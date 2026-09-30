@@ -19,4 +19,7 @@ for migration in supabase/migrations/*.sql; do
   echo "Applying $migration"
   run "$migration"
 done
-run supabase/tests/10_security_tests.sql
+for test in supabase/tests/[1-9]*_tests.sql; do
+  echo "Running $test"
+  run "$test"
+done

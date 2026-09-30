@@ -5,6 +5,9 @@ import com.myclinic.domain.TestData.NOW
 import com.myclinic.domain.model.ConsultStatus
 import com.myclinic.domain.model.PatientRef
 import com.myclinic.domain.model.RecordSection
+import com.myclinic.domain.model.ReferralGrant
+import com.myclinic.domain.model.ReferralKind
+import com.myclinic.domain.model.ReferralStatus
 import com.myclinic.domain.model.VerificationStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -108,9 +111,76 @@ class AccessPolicyTest {
     }
 
     @Test
-    fun `only the owner can edit`() {
-        assertTrue(AccessPolicy.canEdit("owner", patient))
-        assertFalse(AccessPolicy.canEdit("consultant", patient))
+    fun `only the owner can edit, a consultant cannot`() {
+        assertTrue(AccessPolicy.canEdit(owner, patient))
+        assertFalse(AccessPolicy.canEdit(consultant, patient, emptyList()))
+    }
+
+    private fun referral(
+        kind: ReferralKind = ReferralKind.COMANAGEMENT,
+        status: ReferralStatus = ReferralStatus.ACCEPTED,
+        toId: String = "consultant",
+    ) = ReferralGrant("ref-1", "patient-1", "owner", toId, kind, status)
+
+    @Test
+    fun `accepted co-manager can read every section and edit`() {
+        val refs = listOf(referral())
+        assertTrue(AccessPolicy.canEdit(consultant, patient, refs))
+        assertEquals(
+            RecordSection.entries.toSet(),
+            AccessPolicy.readableSections(consultant, patient, emptyList(), NOW, refs),
+        )
+    }
+
+    @Test
+    fun `co-manager cannot delete, share or transfer the patient`() {
+        val refs = listOf(referral())
+        assertTrue(AccessPolicy.canEdit(consultant, patient, refs))
+        assertFalse(AccessPolicy.canManagePatient("consultant", patient))
+        assertFalse(AccessPolicy.canShare(consultant, patient))
+    }
+
+    @Test
+    fun `pending, declined or ended referrals give nothing`() {
+        listOf(ReferralStatus.PENDING, ReferralStatus.DECLINED, ReferralStatus.CANCELLED, ReferralStatus.ENDED).forEach {
+            val refs = listOf(referral(status = it))
+            assertFalse(AccessPolicy.canEdit(consultant, patient, refs))
+            assertFalse(AccessPolicy.canReadSection(consultant, patient, RecordSection.ALLERGIES, emptyList(), NOW, refs))
+        }
+    }
+
+    @Test
+    fun `a pending transfer gives no access`() {
+        val refs = listOf(referral(kind = ReferralKind.TRANSFER, status = ReferralStatus.PENDING))
+        assertFalse(AccessPolicy.canEdit(consultant, patient, refs))
+    }
+
+    @Test
+    fun `unverified co-manager and deleted patient give no access`() {
+        val refs = listOf(referral())
+        val pendingConsultant = TestData.doctor("consultant", VerificationStatus.PENDING)
+        assertFalse(AccessPolicy.canEdit(pendingConsultant, patient, refs))
+        assertFalse(AccessPolicy.canEdit(consultant, patient.copy(deleted = true), refs))
+    }
+
+    @Test
+    fun `closing a consult does not affect co-management`() {
+        val closedConsult = TestData.grant(status = ConsultStatus.CLOSED)
+        val refs = listOf(referral())
+        assertTrue(
+            AccessPolicy.canReadSection(consultant, patient, RecordSection.MEDICATIONS, listOf(closedConsult), NOW, refs),
+        )
+        assertFalse(
+            AccessPolicy.canReadSection(consultant, patient, RecordSection.MEDICATIONS, listOf(closedConsult), NOW),
+        )
+    }
+
+    @Test
+    fun `unverified owner can manage their patients but not share`() {
+        val pendingOwner = TestData.doctor("owner", VerificationStatus.PENDING)
+        assertTrue(AccessPolicy.canEdit(pendingOwner, patient))
+        assertFalse(AccessPolicy.canShare(pendingOwner, patient))
+        assertTrue(AccessPolicy.canShare(owner, patient))
     }
 
     @Test

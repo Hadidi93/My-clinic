@@ -34,3 +34,33 @@ data class PatientRef(
     val ownerId: String,
     val deleted: Boolean = false,
 )
+
+enum class ReferralKind(val dbValue: String) {
+    /** Colleague reads and edits the whole record alongside the owner. */
+    COMANAGEMENT("comanagement"),
+
+    /** Colleague becomes the owner once they accept. */
+    TRANSFER("transfer");
+
+    companion object {
+        fun fromDb(value: String?): ReferralKind = entries.firstOrNull { it.dbValue == value } ?: COMANAGEMENT
+    }
+}
+
+enum class ReferralStatus(val dbValue: String) {
+    PENDING("pending"), ACCEPTED("accepted"), DECLINED("declined"), CANCELLED("cancelled"), ENDED("ended");
+
+    companion object {
+        fun fromDb(value: String?): ReferralStatus = entries.firstOrNull { it.dbValue == value } ?: PENDING
+    }
+}
+
+/** A referral of [patientId] from [fromId] to [toId]. Mirrors the `referrals` table. */
+data class ReferralGrant(
+    val referralId: String,
+    val patientId: String,
+    val fromId: String,
+    val toId: String,
+    val kind: ReferralKind,
+    val status: ReferralStatus,
+)

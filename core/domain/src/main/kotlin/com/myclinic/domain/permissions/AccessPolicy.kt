@@ -5,6 +5,9 @@ import com.myclinic.domain.model.ConsultStatus
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.model.PatientRef
 import com.myclinic.domain.model.RecordSection
+import com.myclinic.domain.model.ReferralGrant
+import com.myclinic.domain.model.ReferralKind
+import com.myclinic.domain.model.ReferralStatus
 import java.time.Instant
 
 /**
@@ -19,8 +22,29 @@ import java.time.Instant
  */
 object AccessPolicy {
 
-    /** Only the doctor who owns a patient can add, edit, delete or share it. */
-    fun canEdit(viewerId: String, patient: PatientRef): Boolean = patient.ownerId == viewerId
+    /** The owner ("primary doctor") is the only one who can delete, share, refer or transfer a patient. */
+    fun isOwner(viewerId: String, patient: PatientRef): Boolean = patient.ownerId == viewerId
+
+    /**
+     * An accepted co-management by a verified colleague, for a patient that
+     * isn't deleted. Mirrors `is_comanager` in the SQL.
+     */
+    fun isComanager(viewer: Doctor, patient: PatientRef, referrals: Collection<ReferralGrant>): Boolean =
+        viewer.isVerified && !patient.deleted && referrals.any {
+            it.patientId == patient.id && it.toId == viewer.id &&
+                it.kind == ReferralKind.COMANAGEMENT && it.status == ReferralStatus.ACCEPTED
+        }
+
+    /** Owner or co-manager: may add and change record entries (mirrors `can_edit_patient`). */
+    fun canEdit(viewer: Doctor, patient: PatientRef, referrals: Collection<ReferralGrant> = emptyList()): Boolean =
+        isOwner(viewer.id, patient) || isComanager(viewer, patient, referrals)
+
+    /** Deleting / restoring the patient, sharing it by consult, referring or transferring it: owner only. */
+    fun canManagePatient(viewerId: String, patient: PatientRef): Boolean = isOwner(viewerId, patient)
+
+    /** Sharing needs a verified owner (unverified doctors can manage their own patients but not share). */
+    fun canShare(viewer: Doctor, patient: PatientRef): Boolean =
+        isOwner(viewer.id, patient) && viewer.isVerified && !patient.deleted
 
     /**
      * A consult gives access only while it is live: not revoked, not closed,
@@ -36,7 +60,7 @@ object AccessPolicy {
 
     /**
      * Can [viewer] read [section] of [patient]?
-     *  - The owner can always read their own patient's record.
+     *  - The owner and accepted co-managers can read the whole record.
      *  - Anyone else needs an active consult that includes the section, and a
      *    verified account (unverified doctors never receive shared data).
      *  - Personal identifiers are never visible through an anonymized consult.
@@ -47,8 +71,9 @@ object AccessPolicy {
         section: RecordSection,
         grants: Collection<ConsultGrant>,
         now: Instant,
+        referrals: Collection<ReferralGrant> = emptyList(),
     ): Boolean {
-        if (viewer.id == patient.ownerId) return true
+        if (canEdit(viewer, patient, referrals)) return true
         if (!viewer.isVerified) return false
         return grants.any { grant ->
             grant.consultantId == viewer.id &&
@@ -64,8 +89,9 @@ object AccessPolicy {
         patient: PatientRef,
         grants: Collection<ConsultGrant>,
         now: Instant,
+        referrals: Collection<ReferralGrant> = emptyList(),
     ): Set<RecordSection> =
-        RecordSection.entries.filterTo(mutableSetOf()) { canReadSection(viewer, patient, it, grants, now) }
+        RecordSection.entries.filterTo(mutableSetOf()) { canReadSection(viewer, patient, it, grants, now, referrals) }
 
     /** Only the doctor who created a consult can revoke it, and only while it is not already revoked. */
     fun canRevoke(viewerId: String, grant: ConsultGrant): Boolean =
