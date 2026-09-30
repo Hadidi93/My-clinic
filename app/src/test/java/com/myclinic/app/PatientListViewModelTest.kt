@@ -22,7 +22,9 @@ class PatientListViewModelTest {
     @get:Rule val mainRule = MainDispatcherRule()
 
     private val repo = FakePatientRepository()
-    private val vm = PatientListViewModel(repo)
+    // Created lazily, i.e. after MainDispatcherRule has installed the test main
+    // thread: this ViewModel starts collecting data as soon as it is built.
+    private val vm by lazy { PatientListViewModel(repo) }
 
     @Test
     fun `quick add needs a name and saves without other fields`() {

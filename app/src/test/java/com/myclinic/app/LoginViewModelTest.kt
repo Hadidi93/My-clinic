@@ -11,7 +11,7 @@ class LoginViewModelTest {
     @get:Rule val mainRule = MainDispatcherRule()
 
     private val auth = FakeAuthRepository()
-    private val vm = LoginViewModel(auth)
+    private val vm by lazy { LoginViewModel(auth) } // after the test main thread is installed
 
     @Test
     fun `invalid email is flagged and nothing is sent`() {
