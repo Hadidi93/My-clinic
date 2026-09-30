@@ -1,0 +1,132 @@
+# Setup: run My Clinic yourself
+
+Doing this the first time takes about 30–45 minutes. You need:
+
+- a computer (Windows, Mac or Linux)
+- an Android phone with Android 10 or newer, or the emulator built into Android Studio
+
+> **Use fake demo patients only** until Phase 5 security hardening is
+> complete and the legal steps in [COMPLIANCE.md](COMPLIANCE.md) are done.
+
+---
+
+## 1. Create the Supabase project (the backend)
+
+1. Go to <https://supabase.com> and sign up. Turn on two-factor authentication
+   for your Supabase account (Account → Security).
+2. Click **New project**:
+   - **Name:** `my-clinic-dev`
+   - **Database password:** use a long random one and store it in a password manager
+   - **Region:** **Central EU (Frankfurt)**, the EU region you chose
+3. Wait about 2 minutes for it to start.
+
+## 2. Create the database tables and security rules
+
+1. In Supabase, open **SQL Editor** → **New query**.
+2. Open `supabase/migrations/20260930000100_doctors_and_audit.sql` from this
+   repository, copy all of it, paste it into the editor and click **Run**.
+3. Do the same for the other migration files, **in filename order**:
+   `…0200_patient_records.sql`, `…0300_consultations.sql`,
+   `…0400_storage_profile_files.sql`.
+
+Each should end with "Success. No rows returned".
+
+*(Alternative for later: install the Supabase CLI and run
+`supabase link` then `supabase db push`, which applies all migrations in one go.)*
+
+## 3. Configure sign-in (Authentication settings)
+
+In Supabase, open **Authentication**:
+
+1. **Sign In / Providers → Email**
+   - Enable Email provider: **on**
+   - Confirm email: **on** (email verification)
+   - Minimum password length: **10**
+   - Password requirements: **letters and digits**
+   - Secure email change: **on**
+2. **URL Configuration**
+   - Site URL: `myclinic://auth-callback`
+   - Redirect URLs → **Add URL**: `myclinic://auth-callback/**`
+
+   This lets the "verify email" and "reset password" links open the app.
+3. **Emails → SMTP settings** *(before real users)*: Supabase's built-in email
+   is rate-limited and meant for testing only. Connect a proper email provider
+   (for example Resend, Postmark or Amazon SES) before inviting colleagues.
+4. **Rate Limits:** leave the defaults.
+
+## 4. Get the app keys
+
+In Supabase: **Project Settings → API**. Copy:
+
+- **Project URL** (looks like `https://abcd1234.supabase.co`)
+- **anon public** key
+
+The anon key is designed to be public, because the security rules protect the data.
+**Never** put the `service_role` key in the app or in git.
+
+## 5. Open the app in Android Studio
+
+1. Install **Android Studio** (latest stable) from <https://developer.android.com/studio>.
+2. **File → Open…** → choose this repository folder. Wait for "Gradle sync" to finish,
+   which downloads everything (several minutes the first time).
+3. In the project folder, copy `local.properties.example` to `local.properties`.
+   Android Studio usually creates `local.properties` with `sdk.dir` already,
+   in which case just add the two lines. Fill in:
+   ```
+   SUPABASE_URL=https://abcd1234.supabase.co
+   SUPABASE_ANON_KEY=eyJhbGciOi...
+   ```
+   `local.properties` is git-ignored, so your keys stay on your computer.
+4. Connect your phone with USB debugging on, or create an emulator
+   (Device Manager → **+** → Pixel, Android 14). Then press the green **Run ▶** button.
+
+## 6. Make yourself the administrator
+
+The first admin has to be set directly in the database; after that, admins
+approve everyone else inside the app.
+
+1. In the app, **Create account** with your email, verify it from the email
+   link **on the phone**, then complete your profile.
+2. In Supabase **SQL Editor**, run (with your email):
+   ```sql
+   update public.doctors
+      set role = 'admin', verification_status = 'verified', verified_at = now()
+    where email = 'you@example.com';
+   ```
+3. Close and reopen the app. A shield icon appears at the top of the home
+   screen, which opens **Doctor approvals**.
+
+## 7. Test checklist for Phase 1
+
+Use a second email address (for example a Gmail `+test` alias:
+`you+demo1@gmail.com`) to play a second doctor.
+
+| # | Try this | Expected |
+|---|---|---|
+| 1 | Create account with password `short` | "Use at least 10 characters" |
+| 2 | Create account properly | "Check your email" screen; email arrives |
+| 3 | Sign in before verifying | "Please verify your email first" |
+| 4 | Tap the email link on the phone | App opens and shows "Complete your profile" |
+| 5 | Save with an empty licence number | Field is marked in red |
+| 6 | Complete profile, add photo and licence photo | "Profile saved"; home shows "Verification pending" |
+| 7 | Switch to العربية | Whole app turns Arabic and right-to-left |
+| 8 | As admin: open Doctor approvals | The new doctor is listed; licence photo opens |
+| 9 | Try to screenshot the approvals screen | Blocked (black image or "can't take screenshot") |
+| 10 | Approve the doctor, reopen their app | Pending banner is gone |
+| 11 | Change licence number, save | Account goes back to "Verification pending" |
+| 12 | Sign out → **Forgot password?** → open link on phone | "Choose a new password" screen; new password works |
+| 13 | Turn on airplane mode, try to sign in | "No connection" message |
+| 14 | Turn phone to dark mode | App follows, with readable contrast |
+
+## 8. Run the automated tests
+
+- **Rules and ViewModel tests:** in Android Studio open the Gradle panel →
+  `MyClinic → Tasks → verification → test`, or in a terminal:
+  `./gradlew :core:domain:test :app:testDebugUnitTest`
+- **Database security tests:** need a local PostgreSQL 15+ install:
+  `PGHOST=localhost PGUSER=postgres supabase/tests/run_local.sh`
+- Both also run automatically on GitHub for every push (the **Actions** tab).
+  Each run also produces a downloadable debug APK under **Artifacts**. To have
+  that APK talk to your Supabase project, add repository secrets
+  `SUPABASE_URL` and `SUPABASE_ANON_KEY` (GitHub → Settings → Secrets and
+  variables → Actions).

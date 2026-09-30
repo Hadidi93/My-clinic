@@ -1,0 +1,5 @@
+# Copy this file to "local.properties" (which is git-ignored) and fill in the
+# values from Supabase Dashboard -> Project Settings -> API.
+sdk.dir=/path/to/Android/sdk
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-anon-public-key

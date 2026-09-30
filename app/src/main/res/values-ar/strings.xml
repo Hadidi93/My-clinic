@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">عيادتي</string>
+
+    <!-- عام -->
+    <string name="email">البريد الإلكتروني</string>
+    <string name="password">كلمة المرور</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="full_name">الاسم الكامل</string>
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="retry">حاول مرة أخرى</string>
+    <string name="back">رجوع</string>
+    <string name="sign_out">تسجيل الخروج</string>
+    <string name="loading">جارٍ التحميل…</string>
+    <string name="show_password">إظهار كلمة المرور</string>
+    <string name="hide_password">إخفاء كلمة المرور</string>
+    <string name="language">اللغة</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="coming_in_phase">قريبًا في المرحلة %1$d</string>
+
+    <!-- تسجيل الدخول -->
+    <string name="login_title">تسجيل الدخول</string>
+    <string name="login_subtitle">سجلات المرضى والاستشارات للأطباء المرخّصين</string>
+    <string name="login_button">تسجيل الدخول</string>
+    <string name="forgot_password">نسيت كلمة المرور؟</string>
+    <string name="no_account">مستخدم جديد؟ أنشئ حسابًا</string>
+
+    <!-- إنشاء حساب -->
+    <string name="signup_title">إنشاء حساب</string>
+    <string name="signup_button">إنشاء الحساب</string>
+    <string name="have_account">لديك حساب؟ سجّل الدخول</string>
+    <string name="password_rules">%1$d أحرف على الأقل، تتضمن حروفًا وأرقامًا</string>
+    <string name="signup_verification_note">بعد تأكيد بريدك الإلكتروني، سيراجع المسؤول ترخيصك الطبي قبل أن تتمكن من مشاركة بيانات المرضى أو استلامها.</string>
+
+    <!-- تحقق من البريد -->
+    <string name="check_email_title">تحقق من بريدك الإلكتروني</string>
+    <string name="check_email_body">أرسلنا رابط التحقق إلى %1$s. افتحه على هذا الهاتف لتفعيل حسابك.</string>
+    <string name="back_to_sign_in">العودة لتسجيل الدخول</string>
+
+    <!-- استعادة كلمة المرور -->
+    <string name="forgot_title">إعادة تعيين كلمة المرور</string>
+    <string name="forgot_body">أدخل بريد حسابك وسنرسل لك رابطًا لاختيار كلمة مرور جديدة.</string>
+    <string name="send_reset_link">إرسال الرابط</string>
+    <string name="reset_link_sent">إذا كان هناك حساب مسجّل بـ %1$s فسيصلك رابط إعادة التعيين. افتحه على هذا الهاتف.</string>
+    <string name="new_password_title">اختر كلمة مرور جديدة</string>
+    <string name="new_password">كلمة المرور الجديدة</string>
+    <string name="update_password">تحديث كلمة المرور</string>
+
+    <!-- الأخطاء -->
+    <string name="error_invalid_email">أدخل بريدًا إلكترونيًا صحيحًا</string>
+    <string name="error_password_too_short">استخدم %1$d أحرف على الأقل</string>
+    <string name="error_password_too_long">كلمة المرور طويلة جدًا</string>
+    <string name="error_password_needs_letter">أضف حرفًا واحدًا على الأقل</string>
+    <string name="error_password_needs_digit">أضف رقمًا واحدًا على الأقل</string>
+    <string name="error_password_mismatch">كلمتا المرور غير متطابقتين</string>
+    <string name="error_password_required">أدخل كلمة المرور</string>
+    <string name="error_invalid_credentials">البريد الإلكتروني أو كلمة المرور غير صحيحة</string>
+    <string name="error_email_not_confirmed">يرجى تأكيد بريدك الإلكتروني أولًا. ابحث عن الرابط في بريدك.</string>
+    <string name="error_email_registered">يوجد حساب مسجّل بهذا البريد بالفعل</string>
+    <string name="error_weak_password">كلمة المرور ضعيفة. اختر كلمة أقوى.</string>
+    <string name="error_rate_limited">محاولات كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى.</string>
+    <string name="error_network">لا يوجد اتصال. تحقق من الإنترنت وحاول مرة أخرى.</string>
+    <string name="error_unknown">حدث خطأ ما. حاول مرة أخرى.</string>
+    <string name="error_profile_load">تعذّر تحميل ملفك الشخصي.</string>
+    <string name="error_full_name">أدخل اسمك الكامل (من 3 إلى 120 حرفًا)</string>
+    <string name="error_specialty">أدخل تخصصك</string>
+    <string name="error_hospital">أدخل اسم المستشفى أو العيادة</string>
+    <string name="error_license">أدخل رقم الترخيص (حروف وأرقام و - أو /)</string>
+    <string name="error_phone">أدخل رقم هاتف صحيحًا</string>
+    <string name="error_license_taken">رقم الترخيص هذا مسجّل لحساب آخر</string>
+
+    <!-- الملف الشخصي -->
+    <string name="profile_setup_title">أكمل ملفك الشخصي</string>
+    <string name="profile_setup_body">يستخدم المسؤول هذه البيانات للتحقق من ترخيصك الطبي.</string>
+    <string name="profile_title">ملفي الشخصي</string>
+    <string name="specialty">التخصص</string>
+    <string name="hospital">المستشفى / العيادة</string>
+    <string name="license_number">رقم الترخيص الطبي</string>
+    <string name="phone">الهاتف</string>
+    <string name="add_photo">إضافة صورة</string>
+    <string name="change_photo">تغيير الصورة</string>
+    <string name="license_document">مستند الترخيص</string>
+    <string name="license_document_help">صورة واضحة لترخيصك أو كارنيه النقابة تُسرّع عملية التحقق.</string>
+    <string name="upload_license_document">رفع صورة الترخيص</string>
+    <string name="replace_license_document">استبدال صورة الترخيص</string>
+    <string name="license_document_uploaded">تم رفع صورة الترخيص</string>
+    <string name="license_change_warning">تغيير بيانات الترخيص يعيد حسابك إلى مرحلة التحقق.</string>
+    <string name="profile_saved">تم حفظ الملف الشخصي</string>
+    <string name="profile_photo">الصورة الشخصية</string>
+
+    <!-- حالة التحقق -->
+    <string name="status_pending">التحقق قيد المراجعة</string>
+    <string name="status_pending_body">يراجع المسؤول ترخيصك الآن. يمكنك إعداد ملفك في الأثناء؛ وستُتاح مشاركة بيانات المرضى واستلامها بعد التحقق.</string>
+    <string name="status_verified">تم التحقق</string>
+    <string name="status_rejected">لم يتم التحقق من الترخيص</string>
+    <string name="status_rejected_body">راجع بيانات ملفك وصورة الترخيص ثم احفظ لإعادة الإرسال.</string>
+    <string name="status_suspended">الحساب موقوف</string>
+    <string name="status_suspended_body">تم إيقاف وصولك. يرجى التواصل مع المسؤول.</string>
+    <string name="status_note">ملاحظة المسؤول: %1$s</string>
+
+    <!-- الرئيسية -->
+    <string name="home_greeting">مرحبًا، %1$s</string>
+    <string name="home_today_patients">مرضى اليوم</string>
+    <string name="home_pending_consults">استشارات معلّقة</string>
+    <string name="home_pending_results">نتائج بانتظار المراجعة</string>
+    <string name="home_upcoming_operations">العمليات القادمة</string>
+    <string name="open_profile">فتح الملف الشخصي</string>
+    <string name="admin_approvals">اعتماد الأطباء</string>
+
+    <!-- المسؤول -->
+    <string name="admin_title">اعتماد الأطباء</string>
+    <string name="admin_empty">لا يوجد أطباء بانتظار الاعتماد.</string>
+    <string name="approve">اعتماد</string>
+    <string name="reject">رفض</string>
+    <string name="admin_reject_title">رفض التحقق</string>
+    <string name="admin_reject_reason">السبب (سيظهر للطبيب)</string>
+    <string name="view_license">عرض صورة الترخيص</string>
+    <string name="no_license_document">لم تُرفع صورة الترخيص</string>
+    <string name="license_label">الترخيص: %1$s</string>
+    <string name="profile_incomplete">الملف غير مكتمل</string>
+    <string name="admin_approved">تم اعتماد %1$s</string>
+    <string name="admin_rejected">تم رفض %1$s</string>
+    <string name="close">إغلاق</string>
+</resources>

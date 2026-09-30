@@ -1,0 +1,27 @@
+package com.myclinic.app.data.doctor
+
+import com.myclinic.domain.model.Doctor
+import com.myclinic.domain.model.VerificationStatus
+import com.myclinic.domain.validation.ProfileInput
+import kotlinx.coroutines.flow.StateFlow
+
+/** Reading and editing doctor profiles, plus the admin approval actions. */
+interface DoctorRepository {
+    /** The signed-in doctor's profile, or null until loaded / after sign-out. */
+    val myProfile: StateFlow<Doctor?>
+
+    suspend fun refreshMyProfile(): Result<Doctor>
+    suspend fun updateMyProfile(input: ProfileInput, language: String): Result<Doctor>
+    suspend fun uploadMyPhoto(jpegBytes: ByteArray): Result<Doctor>
+    suspend fun uploadMyLicenseDocument(jpegBytes: ByteArray): Result<Doctor>
+
+    /** Short-lived links for showing private images. Null if not available. */
+    suspend fun photoUrl(path: String): String?
+    suspend fun licenseDocumentUrl(path: String): String?
+
+    // Admin only (the server refuses these for everyone else).
+    suspend fun doctorsAwaitingVerification(): Result<List<Doctor>>
+    suspend fun setVerification(doctorId: String, status: VerificationStatus, note: String?): Result<Unit>
+
+    fun clear()
+}

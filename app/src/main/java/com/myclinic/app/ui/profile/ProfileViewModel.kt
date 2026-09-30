@@ -1,0 +1,142 @@
+package com.myclinic.app.ui.profile
+
+import android.net.Uri
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.myclinic.app.data.DataError
+import com.myclinic.app.data.doctor.DoctorRepository
+import com.myclinic.app.data.media.ImageCompressor
+import com.myclinic.app.data.toDataError
+import com.myclinic.domain.model.Doctor
+import com.myclinic.domain.model.VerificationStatus
+import com.myclinic.domain.validation.ProfileField
+import com.myclinic.domain.validation.ProfileInput
+import com.myclinic.domain.validation.ProfileValidator
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class ProfileUiState(
+    val fullName: String = "",
+    val specialty: String = "",
+    val hospital: String = "",
+    val licenseNumber: String = "",
+    val phone: String = "",
+    val language: String = "en",
+    val email: String = "",
+    val verificationStatus: VerificationStatus = VerificationStatus.PENDING,
+    val verificationNote: String? = null,
+    val photoUrl: String? = null,
+    val hasLicenseDocument: Boolean = false,
+    val showErrors: Boolean = false,
+    val saving: Boolean = false,
+    val uploadingPhoto: Boolean = false,
+    val uploadingLicense: Boolean = false,
+    val error: DataError? = null,
+    /** One-off event: show the "Profile saved" snackbar. */
+    val savedEvent: Boolean = false,
+) {
+    val input get() = ProfileInput(fullName, specialty, hospital, licenseNumber, phone)
+    val invalidFields: Set<ProfileField> get() = ProfileValidator.validate(input)
+}
+
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val doctorRepository: DoctorRepository,
+    private val imageCompressor: ImageCompressor,
+) : ViewModel() {
+
+    private val _state = MutableStateFlow(ProfileUiState())
+    val state: StateFlow<ProfileUiState> = _state.asStateFlow()
+
+    init {
+        doctorRepository.myProfile.value?.let { fill(it) }
+    }
+
+    private fun fill(doctor: Doctor) {
+        _state.update {
+            it.copy(
+                fullName = doctor.fullName,
+                specialty = doctor.specialty.orEmpty(),
+                hospital = doctor.hospital.orEmpty(),
+                licenseNumber = doctor.licenseNumber.orEmpty(),
+                phone = doctor.phone.orEmpty(),
+                language = doctor.preferredLanguage,
+                email = doctor.email,
+                verificationStatus = doctor.verificationStatus,
+                verificationNote = doctor.verificationNote,
+                hasLicenseDocument = doctor.licenseDocumentPath != null,
+            )
+        }
+        doctor.photoPath?.let { path ->
+            viewModelScope.launch { _state.update { it.copy(photoUrl = doctorRepository.photoUrl(path)) } }
+        }
+    }
+
+    /** Refreshes read-only fields (status, photo) without overwriting what the user is typing. */
+    private fun refreshStatus(doctor: Doctor) {
+        _state.update {
+            it.copy(
+                verificationStatus = doctor.verificationStatus,
+                verificationNote = doctor.verificationNote,
+                hasLicenseDocument = doctor.licenseDocumentPath != null,
+            )
+        }
+    }
+
+    fun onFullNameChange(v: String) = _state.update { it.copy(fullName = v, error = null) }
+    fun onSpecialtyChange(v: String) = _state.update { it.copy(specialty = v, error = null) }
+    fun onHospitalChange(v: String) = _state.update { it.copy(hospital = v, error = null) }
+    fun onLicenseChange(v: String) = _state.update { it.copy(licenseNumber = v, error = null) }
+    fun onPhoneChange(v: String) = _state.update { it.copy(phone = v, error = null) }
+    fun onLanguageChange(v: String) = _state.update { it.copy(language = v) }
+
+    fun save() {
+        val s = _state.value
+        if (s.invalidFields.isNotEmpty()) {
+            _state.update { it.copy(showErrors = true) }
+            return
+        }
+        _state.update { it.copy(saving = true, error = null) }
+        viewModelScope.launch {
+            doctorRepository.updateMyProfile(s.input, s.language)
+                .onSuccess { doctor ->
+                    refreshStatus(doctor)
+                    _state.update { it.copy(saving = false, savedEvent = true) }
+                }
+                .onFailure { e -> _state.update { it.copy(saving = false, error = e.toDataError()) } }
+        }
+    }
+
+    fun onPhotoPicked(uri: Uri) {
+        _state.update { it.copy(uploadingPhoto = true, error = null) }
+        viewModelScope.launch {
+            runCatching { imageCompressor.toJpeg(uri, maxDimension = 512) }
+                .mapCatching { doctorRepository.uploadMyPhoto(it).getOrThrow() }
+                .onSuccess { doctor ->
+                    val url = doctor.photoPath?.let { doctorRepository.photoUrl(it) }
+                    _state.update { it.copy(uploadingPhoto = false, photoUrl = url) }
+                }
+                .onFailure { e -> _state.update { it.copy(uploadingPhoto = false, error = e.toDataError()) } }
+        }
+    }
+
+    fun onLicensePhotoPicked(uri: Uri) {
+        _state.update { it.copy(uploadingLicense = true, error = null) }
+        viewModelScope.launch {
+            runCatching { imageCompressor.toJpeg(uri, maxDimension = 2000, quality = 90) }
+                .mapCatching { doctorRepository.uploadMyLicenseDocument(it).getOrThrow() }
+                .onSuccess { doctor ->
+                    refreshStatus(doctor)
+                    _state.update { it.copy(uploadingLicense = false) }
+                }
+                .onFailure { e -> _state.update { it.copy(uploadingLicense = false, error = e.toDataError()) } }
+        }
+    }
+
+    fun onSavedEventHandled() = _state.update { it.copy(savedEvent = false) }
+}

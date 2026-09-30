@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My Clinic</string>
+
+    <!-- Common -->
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="full_name">Full name</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Try again</string>
+    <string name="back">Back</string>
+    <string name="sign_out">Sign out</string>
+    <string name="loading">Loading…</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="language">Language</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="coming_in_phase">Coming in phase %1$d</string>
+
+    <!-- Sign in -->
+    <string name="login_title">Sign in</string>
+    <string name="login_subtitle">Patient records and consultations for licensed doctors</string>
+    <string name="login_button">Sign in</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="no_account">New here? Create an account</string>
+
+    <!-- Sign up -->
+    <string name="signup_title">Create account</string>
+    <string name="signup_button">Create account</string>
+    <string name="have_account">Already have an account? Sign in</string>
+    <string name="password_rules">At least %1$d characters, including letters and numbers</string>
+    <string name="signup_verification_note">After you verify your email, an administrator will check your medical licence before you can share or receive patient data.</string>
+
+    <!-- Check email -->
+    <string name="check_email_title">Check your email</string>
+    <string name="check_email_body">We sent a verification link to %1$s. Open it on this phone to activate your account.</string>
+    <string name="back_to_sign_in">Back to sign in</string>
+
+    <!-- Forgot / reset password -->
+    <string name="forgot_title">Reset password</string>
+    <string name="forgot_body">Enter your account email and we\'ll send you a link to choose a new password.</string>
+    <string name="send_reset_link">Send reset link</string>
+    <string name="reset_link_sent">If an account exists for %1$s, a reset link is on its way. Open it on this phone.</string>
+    <string name="new_password_title">Choose a new password</string>
+    <string name="new_password">New password</string>
+    <string name="update_password">Update password</string>
+
+    <!-- Errors -->
+    <string name="error_invalid_email">Enter a valid email address</string>
+    <string name="error_password_too_short">Use at least %1$d characters</string>
+    <string name="error_password_too_long">Password is too long</string>
+    <string name="error_password_needs_letter">Include at least one letter</string>
+    <string name="error_password_needs_digit">Include at least one number</string>
+    <string name="error_password_mismatch">Passwords don\'t match</string>
+    <string name="error_password_required">Enter your password</string>
+    <string name="error_invalid_credentials">Email or password is incorrect</string>
+    <string name="error_email_not_confirmed">Please verify your email first. Check your inbox for the link.</string>
+    <string name="error_email_registered">An account with this email already exists</string>
+    <string name="error_weak_password">This password is too weak. Choose a stronger one.</string>
+    <string name="error_rate_limited">Too many attempts. Please wait a few minutes and try again.</string>
+    <string name="error_network">No connection. Check your internet and try again.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+    <string name="error_profile_load">Couldn\'t load your profile.</string>
+    <string name="error_full_name">Enter your full name (3–120 characters)</string>
+    <string name="error_specialty">Enter your specialty</string>
+    <string name="error_hospital">Enter your hospital or clinic</string>
+    <string name="error_license">Enter your licence number (letters, numbers, - or /)</string>
+    <string name="error_phone">Enter a valid phone number</string>
+    <string name="error_license_taken">This licence number is already registered to another account</string>
+
+    <!-- Profile -->
+    <string name="profile_setup_title">Complete your profile</string>
+    <string name="profile_setup_body">An administrator uses these details to verify your medical licence.</string>
+    <string name="profile_title">My profile</string>
+    <string name="specialty">Specialty</string>
+    <string name="hospital">Hospital / clinic</string>
+    <string name="license_number">Medical licence number</string>
+    <string name="phone">Phone</string>
+    <string name="add_photo">Add photo</string>
+    <string name="change_photo">Change photo</string>
+    <string name="license_document">Licence document</string>
+    <string name="license_document_help">A clear photo of your licence or syndicate card speeds up verification.</string>
+    <string name="upload_license_document">Upload photo of licence</string>
+    <string name="replace_license_document">Replace licence photo</string>
+    <string name="license_document_uploaded">Licence photo uploaded</string>
+    <string name="license_change_warning">Changing your licence details sends your account back for verification.</string>
+    <string name="profile_saved">Profile saved</string>
+    <string name="profile_photo">Profile photo</string>
+
+    <!-- Verification status -->
+    <string name="status_pending">Verification pending</string>
+    <string name="status_pending_body">An administrator is checking your licence. You can set up your profile meanwhile; sharing and receiving patient data unlocks once you\'re verified.</string>
+    <string name="status_verified">Verified</string>
+    <string name="status_rejected">Licence not verified</string>
+    <string name="status_rejected_body">Please review your profile details and licence photo, then save to resubmit.</string>
+    <string name="status_suspended">Account suspended</string>
+    <string name="status_suspended_body">Your access has been suspended. Please contact the administrator.</string>
+    <string name="status_note">Note from administrator: %1$s</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Hello, %1$s</string>
+    <string name="home_today_patients">Today\'s patients</string>
+    <string name="home_pending_consults">Pending consults</string>
+    <string name="home_pending_results">Pending results</string>
+    <string name="home_upcoming_operations">Upcoming operations</string>
+    <string name="open_profile">Open profile</string>
+    <string name="admin_approvals">Doctor approvals</string>
+
+    <!-- Admin -->
+    <string name="admin_title">Doctor approvals</string>
+    <string name="admin_empty">No doctors are waiting for approval.</string>
+    <string name="approve">Approve</string>
+    <string name="reject">Reject</string>
+    <string name="admin_reject_title">Reject verification</string>
+    <string name="admin_reject_reason">Reason (shown to the doctor)</string>
+    <string name="view_license">View licence photo</string>
+    <string name="no_license_document">No licence photo uploaded</string>
+    <string name="license_label">Licence: %1$s</string>
+    <string name="profile_incomplete">Profile incomplete</string>
+    <string name="admin_approved">%1$s approved</string>
+    <string name="admin_rejected">%1$s rejected</string>
+    <string name="close">Close</string>
+</resources>
