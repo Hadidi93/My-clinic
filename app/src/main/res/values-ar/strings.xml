@@ -123,4 +123,141 @@
     <string name="admin_approved">تم اعتماد %1$s</string>
     <string name="admin_rejected">تم رفض %1$s</string>
     <string name="close">إغلاق</string>
+
+    <!-- المرضى (المرحلة 2) -->
+    <string name="patients">المرضى</string>
+    <string name="search_patients">ابحث بالاسم أو الرقم أو رقم الملف أو التشخيص</string>
+    <string name="filter_all_dates">أي تاريخ</string>
+    <string name="filter_today">اليوم</string>
+    <string name="filter_7_days">7 أيام</string>
+    <string name="filter_30_days">30 يومًا</string>
+    <string name="show_deleted">عرض المرضى المحذوفين</string>
+    <string name="hide_deleted">إخفاء المرضى المحذوفين</string>
+    <string name="add_patient">إضافة مريض</string>
+    <string name="quick_add_title">إضافة مريض سريعًا</string>
+    <string name="quick_add_hint">الاسم فقط مطلوب، ويمكنك استكمال الباقي لاحقًا.</string>
+    <string name="save_and_open">حفظ وفتح الملف</string>
+    <string name="no_patients">لا يوجد مرضى بعد. اضغط «إضافة مريض» للبدء.</string>
+    <string name="no_results">لا يوجد مرضى مطابقون للبحث.</string>
+    <string name="clear_search">مسح البحث</string>
+    <string name="deleted">محذوف</string>
+    <string name="age_years_short">%1$d سنة</string>
+    <string name="file_number_short">ملف %1$s</string>
+    <string name="view_all_patients">كل المرضى</string>
+
+    <!-- المزامنة -->
+    <plurals name="sync_pending">
+        <item quantity="zero">لا توجد تغييرات بانتظار المزامنة</item>
+        <item quantity="one">تغيير واحد بانتظار المزامنة</item>
+        <item quantity="two">تغييران بانتظار المزامنة</item>
+        <item quantity="few">%1$d تغييرات بانتظار المزامنة</item>
+        <item quantity="many">%1$d تغييرًا بانتظار المزامنة</item>
+        <item quantity="other">%1$d تغيير بانتظار المزامنة</item>
+    </plurals>
+    <plurals name="sync_failed">
+        <item quantity="zero">لا توجد تغييرات مرفوضة</item>
+        <item quantity="one">تعذّر حفظ تغيير واحد على الخادم</item>
+        <item quantity="two">تعذّر حفظ تغييرين على الخادم</item>
+        <item quantity="few">تعذّر حفظ %1$d تغييرات على الخادم</item>
+        <item quantity="many">تعذّر حفظ %1$d تغييرًا على الخادم</item>
+        <item quantity="other">تعذّر حفظ %1$d تغيير على الخادم</item>
+    </plurals>
+    <string name="sync_failed_body">غالبًا يعني ذلك أنك لم تعد تملك صلاحية على هذا المريض.</string>
+    <string name="discard_failed">تجاهل</string>
+    <string name="offline">غير متصل – التغييرات محفوظة على هذا الهاتف</string>
+    <string name="sign_out_unsynced_title">تغييرات غير متزامنة</string>
+    <plurals name="sign_out_unsynced_body">
+        <item quantity="zero">لا توجد تغييرات غير متزامنة.</item>
+        <item quantity="one">هناك تغيير واحد لم يصل إلى الخادم بعد وسيُفقد إذا سجّلت الخروج الآن. اتصل بالإنترنت أولًا للاحتفاظ به.</item>
+        <item quantity="two">هناك تغييران لم يصلا إلى الخادم بعد وسيُفقدان إذا سجّلت الخروج الآن. اتصل بالإنترنت أولًا للاحتفاظ بهما.</item>
+        <item quantity="few">هناك %1$d تغييرات لم تصل إلى الخادم بعد وستُفقد إذا سجّلت الخروج الآن. اتصل بالإنترنت أولًا للاحتفاظ بها.</item>
+        <item quantity="many">هناك %1$d تغييرًا لم تصل إلى الخادم بعد وستُفقد إذا سجّلت الخروج الآن. اتصل بالإنترنت أولًا للاحتفاظ بها.</item>
+        <item quantity="other">هناك %1$d تغيير لم تصل إلى الخادم بعد وستُفقد إذا سجّلت الخروج الآن. اتصل بالإنترنت أولًا للاحتفاظ بها.</item>
+    </plurals>
+    <string name="sign_out_anyway">تسجيل الخروج على أي حال</string>
+
+    <!-- ملف المريض -->
+    <string name="allergies_banner">حساسية: %1$s</string>
+    <string name="no_allergies_recorded">لا توجد حساسية مسجلة</string>
+    <string name="tab_record">الملف</string>
+    <string name="tab_timeline">الخط الزمني</string>
+    <string name="tab_vitals">العلامات الحيوية</string>
+    <string name="add_entry">إضافة</string>
+    <string name="edit">تعديل</string>
+    <string name="edit_personal_data">تعديل البيانات الشخصية</string>
+    <string name="no_entries">لا يوجد تسجيل بعد</string>
+    <string name="delete_patient">حذف المريض</string>
+    <string name="restore_patient">استعادة المريض</string>
+    <string name="delete_patient_confirm">سيُخفى المريض من قوائمك. يبقى الملف محفوظًا ويمكن استعادته من «عرض المرضى المحذوفين».</string>
+    <string name="patient_deleted_banner">هذا المريض محذوف. استعده لتتمكن من التعديل.</string>
+    <string name="delete_entry">تحديد كإدخال خاطئ</string>
+    <string name="delete_entry_confirm">سيُزال هذا الإدخال من عرض الملف، ويبقى في سجل التدقيق.</string>
+    <string name="confirm">تأكيد</string>
+    <string name="saved_offline">تم الحفظ</string>
+    <string name="patient_not_found">لم يعد هذا المريض متاحًا على هذا الهاتف.</string>
+    <string name="checklist_progress">تم %1$d من %2$d</string>
+    <string name="current">حالي</string>
+    <string name="stopped">متوقف</string>
+    <string name="chronic">مزمن</string>
+    <string name="comanaged_badge">متابعة مشتركة</string>
+
+    <!-- النماذج -->
+    <string name="select_date">اختر التاريخ</string>
+    <string name="clear">مسح</string>
+    <string name="ok">موافق</string>
+    <string name="pick_condition_hint">اختر من القائمة أو اكتب بنفسك</string>
+    <string name="no_surgical_cases">أضف العملية أولًا ثم سجّل متابعتها.</string>
+    <string name="suggested_tags">اقتراحات</string>
+    <string name="add_tag">إضافة وسم</string>
+    <string name="field_required">مطلوب</string>
+    <string name="field_too_long">طويل جدًا</string>
+    <string name="field_not_number">أدخل رقمًا</string>
+    <string name="field_out_of_range">خارج النطاق المسموح</string>
+    <string name="field_invalid_date">تاريخ غير صحيح</string>
+    <string name="field_future_date">لا يمكن أن يكون في المستقبل</string>
+    <string name="fix_errors">يرجى تصحيح الحقول المحددة.</string>
+    <string name="unsaved_changes_title">تجاهل التغييرات؟</string>
+    <string name="discard">تجاهل</string>
+    <string name="keep_editing">متابعة التعديل</string>
+
+    <!-- الخط الزمني -->
+    <string name="timeline_empty">ستظهر الأحداث هنا كلما أضفت إلى الملف.</string>
+    <string name="tl_patient_added">إضافة المريض</string>
+    <string name="tl_complaint">الشكوى الحالية</string>
+    <string name="tl_condition">تشخيص</string>
+    <string name="tl_past_surgery">عملية (تاريخ سابق)</string>
+    <string name="tl_med_started">بدء دواء</string>
+    <string name="tl_med_stopped">إيقاف دواء</string>
+    <string name="tl_allergy">تسجيل حساسية</string>
+    <string name="tl_examination">فحص</string>
+    <string name="tl_operation_planned">عملية مخططة</string>
+    <string name="tl_operation_done">عملية</string>
+    <string name="tl_follow_up">متابعة بعد العملية</string>
+
+    <!-- العلامات الحيوية -->
+    <string name="no_vitals">لا توجد علامات حيوية بعد. أضف فحصًا يتضمنها لرؤية التغيرات.</string>
+    <string name="vital_pulse">النبض</string>
+    <string name="vital_systolic">الضغط الانقباضي</string>
+    <string name="vital_diastolic">الضغط الانبساطي</string>
+    <string name="vital_resp_rate">معدل التنفس</string>
+    <string name="vital_temperature">الحرارة</string>
+    <string name="vital_spo2">تشبع الأكسجين</string>
+    <string name="vital_weight">الوزن</string>
+    <string name="vital_pain">درجة الألم</string>
+    <string name="vital_normal_range">المنطقة المظللة: النطاق المعتاد للبالغين %1$s–%2$s %3$s</string>
+    <plurals name="vital_abnormal_count">
+        <item quantity="zero">لا توجد قراءات خارج النطاق المعتاد</item>
+        <item quantity="one">قراءة واحدة خارج النطاق المعتاد</item>
+        <item quantity="two">قراءتان خارج النطاق المعتاد</item>
+        <item quantity="few">%1$d قراءات خارج النطاق المعتاد</item>
+        <item quantity="many">%1$d قراءة خارج النطاق المعتاد</item>
+        <item quantity="other">%1$d قراءة خارج النطاق المعتاد</item>
+    </plurals>
+    <string name="vital_readings">القراءات</string>
+    <string name="outside_range">خارج النطاق</string>
+    <string name="chart_description">رسم بياني لـ %1$s يتضمن %2$d قراءة. القراءات مدرجة بالأسفل.</string>
+
+    <!-- الرئيسية -->
+    <string name="home_no_operations">لا توجد عمليات مخططة خلال الأيام الـ 14 القادمة.</string>
+    <string name="home_tap_to_open">اضغط للفتح</string>
 </resources>

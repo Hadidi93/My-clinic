@@ -78,7 +78,7 @@ select tests.fails($$select public.create_referral('b0000000-0000-0000-0000-0000
                    '42501', 'co-manager cannot transfer the patient');
 
 -- Offline sync for the co-manager
-select tests.ok((select count(*) from public.my_patient_ids() as id where id = :patient) = 1,
+select tests.ok(:patient = any(public.my_patient_ids()),
                 'co-managed patient is included in the offline list');
 select tests.ok(jsonb_array_length(public.sync_pull('allergies', null)) = 1, 'co-manager can sync the record offline');
 select tests.fails($$select public.sync_pull('doctors', null)$$, '22023', 'sync is limited to record tables');
@@ -96,7 +96,7 @@ select tests.ok(jsonb_array_length(public.sync_pull('allergies', now() + interva
 set request.jwt.claim.sub = :stranger;
 select public.end_referral(current_setting('test.coman')::uuid);
 select tests.ok((select count(*) from public.patients) = 0, 'ending co-management removes access');
-select tests.ok((select count(*) from public.my_patient_ids()) = 0, 'and removes the patient from the offline list');
+select tests.ok(cardinality(public.my_patient_ids()) = 0, 'and removes the patient from the offline list');
 
 -- Decline / cancel
 set request.jwt.claim.sub = :owner;
@@ -148,7 +148,7 @@ select tests.fails($$insert into public.allergies (patient_id, allergen) values 
 select tests.fails($$select public.create_consult('b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000004',
                      'q', array['allergies']::public.record_section[], true, 7, true, current_date)$$,
                    '42501', 'the previous owner can no longer share the patient');
-select tests.ok((select count(*) from public.my_patient_ids()) = 0, 'history is not kept offline by the previous owner');
+select tests.ok(cardinality(public.my_patient_ids()) = 0, 'history is not kept offline by the previous owner');
 select tests.ok((select count(*) from public.audit_log where action = 'transfer') = 0,
                 'the previous owner no longer sees the patient''s audit trail');
 

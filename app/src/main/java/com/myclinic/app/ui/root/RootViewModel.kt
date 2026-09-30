@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.auth.AuthState
 import com.myclinic.app.data.doctor.DoctorRepository
+import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.domain.model.Doctor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,7 @@ sealed interface RootState {
 class RootViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val doctorRepository: DoctorRepository,
+    private val patientRepository: PatientRepository,
 ) : ViewModel() {
 
     private val profileLoadFailed = MutableStateFlow(false)
@@ -62,8 +64,16 @@ class RootViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.authState.collect { auth ->
                 when (auth) {
-                    is AuthState.SignedIn -> loadProfile()
-                    AuthState.SignedOut -> doctorRepository.clear()
+                    is AuthState.SignedIn -> {
+                        loadProfile()
+                        patientRepository.startSync()
+                    }
+                    AuthState.SignedOut -> {
+                        doctorRepository.clear()
+                        // No patient data stays on the phone after sign-out
+                        // (also covers a session that expired on its own).
+                        patientRepository.clearLocalData()
+                    }
                     AuthState.Loading -> Unit
                 }
             }

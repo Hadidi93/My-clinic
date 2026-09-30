@@ -79,3 +79,27 @@ fun demoDoctor(complete: Boolean = true) = Doctor(
     verificationStatus = VerificationStatus.PENDING,
     verificationNote = null,
 )
+
+class FakePatientRepository : com.myclinic.app.data.records.PatientRepository {
+    var cleared = 0
+    var syncStarted = 0
+    var unsynced = 0
+    override val records = MutableStateFlow(emptyList<com.myclinic.domain.record.PatientRecord>())
+    override fun record(patientId: String) = MutableStateFlow<com.myclinic.domain.record.PatientRecord?>(null)
+    override suspend fun row(table: com.myclinic.domain.record.RecordTable, id: String): kotlinx.serialization.json.JsonObject? = null
+    override suspend fun save(table: com.myclinic.domain.record.RecordTable, patientId: String?, rowId: String?, values: Map<String, String>): String {
+        saved += table to values
+        return rowId ?: "new-id"
+    }
+    override suspend fun markDeleted(table: com.myclinic.domain.record.RecordTable, id: String) = Unit
+    override suspend fun setPatientDeleted(patientId: String, deleted: Boolean) = Unit
+    override val pendingChanges = MutableStateFlow(0)
+    override val failedChanges = MutableStateFlow(0)
+    override val syncStatus = MutableStateFlow(com.myclinic.app.data.sync.SyncStatus())
+    val saved = mutableListOf<Pair<com.myclinic.domain.record.RecordTable, Map<String, String>>>()
+    override suspend fun discardFailedChanges() = Unit
+    override fun logView(patientId: String) = Unit
+    override fun startSync() { syncStarted++ }
+    override suspend fun unsyncedChangeCount() = unsynced
+    override suspend fun clearLocalData() { cleared++ }
+}

@@ -12,6 +12,10 @@ import com.myclinic.app.ui.auth.ForgotPasswordScreen
 import com.myclinic.app.ui.auth.LoginScreen
 import com.myclinic.app.ui.auth.SignUpScreen
 import com.myclinic.app.ui.home.HomeScreen
+import com.myclinic.app.ui.patients.EntryFormScreen
+import com.myclinic.app.ui.patients.PatientDetailScreen
+import com.myclinic.app.ui.patients.PatientListScreen
+import com.myclinic.domain.record.DateFilter
 import com.myclinic.app.ui.profile.ProfileScreen
 import com.myclinic.domain.model.Doctor
 import kotlinx.serialization.Serializable
@@ -25,6 +29,10 @@ import kotlinx.serialization.Serializable
 @Serializable object HomeRoute
 @Serializable object ProfileRoute
 @Serializable object AdminApprovalsRoute
+@Serializable data class PatientListRoute(val dateFilter: String = "ALL", val quickAdd: Boolean = false)
+@Serializable data class PatientDetailRoute(val patientId: String)
+/** Add (entryId = null) or edit one entry of [table] ("patients" = personal data). */
+@Serializable data class EntryFormRoute(val patientId: String, val table: String, val entryId: String? = null)
 
 /** Screens for signed-out users. */
 @Composable
@@ -67,7 +75,28 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
                 doctor = doctor,
                 onOpenProfile = { nav.navigate(ProfileRoute) },
                 onOpenAdmin = { nav.navigate(AdminApprovalsRoute) },
+                onOpenPatients = { filter -> nav.navigate(PatientListRoute(dateFilter = filter.name)) },
+                onQuickAdd = { nav.navigate(PatientListRoute(quickAdd = true)) },
+                onOpenPatient = { id -> nav.navigate(PatientDetailRoute(id)) },
             )
+        }
+        composable<PatientListRoute> { entry ->
+            val route = entry.toRoute<PatientListRoute>()
+            PatientListScreen(
+                initialDateFilter = runCatching { DateFilter.valueOf(route.dateFilter) }.getOrDefault(DateFilter.ALL),
+                startWithQuickAdd = route.quickAdd,
+                onBack = { nav.popBackStack() },
+                onOpenPatient = { id -> nav.navigate(PatientDetailRoute(id)) },
+            )
+        }
+        composable<PatientDetailRoute> {
+            PatientDetailScreen(
+                onBack = { nav.popBackStack() },
+                onEdit = { patientId, table, entryId -> nav.navigate(EntryFormRoute(patientId, table.tableName, entryId)) },
+            )
+        }
+        composable<EntryFormRoute> {
+            EntryFormScreen(onClose = { nav.popBackStack() })
         }
         composable<ProfileRoute> {
             ProfileScreen(setupMode = false, onBack = { nav.popBackStack() }, onSignOut = onSignOut)

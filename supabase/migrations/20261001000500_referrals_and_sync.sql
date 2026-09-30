@@ -435,16 +435,18 @@ grant execute on function public.end_referral(uuid) to authenticated;
 
 -- Patients this user may keep offline: owned (including deleted, for the
 -- trash) and co-managed. The app deletes any local patient not in this list.
-create function public.my_patient_ids() returns setof uuid
+create function public.my_patient_ids() returns uuid[]
 language sql stable security definer
 set search_path = ''
 as $$
-    select id from public.patients where owner_id = auth.uid()
-    union
-    select r.patient_id from public.referrals r
-      join public.patients p on p.id = r.patient_id
-     where r.to_doctor_id = auth.uid() and r.kind = 'comanagement' and r.status = 'accepted'
-       and p.deleted_at is null and public.is_verified_doctor();
+    select coalesce(array_agg(id), '{}') from (
+        select id from public.patients where owner_id = auth.uid()
+        union
+        select r.patient_id from public.referrals r
+          join public.patients p on p.id = r.patient_id
+         where r.to_doctor_id = auth.uid() and r.kind = 'comanagement' and r.status = 'accepted'
+           and p.deleted_at is null and public.is_verified_doctor()
+    ) ids;
 $$;
 
 -- Returns up to p_limit rows of p_table changed after (p_since, p_after_id),

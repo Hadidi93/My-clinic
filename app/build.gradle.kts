@@ -99,6 +99,18 @@ dependencies {
 
     implementation(libs.coil.compose)
 
+    // Offline cache: Room on top of SQLCipher (encrypted SQLite)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+    implementation(libs.sqlcipher)
+    implementation(libs.androidx.sqlite)
+
+    // Background sync
+    implementation(libs.work.runtime)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.work.compiler)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

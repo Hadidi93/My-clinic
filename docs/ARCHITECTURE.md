@@ -33,10 +33,35 @@
   - main app
 
   Screens never have to juggle this.
-- **Offline (Room) arrives in Phase 2** with patient records, which are the
-  data worth caching. The local database will be encrypted with SQLCipher,
-  using a key protected by Android Keystore (`KeystoreCipher` is already
-  here for the login session).
+- **Offline first (Phase 2).** Patient screens read only from an encrypted
+  copy on the phone, so they are instant and work without signal in theatre
+  or clinic.
+
+## Offline sync, in plain words
+
+```
+ screen ──save──▶ local copy (Room + SQLCipher) ──▶ outbox ──(when online)──▶ Supabase
+ screen ◀─shows── local copy ◀──────── pull changes / purge lost access ◀──── Supabase
+```
+
+- **Encrypted cache:** one generic table (`cached_rows`) holds every row as
+  the server's JSON. It is encrypted with SQLCipher (AES-256), using a random
+  password that is itself encrypted by an Android Keystore key.
+- **Outbox:** every save writes the local copy and a "pending change" in one
+  step. `SyncWorker` (WorkManager) uploads them in order as soon as there is
+  a connection, even if the app was closed, and again every 15 minutes.
+- **Conflicts:** a row with an un-uploaded local change keeps the local
+  version; otherwise the latest server version wins (last write wins per
+  entry). Two doctors editing the *same* entry at the same moment is the
+  only case where one edit replaces the other; separate entries never clash.
+- **Refused changes** (e.g. co-management ended while offline) are kept
+  aside and shown with a "Discard" button, never silently dropped.
+- **Lost access:** after each sync the phone deletes patients it may no
+  longer edit. Signing out deletes the whole offline copy (with a warning if
+  anything is unsynced). If another doctor signs in on the same phone, the
+  previous doctor's cache is wiped first.
+- **What stays online-only:** consult views (Phase 4) and the previous
+  owner's read-only history after a transfer are never stored on the phone.
 
 ## Decision: Supabase vs Firebase
 
@@ -67,9 +92,11 @@
 | Private file storage, short-lived links | storage policies + signed URLs (5–10 min) |
 | Append-only audit log | `audit_log`; no insert/update/delete permission for anyone |
 
+| Encrypted offline database | `LocalDatabase` (SQLCipher) |
+| Record views audit-logged | `PatientRepository.logView` → `log_record_view` |
+
 Coming in Phase 5:
 - biometric/PIN lock with auto-lock
-- encrypted Room database
 - certificate pinning
 - release hardening (R8 obfuscation review, Play Integrity)
 - penetration-test checklist

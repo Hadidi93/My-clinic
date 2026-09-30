@@ -12,30 +12,31 @@ class RootViewModelTest {
     @get:Rule val mainRule = MainDispatcherRule()
 
     private val auth = FakeAuthRepository()
+    private val patients = FakePatientRepository()
 
     @Test
     fun `signed out shows the sign-in flow`() {
-        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor()))
+        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor()), patients)
         assertEquals(RootState.SignedOut, vm.state.value)
     }
 
     @Test
     fun `signed in with an incomplete profile shows profile setup`() {
-        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor(complete = false)))
+        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor(complete = false)), patients)
         auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
         assertTrue(vm.state.value is RootState.NeedsProfile)
     }
 
     @Test
     fun `signed in with a complete profile opens the app`() {
-        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor(complete = true)))
+        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor(complete = true)), patients)
         auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
         assertTrue(vm.state.value is RootState.Ready)
     }
 
     @Test
     fun `password reset link takes priority`() {
-        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor()))
+        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor()), patients)
         auth.passwordRecoveryPending.value = true
         auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
         assertEquals(RootState.PasswordRecovery, vm.state.value)
@@ -44,7 +45,7 @@ class RootViewModelTest {
     @Test
     fun `profile that fails to load offers retry`() {
         val doctors = FakeDoctorRepository(demoDoctor()).apply { failRefresh = true }
-        val vm = RootViewModel(auth, doctors)
+        val vm = RootViewModel(auth, doctors, patients)
         auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
         assertEquals(RootState.ProfileLoadFailed, vm.state.value)
     }
@@ -52,10 +53,20 @@ class RootViewModelTest {
     @Test
     fun `signing out clears the cached profile`() {
         val doctors = FakeDoctorRepository(demoDoctor())
-        val vm = RootViewModel(auth, doctors)
+        val vm = RootViewModel(auth, doctors, patients)
         auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
         vm.signOut()
         assertEquals(RootState.SignedOut, vm.state.value)
         assertEquals(null, doctors.myProfile.value)
+    }
+
+    @Test
+    fun `signing in starts sync and signing out wipes the offline patient data`() {
+        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor()), patients)
+        val clearedAtStart = patients.cleared // signed-out start also clears (e.g. expired session)
+        auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
+        assertEquals(1, patients.syncStarted)
+        vm.signOut()
+        assertEquals(clearedAtStart + 1, patients.cleared)
     }
 }

@@ -27,7 +27,8 @@ Doing this the first time takes about 30–45 minutes. You need:
    repository, copy all of it, paste it into the editor and click **Run**.
 3. Do the same for the other migration files, **in filename order**:
    `…0200_patient_records.sql`, `…0300_consultations.sql`,
-   `…0400_storage_profile_files.sql`.
+   `…0400_storage_profile_files.sql`, `…0500_referrals_and_sync.sql`.
+   (Already set up Phase 1? Just run the new `…0500` file.)
 
 Each should end with "Success. No rows returned".
 
@@ -117,6 +118,26 @@ Use a second email address (for example a Gmail `+test` alias:
 | 12 | Sign out → **Forgot password?** → open link on phone | "Choose a new password" screen; new password works |
 | 13 | Turn on airplane mode, try to sign in | "No connection" message |
 | 14 | Turn phone to dark mode | App follows, with readable contrast |
+
+## 7b. Test checklist for Phase 2 (patients)
+
+Use **fake demo patients only**.
+
+| # | Try this | Expected |
+|---|---|---|
+| 1 | Home → **Add patient**, type only a name, **Save and open** | Record opens in a few seconds |
+| 2 | Add an allergy with severity "Life-threatening" | Red **ALLERGIES** banner on the record and every form |
+| 3 | Add chronic diseases: pick "Hypertension" from the chips, then type a rare one yourself | Both listed under Past medical history |
+| 4 | Add 3 examinations over different times with pulse and BP | **Vitals** tab shows a trend; tap a dot to see its value; out-of-range dots are marked |
+| 5 | Add a surgery with a planned date next week, tick some checklist items | Shows "3 of 10 done"; the operation appears on Home under Upcoming operations |
+| 6 | Add a post-op follow-up to that surgery | Listed under Post-op follow-up and on the **Timeline** |
+| 7 | Open **Timeline** | Everything in date order, newest first |
+| 8 | Patient list: search by part of the name, file number, or diagnosis; filter by tag and "Today" | List narrows correctly; Arabic names match with or without hamza (أحمد / احمد) |
+| 9 | Airplane mode on → add an entry → close the app → airplane mode off → open the app | "Offline"/"waiting to sync" banner, then it disappears; the entry is in Supabase (Table Editor) |
+| 10 | Edit an entry → **Mark as entered in error** | Entry disappears from the record; Supabase shows `deleted_at` set |
+| 11 | Delete the patient (⋮ menu) → list → trash icon | Patient shows as Deleted; restore works |
+| 12 | Try a screenshot on any patient screen | Blocked |
+| 13 | Airplane mode on, add an entry, then Profile → Sign out | Warning about unsynced changes |
 
 ## 8. Run the automated tests
 

@@ -123,4 +123,125 @@
     <string name="admin_approved">%1$s approved</string>
     <string name="admin_rejected">%1$s rejected</string>
     <string name="close">Close</string>
+
+    <!-- Patients (Phase 2) -->
+    <string name="patients">Patients</string>
+    <string name="search_patients">Search name, ID, file no., diagnosis</string>
+    <string name="filter_all_dates">Any date</string>
+    <string name="filter_today">Today</string>
+    <string name="filter_7_days">7 days</string>
+    <string name="filter_30_days">30 days</string>
+    <string name="show_deleted">Show deleted patients</string>
+    <string name="hide_deleted">Hide deleted patients</string>
+    <string name="add_patient">Add patient</string>
+    <string name="quick_add_title">Quick add patient</string>
+    <string name="quick_add_hint">Only the name is required. You can complete the rest later.</string>
+    <string name="save_and_open">Save and open</string>
+    <string name="no_patients">No patients yet. Tap “Add patient” to create one.</string>
+    <string name="no_results">No patients match your search.</string>
+    <string name="clear_search">Clear search</string>
+    <string name="deleted">Deleted</string>
+    <string name="age_years_short">%1$d y</string>
+    <string name="file_number_short">File %1$s</string>
+    <string name="view_all_patients">All patients</string>
+
+    <!-- Sync -->
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d change waiting to sync</item>
+        <item quantity="other">%1$d changes waiting to sync</item>
+    </plurals>
+    <plurals name="sync_failed">
+        <item quantity="one">%1$d change couldn\'t be saved on the server</item>
+        <item quantity="other">%1$d changes couldn\'t be saved on the server</item>
+    </plurals>
+    <string name="sync_failed_body">Usually this means you no longer have access to that patient.</string>
+    <string name="discard_failed">Discard</string>
+    <string name="offline">Offline – changes are saved on this phone</string>
+    <string name="sign_out_unsynced_title">Unsynced changes</string>
+    <plurals name="sign_out_unsynced_body">
+        <item quantity="one">%1$d change hasn\'t reached the server yet and will be lost if you sign out now. Connect to the internet first to keep it.</item>
+        <item quantity="other">%1$d changes haven\'t reached the server yet and will be lost if you sign out now. Connect to the internet first to keep them.</item>
+    </plurals>
+    <string name="sign_out_anyway">Sign out anyway</string>
+
+    <!-- Patient record -->
+    <string name="allergies_banner">ALLERGIES: %1$s</string>
+    <string name="no_allergies_recorded">No allergies recorded</string>
+    <string name="tab_record">Record</string>
+    <string name="tab_timeline">Timeline</string>
+    <string name="tab_vitals">Vitals</string>
+    <string name="add_entry">Add</string>
+    <string name="edit">Edit</string>
+    <string name="edit_personal_data">Edit personal data</string>
+    <string name="no_entries">Nothing recorded yet</string>
+    <string name="delete_patient">Delete patient</string>
+    <string name="restore_patient">Restore patient</string>
+    <string name="delete_patient_confirm">The patient will be hidden from your lists. The record is kept and can be restored from “Show deleted patients”.</string>
+    <string name="patient_deleted_banner">This patient is deleted. Restore to edit.</string>
+    <string name="delete_entry">Mark as entered in error</string>
+    <string name="delete_entry_confirm">This entry will be removed from the record view. It stays in the audit history.</string>
+    <string name="confirm">Confirm</string>
+    <string name="saved_offline">Saved</string>
+    <string name="patient_not_found">This patient is no longer available on this phone.</string>
+    <string name="checklist_progress">%1$d of %2$d done</string>
+    <string name="current">current</string>
+    <string name="stopped">stopped</string>
+    <string name="chronic">chronic</string>
+    <string name="comanaged_badge">Co-managed</string>
+
+    <!-- Forms -->
+    <string name="select_date">Select date</string>
+    <string name="clear">Clear</string>
+    <string name="ok">OK</string>
+    <string name="pick_condition_hint">Choose from the list or type your own</string>
+    <string name="no_surgical_cases">Add a surgery first, then record its follow-up.</string>
+    <string name="suggested_tags">Suggestions</string>
+    <string name="add_tag">Add tag</string>
+    <string name="field_required">Required</string>
+    <string name="field_too_long">Too long</string>
+    <string name="field_not_number">Enter a number</string>
+    <string name="field_out_of_range">Outside the allowed range</string>
+    <string name="field_invalid_date">Invalid date</string>
+    <string name="field_future_date">Can\'t be in the future</string>
+    <string name="fix_errors">Please correct the highlighted fields.</string>
+    <string name="unsaved_changes_title">Discard changes?</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep editing</string>
+
+    <!-- Timeline -->
+    <string name="timeline_empty">Events appear here as you add to the record.</string>
+    <string name="tl_patient_added">Patient added</string>
+    <string name="tl_complaint">Presenting complaint</string>
+    <string name="tl_condition">Diagnosed</string>
+    <string name="tl_past_surgery">Operation (history)</string>
+    <string name="tl_med_started">Medication started</string>
+    <string name="tl_med_stopped">Medication stopped</string>
+    <string name="tl_allergy">Allergy recorded</string>
+    <string name="tl_examination">Examination</string>
+    <string name="tl_operation_planned">Operation planned</string>
+    <string name="tl_operation_done">Operation</string>
+    <string name="tl_follow_up">Post-op follow-up</string>
+
+    <!-- Vitals -->
+    <string name="no_vitals">No vital signs yet. Add an examination with vitals to see trends.</string>
+    <string name="vital_pulse">Pulse</string>
+    <string name="vital_systolic">Systolic BP</string>
+    <string name="vital_diastolic">Diastolic BP</string>
+    <string name="vital_resp_rate">Respiratory rate</string>
+    <string name="vital_temperature">Temperature</string>
+    <string name="vital_spo2">SpO₂</string>
+    <string name="vital_weight">Weight</string>
+    <string name="vital_pain">Pain score</string>
+    <string name="vital_normal_range">Shaded band: typical adult range %1$s–%2$s %3$s</string>
+    <plurals name="vital_abnormal_count">
+        <item quantity="one">%1$d reading outside the typical range</item>
+        <item quantity="other">%1$d readings outside the typical range</item>
+    </plurals>
+    <string name="vital_readings">Readings</string>
+    <string name="outside_range">outside range</string>
+    <string name="chart_description">Trend chart of %1$s with %2$d readings. The readings are listed below.</string>
+
+    <!-- Dashboard -->
+    <string name="home_no_operations">No operations planned in the next 14 days.</string>
+    <string name="home_tap_to_open">Tap to open</string>
 </resources>

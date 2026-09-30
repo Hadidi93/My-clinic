@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.DataError
 import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.media.ImageCompressor
+import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.app.data.toDataError
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.model.VerificationStatus
@@ -39,6 +40,10 @@ data class ProfileUiState(
     val error: DataError? = null,
     /** One-off event: show the "Profile saved" snackbar. */
     val savedEvent: Boolean = false,
+    /** Number of unsynced changes to warn about before signing out (null = no warning showing). */
+    val signOutWarning: Int? = null,
+    /** One-off event: go ahead and sign out. */
+    val signOutConfirmed: Boolean = false,
 ) {
     val input get() = ProfileInput(fullName, specialty, hospital, licenseNumber, phone)
     val invalidFields: Set<ProfileField> get() = ProfileValidator.validate(input)
@@ -48,6 +53,7 @@ data class ProfileUiState(
 class ProfileViewModel @Inject constructor(
     private val doctorRepository: DoctorRepository,
     private val imageCompressor: ImageCompressor,
+    private val patientRepository: PatientRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileUiState())
@@ -139,4 +145,16 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onSavedEventHandled() = _state.update { it.copy(savedEvent = false) }
+
+    /** Signing out wipes the offline copy, so warn first if some changes haven't been uploaded. */
+    fun requestSignOut() {
+        viewModelScope.launch {
+            val unsynced = patientRepository.unsyncedChangeCount()
+            _state.update { if (unsynced > 0) it.copy(signOutWarning = unsynced) else it.copy(signOutConfirmed = true) }
+        }
+    }
+
+    fun confirmSignOut() = _state.update { it.copy(signOutWarning = null, signOutConfirmed = true) }
+    fun cancelSignOut() = _state.update { it.copy(signOutWarning = null) }
+    fun onSignOutHandled() = _state.update { it.copy(signOutConfirmed = false) }
 }

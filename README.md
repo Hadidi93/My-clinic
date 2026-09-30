@@ -13,10 +13,10 @@ Android 10+.
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Project setup, database schema + ER diagram, auth, doctor profile, admin approval | ✅ built, awaiting review |
-| 2 | Patients and all record sections, offline cache, timeline, search | ⏳ |
+| 1 | Project setup, database schema + ER diagram, auth, doctor profile, admin approval | ✅ approved |
+| 2 | Patients and all record sections, encrypted offline cache + sync, timeline, vitals chart, search; referral rules (database) | ✅ built, awaiting review |
 | 3 | Investigation requests, file uploads, camera | ⏳ |
-| 4 | Consultations, sharing permissions, notifications | ⏳ (database rules already written and tested) |
+| 4 | Consultations, referrals (co-management / transfer) screens, notifications | ⏳ (database rules already written and tested) |
 | 5 | Security hardening, audit views, testing, Play Store release | ⏳ |
 
 ## Where things are

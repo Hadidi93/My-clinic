@@ -10,6 +10,7 @@ schema can run on Supabase Cloud or a self-hosted server later.
 | `…0200_patient_records.sql` | 2 | `patients` and all record-section tables, owner-only access |
 | `…0300_consultations.sql` | 4 | `consults`, per-section sharing, message thread, revoke/close |
 | `…0400_storage_profile_files.sql` | 1 | Private buckets for profile photos and licence documents |
+| `…0500_referrals_and_sync.sql` | 2 | Referrals (co-management / transfer), ownership history, soft delete of entries, offline-sync functions |
 
 Migrations 2 and 3 are written now so the security model can be designed and
 tested as one piece. The app screens that use them come in Phases 2 and 4.
@@ -42,6 +43,9 @@ erDiagram
     PATIENTS ||--o{ ATTACHMENTS : "files, wound photos (Phase 3)"
 
     PATIENTS ||--o{ CONSULTS : "shared through"
+    PATIENTS ||--o{ REFERRALS : "referred through"
+    DOCTORS ||--o{ REFERRALS : "refers / receives"
+    PATIENTS ||--o{ PATIENT_OWNERSHIP_HISTORY : "owned by, over time"
     CONSULTS ||--|{ CONSULT_SECTIONS : "ticked sections"
     CONSULTS ||--o{ CONSULT_MESSAGES : thread
 
@@ -128,6 +132,24 @@ erDiagram
         text body
         text_array attachment_paths
     }
+    REFERRALS {
+        uuid id PK
+        uuid patient_id FK
+        uuid from_doctor_id FK
+        uuid to_doctor_id FK
+        enum kind "comanagement or transfer"
+        text note
+        boolean consent_confirmed "must be true"
+        date consent_date
+        enum status "pending, accepted, declined, cancelled, ended"
+    }
+    PATIENT_OWNERSHIP_HISTORY {
+        bigint id PK
+        uuid patient_id FK
+        uuid doctor_id FK
+        timestamptz owned_from
+        timestamptz owned_until "set on transfer"
+    }
     AUDIT_LOG {
         bigint id PK
         timestamptz occurred_at
@@ -142,8 +164,8 @@ erDiagram
 
 Every section table (complaints, conditions, surgical history, medications,
 allergies, family, social, examinations, surgical cases, follow-ups) also has
-`created_by`, `created_at` and `updated_at`. The diagram leaves these out to
-stay readable.
+`created_by`, `created_at`, `updated_at` and `deleted_at` (entered in error).
+The diagram leaves these out to stay readable.
 
 ## Record sections and sharing
 
@@ -166,6 +188,15 @@ Consult screen.
 
 ## Security model in plain words
 
+0. **Three kinds of access.**
+   - The **owner** (primary doctor) has everything.
+   - A **co-manager** (accepted co-management referral) reads and edits the
+     whole record, but cannot delete the patient, share or transfer it.
+   - A **consultant** (live consult) reads only the ticked sections.
+   - After a **transfer**, the previous owner keeps read-only access to entries
+     recorded up to the transfer time.
+   - A referral lasts until it is ended. Closing or revoking a consult never
+     affects it.
 1. **Nobody sees anything by default.** Every table has Row-Level Security on,
    and every permission is granted explicitly.
 2. **Owner rule.** A doctor sees and edits only the patients they created.
@@ -186,8 +217,14 @@ Consult screen.
    consultant view is logged automatically. The app also logs when the owner
    opens a section. The log is append-only and stores no clinical values.
    Owners can see who accessed their patients.
-8. **No hard deletes.** Patients are soft-deleted (`deleted_at`), because
-   medical records must be kept.
+8. **No hard deletes.** Patients and record entries are soft-deleted
+   (`deleted_at`, "entered in error") because medical records must be kept.
+   This is also how offline phones learn about deletions.
+9. **Offline copies.**
+   - `sync_pull()` returns only patients the doctor may edit (owned or
+     co-managed); consult readers never get an offline copy.
+   - `my_patient_ids()` tells the phone which patients to delete from its
+     cache when access ends.
 
 The same rules exist in Kotlin (`core/domain/.../permissions/`) so the app can
 hide buttons the server would refuse. **The server is the one that enforces
@@ -195,8 +232,10 @@ them.**
 
 ## Tests
 
-- `supabase/tests/10_security_tests.sql` runs 77 checks against the real
-  migrations: anonymous users, the owner, a stranger, a consultant, a pending
-  doctor and an admin each try allowed and forbidden actions. Run it with
-  `supabase/tests/run_local.sh`. CI runs it on every push.
+- `supabase/tests/10_security_tests.sql` (77 checks) and
+  `20_referral_and_sync_tests.sql` (43 checks) run against the real
+  migrations. Anonymous users, the owner, a stranger, a consultant, a
+  co-manager, a pending doctor and an admin each try allowed and forbidden
+  actions. Run them with `supabase/tests/run_local.sh`; CI runs them on
+  every push.
 - `core/domain/src/test/` has the Kotlin unit tests for the same rules.
