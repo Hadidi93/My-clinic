@@ -32,6 +32,16 @@ Doing this the first time takes about 30–45 minutes. You need:
 
 Each should end with "Success. No rows returned".
 
+> **Error `type "verification_status" already exists` (or any "already
+> exists")?** That file was already run, and running it twice is not allowed.
+> To see which files are installed, run `supabase/dev/check_migrations.sql`.
+> It only reads, so it is always safe. Then run only the files marked ❌,
+> in order.
+> If a run stopped halfway and a file keeps failing, the development
+> database can be wiped with `supabase/dev/reset_dev_database.sql` (fake
+> data only, **never** on real patients), then all files run again from
+> the first.
+
 *(Alternative for later: install the Supabase CLI and run
 `supabase link` then `supabase db push`, which applies all migrations in one go.)*
 
