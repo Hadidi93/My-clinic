@@ -37,6 +37,8 @@ Each should end with "Success. No rows returned".
 > To see which files are installed, run `supabase/dev/check_migrations.sql`.
 > It only reads, so it is always safe. Then run only the files marked ❌,
 > in order.
+> After all files are installed, run `supabase/dev/check_rules.sql` to
+> confirm every table is protected: all 18 rows should say ✅.
 > If a run stopped halfway and a file keeps failing, the development
 > database can be wiped with `supabase/dev/reset_dev_database.sql` (fake
 > data only, **never** on real patients), then all files run again from
