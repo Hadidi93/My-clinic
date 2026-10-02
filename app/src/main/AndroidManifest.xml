@@ -25,15 +25,22 @@
         android:theme="@style/Theme.MyClinic"
         tools:targetApi="33">
 
+        <!-- Home-screen entry: opens MainActivity, or first shows the last crash in test builds. -->
+        <activity
+            android:name=".debug.LaunchActivity"
+            android:exported="true"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
             <!-- Links from Supabase emails (verify email, reset password) open the app. -->
             <intent-filter>

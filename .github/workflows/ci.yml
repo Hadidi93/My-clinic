@@ -64,3 +64,38 @@ jobs:
         with:
           name: test-reports
           path: "**/build/reports/tests/"
+
+  # Starts the app on an Android emulator and fails if it crashes on launch.
+  launch-smoke-test:
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: my-clinic-debug-apk
+          path: app-apk
+      - name: Enable KVM (hardware acceleration for the emulator)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Launch the app on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: .github/scripts/smoke-test.sh
+      - name: Upload device log and screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: launch-smoke-test-log
+          path: |
+            logcat.txt
+            screen.png
+          retention-days: 14
