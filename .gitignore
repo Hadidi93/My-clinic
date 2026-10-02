@@ -15,6 +15,7 @@ captures/
 local.properties
 *.jks
 *.keystore
+!app/debug.keystore
 google-services.json
 supabase/.env
 supabase/.temp/

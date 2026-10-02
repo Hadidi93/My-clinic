@@ -36,6 +36,19 @@ android {
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY", "missing-anon-key")}\"")
     }
 
+    signingConfigs {
+        // A fixed, shared key for TEST builds only, so each new test app from
+        // GitHub installs as an update instead of needing an uninstall first.
+        // It is not secret (standard Android debug passwords). The Play Store
+        // release key is separate and must never be committed (Phase 5).
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
