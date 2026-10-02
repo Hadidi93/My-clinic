@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.myclinic.app.data.auth.LinkMessage
 import com.myclinic.app.ui.admin.AdminApprovalsScreen
 import com.myclinic.app.ui.auth.CheckEmailScreen
 import com.myclinic.app.ui.auth.ForgotPasswordScreen
@@ -34,15 +35,21 @@ import kotlinx.serialization.Serializable
 /** Add (entryId = null) or edit one entry of [table] ("patients" = personal data). */
 @Serializable data class EntryFormRoute(val patientId: String, val table: String, val entryId: String? = null)
 
-/** Screens for signed-out users. */
+/** Screens for signed-out users. [linkMessage] explains an email link that couldn't sign in. */
 @Composable
-fun AuthNavHost() {
+fun AuthNavHost(linkMessage: LinkMessage?, onDismissLinkMessage: () -> Unit) {
     val nav = rememberNavController()
+    // A link message belongs on the sign-in screen, wherever the user was.
+    LaunchedEffect(linkMessage) {
+        if (linkMessage != null) nav.popBackStack(LoginRoute, inclusive = false)
+    }
     NavHost(navController = nav, startDestination = LoginRoute) {
         composable<LoginRoute> {
             LoginScreen(
                 onCreateAccount = { nav.navigate(SignUpRoute) },
                 onForgotPassword = { nav.navigate(ForgotPasswordRoute) },
+                linkMessage = linkMessage,
+                onDismissLinkMessage = onDismissLinkMessage,
             )
         }
         composable<SignUpRoute> {

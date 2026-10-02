@@ -260,4 +260,7 @@
     <!-- الرئيسية -->
     <string name="home_no_operations">لا توجد عمليات مخططة خلال الأيام الـ 14 القادمة.</string>
     <string name="home_tap_to_open">اضغط للفتح</string>
+    <string name="link_email_verified">تم تأكيد بريدك الإلكتروني. يرجى تسجيل الدخول.</string>
+    <string name="link_expired">انتهت صلاحية هذا الرابط أو تم استخدامه من قبل. سجّل الدخول أو اطلب رابطًا جديدًا.</string>
+    <string name="link_reset_failed">لم يعمل رابط إعادة تعيين كلمة المرور. اطلب رابطًا جديدًا من «نسيت كلمة المرور؟».</string>
 </resources>

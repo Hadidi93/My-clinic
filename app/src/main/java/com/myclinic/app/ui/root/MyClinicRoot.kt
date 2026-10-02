@@ -17,9 +17,10 @@ import com.myclinic.app.ui.profile.ProfileScreen
 @Composable
 fun MyClinicRoot(viewModel: RootViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val linkMessage by viewModel.linkMessage.collectAsStateWithLifecycle()
     when (val s = state) {
         RootState.Loading -> FullScreenLoading()
-        RootState.SignedOut -> AuthNavHost()
+        RootState.SignedOut -> AuthNavHost(linkMessage = linkMessage, onDismissLinkMessage = viewModel::clearLinkMessage)
         RootState.PasswordRecovery -> ResetPasswordScreen()
         RootState.ProfileLoadFailed -> FullScreenError(
             message = stringResource(R.string.error_profile_load),

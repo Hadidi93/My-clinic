@@ -87,6 +87,10 @@ class RootViewModel @Inject constructor(
         }
     }
 
+    /** Message about an email link that opened the app but couldn't sign in (shown on the sign-in screen). */
+    val linkMessage = authRepository.linkMessage
+    fun clearLinkMessage() = authRepository.clearLinkMessage()
+
     fun signOut() {
         viewModelScope.launch { authRepository.signOut() }
     }

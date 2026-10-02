@@ -18,6 +18,8 @@ class FakeAuthRepository : AuthRepository {
     val state = MutableStateFlow<AuthState>(AuthState.SignedOut)
     override val authState = state
     override val passwordRecoveryPending = MutableStateFlow(false)
+    override val linkMessage = MutableStateFlow<com.myclinic.app.data.auth.LinkMessage?>(null)
+    override fun clearLinkMessage() { linkMessage.value = null }
 
     var signInError: AuthError? = null
     val signInCalls = mutableListOf<Pair<String, String>>()

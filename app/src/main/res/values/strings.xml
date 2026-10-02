@@ -244,4 +244,7 @@
     <!-- Dashboard -->
     <string name="home_no_operations">No operations planned in the next 14 days.</string>
     <string name="home_tap_to_open">Tap to open</string>
+    <string name="link_email_verified">Your email is verified. Please sign in.</string>
+    <string name="link_expired">This link has expired or was already used. Please sign in, or request a new link.</string>
+    <string name="link_reset_failed">This password reset link didn\'t work. Please request a new one with “Forgot password?”.</string>
 </resources>

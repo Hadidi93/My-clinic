@@ -2,6 +2,7 @@ package com.myclinic.app.ui.auth
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +15,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
+import com.myclinic.app.data.auth.LinkMessage
+import com.myclinic.app.ui.components.MessageCard
 import com.myclinic.app.ui.components.AppTextField
 import com.myclinic.app.ui.components.ErrorMessage
 import com.myclinic.app.ui.components.PasswordField
@@ -25,6 +28,8 @@ import com.myclinic.app.ui.components.message
 fun LoginScreen(
     onCreateAccount: () -> Unit,
     onForgotPassword: () -> Unit,
+    linkMessage: LinkMessage? = null,
+    onDismissLinkMessage: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -34,6 +39,21 @@ fun LoginScreen(
         title = stringResource(R.string.app_name),
         subtitle = stringResource(R.string.login_subtitle),
     ) {
+        linkMessage?.let { message ->
+            val verified = message == LinkMessage.EMAIL_VERIFIED_SIGN_IN
+            MessageCard(
+                title = stringResource(
+                    when (message) {
+                        LinkMessage.EMAIL_VERIFIED_SIGN_IN -> R.string.link_email_verified
+                        LinkMessage.LINK_EXPIRED -> R.string.link_expired
+                        LinkMessage.RESET_LINK_FAILED -> R.string.link_reset_failed
+                    },
+                ),
+                container = if (verified) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer,
+                content = if (verified) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer,
+            )
+            TextButton(onClick = onDismissLinkMessage) { Text(stringResource(R.string.close)) }
+        }
         AppTextField(
             value = state.email,
             onValueChange = viewModel::onEmailChange,
