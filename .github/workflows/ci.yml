@@ -8,6 +8,9 @@ name: CI
 on:
   push:
   pull_request:
+  # Adds a "Run workflow" button on the Actions page, e.g. to rebuild the
+  # test app after changing the Supabase secrets.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
