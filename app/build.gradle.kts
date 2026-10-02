@@ -17,7 +17,14 @@ val localProps = Properties().apply {
     if (f.exists()) f.inputStream().use { load(it) }
 }
 fun secret(name: String, default: String): String =
-    (localProps.getProperty(name) ?: System.getenv(name))?.takeIf { it.isNotBlank() } ?: default
+    (localProps.getProperty(name) ?: System.getenv(name))?.trim()?.takeIf { it.isNotBlank() } ?: default
+
+// Accept the URL as copied from any Supabase settings page: drop a trailing
+// "/rest/v1" (or auth/storage/realtime) and slashes, which the library rejects.
+fun supabaseProjectUrl(raw: String): String =
+    raw.trim().trimEnd('/')
+        .replace(Regex("/(rest|auth|storage|realtime)/v1$"), "")
+        .trimEnd('/')
 
 android {
     namespace = "com.myclinic.app"
@@ -32,7 +39,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SUPABASE_URL", "\"${secret("SUPABASE_URL", "https://example.supabase.co")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${supabaseProjectUrl(secret("SUPABASE_URL", "https://example.supabase.co"))}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY", "missing-anon-key")}\"")
     }
 
