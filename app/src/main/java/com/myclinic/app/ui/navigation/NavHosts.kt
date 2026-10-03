@@ -197,6 +197,7 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit, openRequest: String?, onO
                 onOpenInvestigation = { patientId, requestId -> nav.navigate(InvestigationRoute(patientId, requestId)) },
                 onConsult = { nav.navigate(NewConsultRoute(it)) },
                 onRefer = { nav.navigate(NewReferralRoute(it)) },
+                onOpenReferrals = { nav.navigate(ReferralsRoute) },
             )
         }
         composable<EntryFormRoute> {

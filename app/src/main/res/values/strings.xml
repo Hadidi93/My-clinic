@@ -415,4 +415,5 @@
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>
     </plurals>
+    <string name="referral_end_self_confirm">You will stop co-managing this patient and lose access to the record straight away. It is removed from this phone.</string>
 </resources>

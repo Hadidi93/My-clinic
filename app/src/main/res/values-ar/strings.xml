@@ -443,4 +443,5 @@
         <item quantity="many">%1$d يومًا</item>
         <item quantity="other">%1$d يوم</item>
     </plurals>
+    <string name="referral_end_self_confirm">ستتوقف عن المتابعة المشتركة لهذا المريض وتفقد الوصول إلى ملفه فورًا، وسيُحذف من هذا الهاتف.</string>
 </resources>

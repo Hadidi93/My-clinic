@@ -4,7 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.myclinic.app.data.DataError
+import com.myclinic.app.data.consults.ConsultRepository
 import com.myclinic.app.data.doctor.DoctorRepository
+import com.myclinic.app.data.toDataError
+import com.myclinic.domain.consult.ReferralRules
+import kotlinx.coroutines.flow.asStateFlow
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.app.ui.navigation.PatientDetailRoute
 import com.myclinic.domain.model.PatientRef
@@ -37,12 +42,44 @@ data class PatientDetailUiState(
     val selectedTrend: Trend? = null,
 )
 
+/** Ending co-management from the record (co-manager side). */
+data class EndComanagementState(val working: Boolean = false, val ended: Boolean = false, val error: DataError? = null)
+
 @HiltViewModel
 class PatientDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: PatientRepository,
     doctorRepository: DoctorRepository,
+    private val consults: ConsultRepository,
 ) : ViewModel() {
+
+    private val _endState = MutableStateFlow(EndComanagementState())
+    val endState: StateFlow<EndComanagementState> = _endState.asStateFlow()
+
+    fun clearEndError() {
+        _endState.value = _endState.value.copy(error = null)
+    }
+
+    /** Ends my co-management of this patient; the record then leaves this phone with the next sync. */
+    fun endComanagement() {
+        _endState.value = EndComanagementState(working = true)
+        viewModelScope.launch {
+            val referral = consults.myReferrals().getOrElse { e ->
+                _endState.value = EndComanagementState(error = e.toDataError())
+                return@launch
+            }.firstOrNull { it.patientId == patientId && it.received && ReferralRules.canEnd(it) }
+            if (referral == null) {
+                _endState.value = EndComanagementState(error = DataError.NOT_ALLOWED)
+                return@launch
+            }
+            consults.endReferral(referral.id)
+                .onSuccess {
+                    repository.startSync()
+                    _endState.value = EndComanagementState(ended = true)
+                }
+                .onFailure { e -> _endState.value = EndComanagementState(error = e.toDataError()) }
+        }
+    }
 
     val patientId: String = savedStateHandle.toRoute<PatientDetailRoute>().patientId
     private val selectedTrend = MutableStateFlow<Trend?>(null)

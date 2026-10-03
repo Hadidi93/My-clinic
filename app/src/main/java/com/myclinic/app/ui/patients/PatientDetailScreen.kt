@@ -48,6 +48,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
 import com.myclinic.app.ui.components.FullScreenLoading
+import com.myclinic.app.ui.components.message
+import androidx.compose.runtime.LaunchedEffect
 import com.myclinic.app.ui.components.MessageCard
 import com.myclinic.app.ui.components.SecureScreen
 import com.myclinic.app.ui.components.TouchTarget
@@ -75,9 +77,14 @@ fun PatientDetailScreen(
     onOpenInvestigation: (patientId: String, requestId: String) -> Unit,
     onConsult: (patientId: String) -> Unit,
     onRefer: (patientId: String) -> Unit,
+    onOpenReferrals: () -> Unit,
     viewModel: PatientDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val endState by viewModel.endState.collectAsStateWithLifecycle()
+    var confirmEnd by remember { mutableStateOf(false) }
+    // Co-management ended: this record is no longer ours, go back.
+    LaunchedEffect(endState.ended) { if (endState.ended) onBack() }
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var menuOpen by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -120,10 +127,25 @@ fun PatientDetailScreen(
                                             onClick = { menuOpen = false; onRefer(record.patient.id) },
                                         )
                                         DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.referrals_title)) },
+                                            onClick = { menuOpen = false; onOpenReferrals() },
+                                        )
+                                        DropdownMenuItem(
                                             text = { Text(stringResource(R.string.delete_patient)) },
                                             onClick = { menuOpen = false; confirmDelete = true },
                                         )
                                     }
+                                }
+                            } else {
+                                // Co-manager: can end the co-management here.
+                                IconButton(onClick = { menuOpen = true }) {
+                                    Icon(Icons.Filled.MoreVert, contentDescription = null)
+                                }
+                                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.referral_end)) },
+                                        onClick = { menuOpen = false; confirmEnd = true },
+                                    )
                                 }
                             }
                         }
@@ -167,6 +189,25 @@ fun PatientDetailScreen(
             }
         }
 
+        if (confirmEnd) {
+            AlertDialog(
+                onDismissRequest = { confirmEnd = false },
+                title = { Text(stringResource(R.string.referral_end)) },
+                text = { Text(stringResource(R.string.referral_end_self_confirm)) },
+                confirmButton = {
+                    TextButton(onClick = { confirmEnd = false; viewModel.endComanagement() }) { Text(stringResource(R.string.confirm)) }
+                },
+                dismissButton = { TextButton(onClick = { confirmEnd = false }) { Text(stringResource(R.string.cancel)) } },
+            )
+        }
+        endState.error?.let { e ->
+            AlertDialog(
+                onDismissRequest = { viewModel.clearEndError() },
+                title = { Text(stringResource(R.string.referral_end)) },
+                text = { Text(e.message()) },
+                confirmButton = { TextButton(onClick = { viewModel.clearEndError() }) { Text(stringResource(R.string.ok)) } },
+            )
+        }
         if (confirmDelete) {
             AlertDialog(
                 onDismissRequest = { confirmDelete = false },
