@@ -106,9 +106,14 @@ data class Doctor(
     val verificationNote: String?,
     val accountType: AccountType = AccountType.DOCTOR,
     val facilityId: String? = null,
-    /** Doctors only: resident, specialist or consultant (see [DoctorGrade]). */
+    /** Doctors only: the approved grade (resident, specialist or consultant, see [DoctorGrade]). */
     val grade: String? = null,
+    /** A grade change waiting for an admin; colleagues still see [grade] meanwhile. */
+    val requestedGrade: String? = null,
 ) {
+    /** Approved and only waiting for a grade change to be reviewed. */
+    val onlyGradeChangePending: Boolean get() = isVerified && requestedGrade != null
+
     val isStaff: Boolean get() = accountType == AccountType.STAFF
 
     val isVerified: Boolean get() = verificationStatus == VerificationStatus.VERIFIED

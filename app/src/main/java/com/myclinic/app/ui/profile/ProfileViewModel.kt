@@ -55,6 +55,9 @@ data class ProfileUiState(
     val savedAccountType: AccountType = AccountType.DOCTOR,
     /** resident / specialist / consultant (doctors only). */
     val grade: String? = null,
+    /** What colleagues see until a change is approved. */
+    val approvedGrade: String? = null,
+    val gradePending: Boolean = false,
 ) {
     val input get() = ProfileInput(fullName, specialty, hospital, licenseNumber, phone)
     val invalidFields: Set<ProfileField> get() = ProfileValidator.validate(input)
@@ -95,7 +98,10 @@ class ProfileViewModel @Inject constructor(
                 accountType = doctor.accountType,
                 savedAccountType = doctor.accountType,
                 facilityId = doctor.facilityId,
-                grade = doctor.grade,
+                // The dropdown shows the grade asked for, if a change is waiting.
+                grade = doctor.requestedGrade ?: doctor.grade,
+                approvedGrade = doctor.grade,
+                gradePending = doctor.requestedGrade != null,
             )
         }
         doctor.photoPath?.let { path ->
@@ -143,7 +149,10 @@ class ProfileViewModel @Inject constructor(
             doctorRepository.updateMyProfile(s.input, s.language, s.accountType, s.facilityId, s.grade)
                 .onSuccess { doctor ->
                     refreshStatus(doctor)
-                    _state.update { it.copy(savedAccountType = doctor.accountType) }
+                    _state.update {
+                        it.copy(savedAccountType = doctor.accountType, approvedGrade = doctor.grade,
+                            gradePending = doctor.requestedGrade != null)
+                    }
                     _state.update { it.copy(saving = false, savedEvent = true) }
                 }
                 .onFailure { e -> _state.update { it.copy(saving = false, error = e.toDataError()) } }

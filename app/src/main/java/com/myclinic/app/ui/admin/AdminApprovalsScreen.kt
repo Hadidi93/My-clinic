@@ -106,6 +106,7 @@ fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel 
                             busy = state.busyDoctorId == doctor.id,
                             onApprove = { viewModel.approve(doctor) },
                             onReject = { rejecting = doctor },
+                            onReviewGrade = { approve -> viewModel.reviewGrade(doctor, approve) },
                             onViewLicense = { viewModel.openLicense(doctor) },
                         )
                     }
@@ -147,8 +148,11 @@ private fun PendingDoctorCard(
     busy: Boolean,
     onApprove: () -> Unit,
     onReject: () -> Unit,
+    onReviewGrade: (Boolean) -> Unit,
     onViewLicense: () -> Unit,
 ) {
+    val lang = com.myclinic.app.ui.components.currentAppLanguage()
+    fun gradeLabel(g: String?) = g?.let { com.myclinic.domain.forms.Vocabulary.option(it).get(lang) }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(doctor.fullName.ifBlank { doctor.email }, style = MaterialTheme.typography.titleMedium)
@@ -160,8 +164,13 @@ private fun PendingDoctorCard(
                     style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary,
                 )
             }
-            listOfNotNull(doctor.grade?.let { com.myclinic.domain.forms.Vocabulary.option(it).get(com.myclinic.app.ui.components.currentAppLanguage()) },
-                doctor.specialty, doctor.hospital).takeIf { it.isNotEmpty() }?.let {
+            doctor.requestedGrade?.let { requested ->
+                Text(
+                    stringResource(R.string.admin_grade_change, gradeLabel(doctor.grade) ?: "—", gradeLabel(requested).orEmpty()),
+                    style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            listOfNotNull(gradeLabel(doctor.grade), doctor.specialty, doctor.hospital).takeIf { it.isNotEmpty() }?.let {
                 Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium)
             }
             Text(
@@ -182,6 +191,16 @@ private fun PendingDoctorCard(
             }
             if (busy) {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            } else if (doctor.onlyGradeChangePending) {
+                // The account is approved; only the new grade needs a decision.
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedButton(onClick = { onReviewGrade(false) }, modifier = Modifier.weight(1f).heightIn(min = TouchTarget)) {
+                        Text(stringResource(R.string.admin_grade_reject))
+                    }
+                    Button(onClick = { onReviewGrade(true) }, modifier = Modifier.weight(1f).heightIn(min = TouchTarget)) {
+                        Text(stringResource(R.string.admin_grade_approve))
+                    }
+                }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedButton(onClick = onReject, modifier = Modifier.weight(1f).heightIn(min = TouchTarget)) {

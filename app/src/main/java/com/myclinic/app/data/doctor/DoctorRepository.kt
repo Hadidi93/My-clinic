@@ -30,6 +30,8 @@ interface DoctorRepository {
     // Admin only (the server refuses these for everyone else).
     suspend fun doctorsAwaitingVerification(): Result<List<Doctor>>
     suspend fun setVerification(doctorId: String, status: VerificationStatus, note: String?): Result<Unit>
+    /** Approve or reject a doctor's requested grade. */
+    suspend fun reviewGrade(doctorId: String, approve: Boolean): Result<Unit>
 
     fun clear()
 }

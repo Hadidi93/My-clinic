@@ -74,6 +74,15 @@ class AdminApprovalsViewModel @Inject constructor(
         }
     }
 
+    fun reviewGrade(doctor: Doctor, approve: Boolean) {
+        _state.update { it.copy(busyDoctorId = doctor.id, error = null) }
+        viewModelScope.launch {
+            doctorRepository.reviewGrade(doctor.id, approve)
+                .onSuccess { _state.update { s -> s.copy(busyDoctorId = null, doctors = s.doctors.filterNot { it.id == doctor.id }) } }
+                .onFailure { e -> _state.update { it.copy(busyDoctorId = null, error = e.toDataError()) } }
+        }
+    }
+
     fun openLicense(doctor: Doctor) {
         val path = doctor.licenseDocumentPath ?: return
         viewModelScope.launch {

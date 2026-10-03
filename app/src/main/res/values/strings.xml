@@ -418,4 +418,8 @@
     <string name="referral_end_self_confirm">You will stop co-managing this patient and lose access to the record straight away. It is removed from this phone.</string>
     <string name="grade">Grade</string>
     <string name="grade_choose">Resident, specialist or consultant</string>
+    <string name="grade_pending">Waiting for admin approval. Until then colleagues see your current grade: %1$s. Your account works as usual.</string>
+    <string name="admin_grade_change">Grade change requested: %1$s → %2$s</string>
+    <string name="admin_grade_approve">Approve grade</string>
+    <string name="admin_grade_reject">Keep old grade</string>
 </resources>

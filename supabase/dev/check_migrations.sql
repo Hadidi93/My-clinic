@@ -16,6 +16,7 @@ from (values
     (7, '20261004000700_notifications_and_consult_files.sql', to_regprocedure('public.my_referrals()') is not null
                                                      and exists (select 1 from pg_policies where schemaname = 'storage' and policyname = 'consult_files_insert')),
     (8, '20261005000800_doctor_grade_and_search.sql',  exists (select 1 from information_schema.columns
-                                                              where table_schema = 'public' and table_name = 'doctors' and column_name = 'grade'))
+                                                              where table_schema = 'public' and table_name = 'doctors' and column_name = 'grade')),
+    (9, '20261005000900_grade_change_requests.sql',    to_regprocedure('public.admin_review_grade(uuid,boolean)') is not null)
 ) as m (n, file, installed)
 order by m.n;

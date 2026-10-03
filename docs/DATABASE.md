@@ -14,6 +14,7 @@ schema can run on Supabase Cloud or a self-hosted server later.
 | `…0600_investigations_and_files.sql` | 3 | Departments (`facilities`), lab/radiology staff accounts, investigation requests and results, attachments, the `clinical-files` bucket, the staff inbox functions |
 | `…0700_notifications_and_consult_files.sql` | 4 | Notifications, push device registration, the `consult-files` bucket, `my_consults` / `my_referrals` lists |
 | `…0800_doctor_grade_and_search.sql` | 4 | Doctor grade (resident / specialist / consultant); directory search matches every word against name, specialty, hospital or grade |
+| `…0900_grade_change_requests.sql` | 4 | A grade change is a request approved by an admin; the account keeps working with the old grade meanwhile |
 
 Migration 3 (consults) was written early so the whole security model could be
 designed and tested as one piece. Its screens come in Phase 4.
@@ -69,7 +70,8 @@ erDiagram
         text preferred_language "en or ar"
         enum role "doctor or admin"
         enum verification_status "pending, verified, rejected, suspended"
-        text grade "resident, specialist or consultant"
+        text grade "approved: resident, specialist or consultant"
+        text requested_grade "waiting for admin approval"
         text account_type "doctor or staff"
         uuid facility_id FK "staff only"
     }

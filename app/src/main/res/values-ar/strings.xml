@@ -446,4 +446,8 @@
     <string name="referral_end_self_confirm">ستتوقف عن المتابعة المشتركة لهذا المريض وتفقد الوصول إلى ملفه فورًا، وسيُحذف من هذا الهاتف.</string>
     <string name="grade">الدرجة الوظيفية</string>
     <string name="grade_choose">مقيم أو أخصائي أو استشاري</string>
+    <string name="grade_pending">في انتظار موافقة المسؤول. حتى ذلك الحين يرى الزملاء درجتك الحالية: %1$s. يعمل حسابك كالمعتاد.</string>
+    <string name="admin_grade_change">طلب تغيير الدرجة: %1$s ← %2$s</string>
+    <string name="admin_grade_approve">الموافقة على الدرجة</string>
+    <string name="admin_grade_reject">إبقاء الدرجة القديمة</string>
 </resources>

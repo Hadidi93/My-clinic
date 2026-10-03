@@ -26,6 +26,7 @@ data class DoctorDto(
     @SerialName("account_type") val accountType: String = "doctor",
     @SerialName("facility_id") val facilityId: String? = null,
     val grade: String? = null,
+    @SerialName("requested_grade") val requestedGrade: String? = null,
 ) {
     fun toDomain() = Doctor(
         id = id,
@@ -44,6 +45,7 @@ data class DoctorDto(
         accountType = AccountType.fromDb(accountType),
         facilityId = facilityId,
         grade = grade,
+        requestedGrade = requestedGrade,
     )
 }
 
@@ -61,7 +63,8 @@ data class DoctorProfileUpdate(
     @SerialName("preferred_language") val preferredLanguage: String,
     @SerialName("account_type") val accountType: String,
     @SerialName("facility_id") val facilityId: String?,
-    val grade: String?,
+    /** The grade the doctor asks for; an admin approves it (see migration 9). */
+    @SerialName("requested_grade") val requestedGrade: String?,
 )
 
 @Serializable

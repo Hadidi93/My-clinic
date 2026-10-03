@@ -195,6 +195,13 @@ fun ProfileScreen(
                 if (!state.isStaff) {
                     SpecialtySuggestions(state.specialty, viewModel::onSpecialtyChange)
                     GradeDropdown(state.grade, viewModel::onGradeChange)
+                    if (state.gradePending || (state.grade != null && state.grade != state.approvedGrade && state.verificationStatus == com.myclinic.domain.model.VerificationStatus.VERIFIED)) {
+                        Text(
+                            stringResource(R.string.grade_pending,
+                                state.approvedGrade?.let { com.myclinic.domain.forms.Vocabulary.option(it).get(com.myclinic.app.ui.components.currentAppLanguage()) } ?: "—"),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 AppTextField(
                     value = state.hospital, onValueChange = viewModel::onHospitalChange,

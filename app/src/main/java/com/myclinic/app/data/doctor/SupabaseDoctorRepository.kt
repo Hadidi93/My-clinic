@@ -57,7 +57,7 @@ class SupabaseDoctorRepository @Inject constructor(
             preferredLanguage = language,
             accountType = accountType.dbValue,
             facilityId = facilityId.takeIf { accountType == AccountType.STAFF },
-            grade = grade.takeIf { accountType == AccountType.DOCTOR },
+            requestedGrade = grade.takeIf { accountType == AccountType.DOCTOR },
         )
         return call { supabase.from(TABLE).update(update) { filter { eq("id", currentUserId()) } } }
             .mapCatching { refreshMyProfile().getOrThrow() }
@@ -93,14 +93,21 @@ class SupabaseDoctorRepository @Inject constructor(
         runCatching { supabase.storage.from(LICENSES).createSignedUrl(path, 5.minutes) }.getOrNull()
 
     override suspend fun doctorsAwaitingVerification(): Result<List<Doctor>> = call {
-        supabase.from(TABLE)
-            .select {
-                filter { eq("verification_status", VerificationStatus.PENDING.dbValue) }
-                order("created_at", Order.ASCENDING)
-            }
-            .decodeList<DoctorDto>()
+        // New or changed accounts, and grade changes waiting for approval.
+        val result = supabase.postgrest.rpc("admin_review_queue")
+        reviewJson.decodeFromString(kotlinx.serialization.builtins.ListSerializer(DoctorDto.serializer()), result.data)
             .map { it.toDomain() }
     }
+
+    override suspend fun reviewGrade(doctorId: String, approve: Boolean): Result<Unit> = call {
+        supabase.postgrest.rpc("admin_review_grade", kotlinx.serialization.json.buildJsonObject {
+            put("p_doctor_id", kotlinx.serialization.json.JsonPrimitive(doctorId))
+            put("p_approve", kotlinx.serialization.json.JsonPrimitive(approve))
+        })
+        Unit
+    }
+
+    private val reviewJson = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
 
     override suspend fun setVerification(doctorId: String, status: VerificationStatus, note: String?): Result<Unit> =
         call {

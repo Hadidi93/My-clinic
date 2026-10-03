@@ -71,6 +71,7 @@ class FakeDoctorRepository(var stored: Doctor? = null) : DoctorRepository {
     override suspend fun licenseDocumentUrl(path: String): String? = null
     override suspend fun doctorsAwaitingVerification() = Result.success(emptyList<Doctor>())
     override suspend fun setVerification(doctorId: String, status: VerificationStatus, note: String?) = Result.success(Unit)
+    override suspend fun reviewGrade(doctorId: String, approve: Boolean) = Result.success(Unit)
     override fun clear() { profile.value = null }
 }
 
