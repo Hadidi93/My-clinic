@@ -4,6 +4,9 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -244,7 +247,6 @@ fun ConsultDetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableIntStateOf(0) }
-    var menuOpen by remember { mutableStateOf(false) }
     var confirm by remember { mutableStateOf<String?>(null) }
     val consult = state.consult
 
@@ -256,21 +258,6 @@ fun ConsultDetailScreen(
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                        }
-                    },
-                    actions = {
-                        if (consult != null && (ConsultRules.canRevoke(consult) || ConsultRules.canClose(consult))) {
-                            IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = null) }
-                            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                                if (ConsultRules.canRevoke(consult)) {
-                                    DropdownMenuItem(text = { Text(stringResource(R.string.consult_revoke)) },
-                                        onClick = { menuOpen = false; confirm = "revoke" })
-                                }
-                                if (ConsultRules.canClose(consult)) {
-                                    DropdownMenuItem(text = { Text(stringResource(R.string.consult_close)) },
-                                        onClick = { menuOpen = false; confirm = "close" })
-                                }
-                            }
                         }
                     },
                 )
@@ -294,7 +281,8 @@ fun ConsultDetailScreen(
                     if (showRecordTab && tab == 1) {
                         SharedRecord(state, consult, onOpenRecordFile)
                     } else {
-                        Conversation(state, consult, viewModel, onOpenConsultFile)
+                        Conversation(state, consult, viewModel, onOpenConsultFile,
+                            onRevoke = { confirm = "revoke" }, onClose = { confirm = "close" })
                     }
                 }
             }
@@ -317,8 +305,9 @@ fun ConsultDetailScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ConsultHeader(consult: ConsultSummary) {
+private fun ConsultHeader(consult: ConsultSummary, onRevoke: () -> Unit, onClose: () -> Unit) {
     Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(patientLabel(consult.patientName, consult.patientAge, consult.patientSex), style = MaterialTheme.typography.titleSmall)
@@ -335,6 +324,21 @@ private fun ConsultHeader(consult: ConsultSummary) {
             if (consult.active) {
                 formatDate(consult.expiresAt)?.let { Text(stringResource(R.string.consult_access_until, it), style = MaterialTheme.typography.bodySmall) }
             }
+            // The main actions, in plain sight.
+            if (ConsultRules.canRevoke(consult) || ConsultRules.canClose(consult)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                    if (ConsultRules.canRevoke(consult)) {
+                        OutlinedButton(onClick = onRevoke, modifier = Modifier.heightIn(min = 48.dp)) {
+                            Text(stringResource(R.string.consult_revoke))
+                        }
+                    }
+                    if (ConsultRules.canClose(consult)) {
+                        OutlinedButton(onClick = onClose, modifier = Modifier.heightIn(min = 48.dp)) {
+                            Text(stringResource(R.string.consult_close))
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -345,6 +349,8 @@ private fun Conversation(
     consult: ConsultSummary,
     viewModel: ConsultDetailViewModel,
     onOpenFile: (path: String, mimeType: String) -> Unit,
+    onRevoke: () -> Unit,
+    onClose: () -> Unit,
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages.size) { if (state.messages.isNotEmpty()) listState.animateScrollToItem(state.messages.size) }
@@ -355,7 +361,7 @@ private fun Conversation(
             contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item { ConsultHeader(consult) }
+            item { ConsultHeader(consult, onRevoke, onClose) }
             items(state.messages, key = { it.id }) { m -> MessageBubble(m, mine = m.senderId == viewModel.myId, onOpenFile) }
         }
         HorizontalDivider()

@@ -18,6 +18,11 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.AssistChip
+import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -119,33 +124,10 @@ fun PatientDetailScreen(
                                         )
                                     } else {
                                         DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.ask_colleague)) },
-                                            onClick = { menuOpen = false; onConsult(record.patient.id) },
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.refer_patient)) },
-                                            onClick = { menuOpen = false; onRefer(record.patient.id) },
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.referrals_title)) },
-                                            onClick = { menuOpen = false; onOpenReferrals() },
-                                        )
-                                        DropdownMenuItem(
                                             text = { Text(stringResource(R.string.delete_patient)) },
                                             onClick = { menuOpen = false; confirmDelete = true },
                                         )
                                     }
-                                }
-                            } else {
-                                // Co-manager: can end the co-management here.
-                                IconButton(onClick = { menuOpen = true }) {
-                                    Icon(Icons.Filled.MoreVert, contentDescription = null)
-                                }
-                                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.referral_end)) },
-                                        onClick = { menuOpen = false; confirmEnd = true },
-                                    )
                                 }
                             }
                         }
@@ -165,6 +147,16 @@ fun PatientDetailScreen(
                         onEdit(record.patient.id, RecordTable.ALLERGIES, null)
                     })
                     PatientHeader(state)
+                    if (!record.patient.isDeleted) {
+                        PatientActions(
+                            isOwner = state.isOwner,
+                            onConsult = { onConsult(record.patient.id) },
+                            onRefer = { onRefer(record.patient.id) },
+                            onOpenReferrals = onOpenReferrals,
+                            onEndComanagement = { confirmEnd = true },
+                            working = endState.working,
+                        )
+                    }
                     PrimaryTabRow(selectedTabIndex = tab) {
                         listOf(R.string.tab_record, R.string.tab_timeline, R.string.tab_vitals).forEachIndexed { i, label ->
                             Tab(selected = tab == i, onClick = { tab = i }, text = { Text(stringResource(label)) },
@@ -237,6 +229,38 @@ private fun PatientHeader(state: PatientDetailUiState) {
         if (!state.isOwner) Text(stringResource(R.string.comanaged_badge), style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.tertiary)
         if (p.isDeleted) MessageCard(title = stringResource(R.string.patient_deleted_banner))
+    }
+}
+
+/**
+ * The main actions as buttons on the screen: consult, refer, referrals for the
+ * main doctor; "End co-management" for a co-manager. Delete stays in ⋮.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PatientActions(
+    isOwner: Boolean,
+    onConsult: () -> Unit,
+    onRefer: () -> Unit,
+    onOpenReferrals: () -> Unit,
+    onEndComanagement: () -> Unit,
+    working: Boolean,
+) {
+    FlowRow(
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (isOwner) {
+            AssistChip(onClick = onConsult, label = { Text(stringResource(R.string.ask_colleague)) },
+                leadingIcon = { Icon(Icons.Filled.Forum, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))
+            AssistChip(onClick = onRefer, label = { Text(stringResource(R.string.refer_patient)) },
+                leadingIcon = { Icon(Icons.Filled.SwapHoriz, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))
+            AssistChip(onClick = onOpenReferrals, label = { Text(stringResource(R.string.referrals_title)) },
+                modifier = Modifier.heightIn(min = 48.dp))
+        } else {
+            AssistChip(onClick = onEndComanagement, enabled = !working, label = { Text(stringResource(R.string.referral_end)) },
+                leadingIcon = { Icon(Icons.Filled.SwapHoriz, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))
+        }
     }
 }
 
