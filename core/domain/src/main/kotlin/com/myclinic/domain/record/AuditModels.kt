@@ -1,6 +1,19 @@
 package com.myclinic.domain.record
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNamingStrategy
+
+/**
+ * Reads access-log rows. Entries written by the system itself (e.g. a new
+ * sign-up) have no person, so some yes/no fields come back empty: those
+ * read as "no" instead of failing the whole list.
+ */
+val AuditJson: Json = Json {
+    ignoreUnknownKeys = true
+    coerceInputValues = true
+    namingStrategy = JsonNamingStrategy.SnakeCase
+}
 
 /** One line of an access log (database functions patient_access_log / admin_activity_log). */
 @Serializable

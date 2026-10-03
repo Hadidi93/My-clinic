@@ -1,7 +1,7 @@
 package com.myclinic.app.data.audit
 
 import com.myclinic.domain.record.AuditEntry
-import com.myclinic.domain.record.RecordJson
+import com.myclinic.domain.record.AuditJson
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.CancellationException
@@ -28,7 +28,7 @@ class SupabaseAuditRepository @Inject constructor(
 
     override suspend fun patientLog(patientId: String) = call {
         val r = supabase.postgrest.rpc("patient_access_log", buildJsonObject { put("p_patient_id", patientId) })
-        RecordJson.decodeFromString(ListSerializer(AuditEntry.serializer()), r.data)
+        AuditJson.decodeFromString(ListSerializer(AuditEntry.serializer()), r.data)
     }
 
     override suspend fun activityLog(before: String?) = call {
@@ -36,7 +36,7 @@ class SupabaseAuditRepository @Inject constructor(
             put("p_limit", PAGE)
             put("p_before", before)
         })
-        RecordJson.decodeFromString(ListSerializer(AuditEntry.serializer()), r.data)
+        AuditJson.decodeFromString(ListSerializer(AuditEntry.serializer()), r.data)
     }
 
     override suspend fun logExport(patientId: String) = call {
