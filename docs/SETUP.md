@@ -27,8 +27,11 @@ Doing this the first time takes about 30–45 minutes. You need:
    repository, copy all of it, paste it into the editor and click **Run**.
 3. Do the same for the other migration files, **in filename order**:
    `…0200_patient_records.sql`, `…0300_consultations.sql`,
-   `…0400_storage_profile_files.sql`, `…0500_referrals_and_sync.sql`.
-   (Already set up Phase 1? Just run the new `…0500` file.)
+   `…0400_storage_profile_files.sql`, `…0500_referrals_and_sync.sql`,
+   `…0600_investigations_and_files.sql`.
+   (Already set up Phase 2? Just run the new `…0600` file. Supabase may warn
+   that it "includes destructive operations": that is expected, because it
+   replaces a few security rules with stricter versions. No data is deleted.)
 
 Each should end with "Success. No rows returned".
 
@@ -38,7 +41,7 @@ Each should end with "Success. No rows returned".
 > It only reads, so it is always safe. Then run only the files marked ❌,
 > in order.
 > After all files are installed, run `supabase/dev/check_rules.sql` to
-> confirm every table is protected: all 18 rows should say ✅.
+> confirm every table is protected: all 22 rows should say ✅.
 > If a run stopped halfway and a file keeps failing, the development
 > database can be wiped with `supabase/dev/reset_dev_database.sql` (fake
 > data only, **never** on real patients), then all files run again from
@@ -150,6 +153,38 @@ Use **fake demo patients only**.
 | 11 | Delete the patient (⋮ menu) → list → trash icon | Patient shows as Deleted; restore works |
 | 12 | Try a screenshot on any patient screen | Blocked |
 | 13 | Airplane mode on, add an entry, then Profile → Sign out | Warning about unsynced changes |
+
+## 7c. Test checklist for Phase 3 (investigations and files)
+
+You need two accounts: your doctor account, and a second one (for example
+`you+lab@gmail.com`) to play a lab technician. **Fake demo patients only.**
+
+**Set up the lab account**
+
+1. Sign up with the second email. In **Complete your profile**, choose
+   **Lab / radiology staff**, fill in job title and staff ID, then
+   **Add department**: type "Lab", name "Demo Main Lab", your hospital.
+2. Upload any photo as the staff ID card and save. The app shows
+   "Department inbox" with "Verification pending".
+3. As admin (your doctor account): **Doctor approvals** shows the new account
+   marked "Lab/radiology staff · Demo Main Lab". Approve it.
+
+**Try it out**
+
+| # | Try this | Expected |
+|---|---|---|
+| 1 | Doctor: open a demo patient → Investigations → **Request**. Type Lab, pick "CBC", urgency Urgent, **Send to department: Demo Main Lab**, save | Request listed as "Requested · Urgent" |
+| 2 | Lab account: tap the refresh button (↻) in the inbox | The request appears with the patient's name, age, sex; urgent ones are marked |
+| 3 | Lab: open it | Allergies banner, requested tests, the doctor's notes. No other parts of the record |
+| 4 | Lab: **Sample taken**, then fill the Hb/WBC values (one below the normal range), take a photo of any paper, **Send result to the doctor** | Back to the inbox; the request now says "Result ready" |
+| 5 | Doctor: Home screen | "Results to review" shows 1 and lists the request |
+| 6 | Doctor: open it | The values (low ones in red with ↓), the photo opens full screen and zooms |
+| 7 | Doctor: tap **Open** on the result | "Uploaded by the department": can't be edited, only marked as entered in error |
+| 8 | Doctor: **Mark result as reviewed** | Lab inbox: the request disappears (the lab no longer has access) |
+| 9 | Doctor: **Add result** on the patient (no request), type a CBC with an Hb value, attach a PDF | Result listed; **Trends** tab now offers "Hb" next to the vital signs |
+| 10 | Airplane mode on: add a post-op follow-up with a wound photo, then airplane mode off | The photo uploads with the next sync and opens from the follow-up |
+| 11 | Try a screenshot on the inbox, a request, or a file | Blocked |
+| 12 | Lab account: look for patients or the doctor directory | Not available: staff only see their inbox |
 
 ## 8. Run the automated tests
 

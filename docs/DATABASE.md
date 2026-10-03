@@ -11,10 +11,10 @@ schema can run on Supabase Cloud or a self-hosted server later.
 | `…0300_consultations.sql` | 4 | `consults`, per-section sharing, message thread, revoke/close |
 | `…0400_storage_profile_files.sql` | 1 | Private buckets for profile photos and licence documents |
 | `…0500_referrals_and_sync.sql` | 2 | Referrals (co-management / transfer), ownership history, soft delete of entries, offline-sync functions |
+| `…0600_investigations_and_files.sql` | 3 | Departments (`facilities`), lab/radiology staff accounts, investigation requests and results, attachments, the `clinical-files` bucket, the staff inbox functions |
 
-Migrations 2 and 3 are written now so the security model can be designed and
-tested as one piece. The app screens that use them come in Phases 2 and 4.
-Tables marked *(Phase 3)* in the diagram are planned but not created yet.
+Migration 3 (consults) was written early so the whole security model could be
+designed and tested as one piece. Its screens come in Phase 4.
 
 ## ER diagram
 
@@ -27,6 +27,8 @@ erDiagram
     DOCTORS ||--o{ CONSULTS : "requests (requester)"
     DOCTORS ||--o{ CONSULTS : "is asked (consultant)"
     DOCTORS ||--o{ CONSULT_MESSAGES : sends
+    FACILITIES ||--o{ DOCTORS : "staff work in"
+    FACILITIES ||--o{ INVESTIGATION_REQUESTS : "inbox receives"
 
     PATIENTS ||--o{ PRESENTING_COMPLAINTS : has
     PATIENTS ||--o{ MEDICAL_CONDITIONS : "past medical"
@@ -38,9 +40,11 @@ erDiagram
     PATIENTS ||--o{ EXAMINATIONS : "exam + vitals"
     PATIENTS ||--o{ SURGICAL_CASES : "surgical care"
     SURGICAL_CASES ||--o{ POSTOP_FOLLOWUPS : "follow-up"
-    PATIENTS ||--o{ INVESTIGATION_REQUESTS : "(Phase 3)"
-    INVESTIGATION_REQUESTS ||--o{ INVESTIGATION_RESULTS : "(Phase 3)"
-    PATIENTS ||--o{ ATTACHMENTS : "files, wound photos (Phase 3)"
+    PATIENTS ||--o{ INVESTIGATION_REQUESTS : requests
+    INVESTIGATION_REQUESTS ||--o{ INVESTIGATION_RESULTS : "results"
+    PATIENTS ||--o{ INVESTIGATION_RESULTS : "results (also without a request)"
+    INVESTIGATION_RESULTS ||--o{ ATTACHMENTS : "report photos, PDFs"
+    POSTOP_FOLLOWUPS ||--o{ ATTACHMENTS : "wound photos"
 
     PATIENTS ||--o{ CONSULTS : "shared through"
     PATIENTS ||--o{ REFERRALS : "referred through"
@@ -61,6 +65,44 @@ erDiagram
         text preferred_language "en or ar"
         enum role "doctor or admin"
         enum verification_status "pending, verified, rejected, suspended"
+        text account_type "doctor or staff"
+        uuid facility_id FK "staff only"
+    }
+    FACILITIES {
+        uuid id PK
+        text name "e.g. Main Lab"
+        enum kind "lab, radiology, pathology, other"
+        text hospital
+    }
+    INVESTIGATION_REQUESTS {
+        uuid id PK
+        uuid patient_id FK
+        enum kind "lab, imaging, pathology, other"
+        text_array tests
+        enum urgency "routine, urgent, stat"
+        uuid facility_id FK "null = doctor enters the result"
+        enum status "requested, sample_taken, result_uploaded, reviewed, cancelled"
+        text clinical_notes
+    }
+    INVESTIGATION_RESULTS {
+        uuid id PK
+        uuid patient_id FK
+        uuid request_id FK "optional"
+        text title
+        date result_date
+        jsonb lab_values "typed values with unit and range"
+        text report_text
+        text source "doctor or staff"
+    }
+    ATTACHMENTS {
+        uuid id PK
+        uuid patient_id FK
+        enum section "investigations or surgical_care"
+        uuid result_id FK
+        uuid followup_id FK
+        text storage_path "section/patient/file"
+        text mime_type "jpeg, png, pdf"
+        text caption
     }
     PATIENTS {
         uuid id PK
@@ -183,8 +225,8 @@ Consult screen.
 | `family_history` | `family_history` |
 | `social_history` | `social_history` |
 | `examination` | `examinations` |
-| `investigations` | Phase 3 tables |
-| `surgical_care` | `surgical_cases`, `postop_followups` |
+| `investigations` | `investigation_requests`, `investigation_results`, their `attachments` |
+| `surgical_care` | `surgical_cases`, `postop_followups`, wound-photo `attachments` |
 
 ## Security model in plain words
 
@@ -220,7 +262,23 @@ Consult screen.
 8. **No hard deletes.** Patients and record entries are soft-deleted
    (`deleted_at`, "entered in error") because medical records must be kept.
    This is also how offline phones learn about deletions.
-9. **Offline copies.**
+9. **Lab and radiology staff** (account type `staff`, approved by an admin,
+   belonging to one department):
+   - can never own patients, be consulted or referred to, or appear in the
+     doctor directory
+   - see only requests sent to their department, through the `staff_*`
+     functions, never the record tables themselves
+   - for each request they see: name, age, sex, file number, allergies, the
+     requested tests and notes, and earlier results of the same kind
+   - lose access as soon as the doctor marks the result reviewed or cancels
+     the request
+   - results they send can't be edited by doctors, only marked "entered in error"
+   - an edit from an older offline copy can never move a request's status backwards
+10. **Files** live in the private `clinical-files` bucket at
+    `<section>/<patient id>/<random name>`, readable only by those who may
+    read that section (and staff while a request is open). Files can't be
+    changed or deleted, only their attachment marked "entered in error".
+11. **Offline copies.**
    - `sync_pull()` returns only patients the doctor may edit (owned or
      co-managed); consult readers never get an offline copy.
    - `my_patient_ids()` tells the phone which patients to delete from its
@@ -232,8 +290,9 @@ them.**
 
 ## Tests
 
-- `supabase/tests/10_security_tests.sql` (77 checks) and
-  `20_referral_and_sync_tests.sql` (43 checks) run against the real
+- `supabase/tests/10_security_tests.sql` (77 checks),
+  `20_referral_and_sync_tests.sql` (43 checks) and
+  `30_investigations_tests.sql` (61 checks) run against the real
   migrations. Anonymous users, the owner, a stranger, a consultant, a
   co-manager, a pending doctor and an admin each try allowed and forbidden
   actions. Run them with `supabase/tests/run_local.sh`; CI runs them on

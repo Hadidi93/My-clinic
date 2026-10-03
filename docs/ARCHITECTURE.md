@@ -60,8 +60,15 @@
   longer edit. Signing out deletes the whole offline copy (with a warning if
   anything is unsynced). If another doctor signs in on the same phone, the
   previous doctor's cache is wiped first.
-- **What stays online-only:** consult views (Phase 4) and the previous
-  owner's read-only history after a transfer are never stored on the phone.
+- **Files (photos, PDFs):** a file added offline is kept on the phone
+  encrypted (AES-256-GCM, key protected by Android Keystore) and uploaded by
+  the sync just before its attachment entry, so an entry never points to a
+  missing file. Opened files are held in memory only, never saved to the
+  gallery or shared with other apps. Photos are re-encoded first, which
+  removes GPS and camera details.
+- **What stays online-only:** consult views (Phase 4), the previous
+  owner's read-only history after a transfer, and the whole lab/radiology
+  staff side (their inbox is never stored on the phone).
 
 ## Decision: Supabase vs Firebase
 
@@ -93,6 +100,8 @@
 | Append-only audit log | `audit_log`; no insert/update/delete permission for anyone |
 
 | Encrypted offline database | `LocalDatabase` (SQLCipher) |
+| Encrypted offline files, in-memory viewing | `ClinicalFileStore`, `FileViewerScreen` |
+| Lab/radiology staff see the minimum | `staff_*` functions in migration 6; no table access |
 | Record views audit-logged | `PatientRepository.logView` → `log_record_view` |
 
 Coming in Phase 5:
