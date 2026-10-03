@@ -2,7 +2,10 @@ package com.myclinic.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.notifications.NotificationRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.domain.consult.NotificationKind
 import com.myclinic.domain.record.Dashboard
@@ -39,7 +42,22 @@ data class HomeUiState(
 class HomeViewModel @Inject constructor(
     private val repository: PatientRepository,
     private val notifications: NotificationRepository,
+    private val doctors: DoctorRepository,
 ) : ViewModel() {
+
+    private val _pendingApprovals = MutableStateFlow(0)
+    /** Admins: accounts and grade changes waiting for approval (badge on the shield icon). */
+    val pendingApprovals: StateFlow<Int> = _pendingApprovals.asStateFlow()
+
+    /** Called when Home is shown. The approvals count is only asked for by admins (the server refuses others). */
+    fun refresh(isAdmin: Boolean) {
+        refreshNotifications()
+        if (isAdmin) {
+            viewModelScope.launch {
+                doctors.doctorsAwaitingVerification().onSuccess { _pendingApprovals.value = it.size }
+            }
+        }
+    }
 
     val state: StateFlow<HomeUiState> = combine(
         repository.records,

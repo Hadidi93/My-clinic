@@ -76,8 +76,9 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val pendingApprovals by viewModel.pendingApprovals.collectAsStateWithLifecycle()
     LifecycleResumeEffect(Unit) {
-        viewModel.refreshNotifications()
+        viewModel.refresh(doctor.isAdmin)
         onPauseOrDispose { }
     }
     RequestNotificationPermission()
@@ -88,7 +89,9 @@ fun HomeScreen(
                 actions = {
                     if (doctor.isAdmin) {
                         IconButton(onClick = onOpenAdmin) {
-                            Icon(Icons.Filled.AdminPanelSettings, contentDescription = stringResource(R.string.admin_approvals))
+                            BadgedBox(badge = { if (pendingApprovals > 0) Badge { Text(pendingApprovals.toString()) } }) {
+                                Icon(Icons.Filled.AdminPanelSettings, contentDescription = stringResource(R.string.admin_approvals))
+                            }
                         }
                         IconButton(onClick = onOpenActivityLog) {
                             Icon(Icons.Filled.History, contentDescription = stringResource(R.string.activity_log_title))
