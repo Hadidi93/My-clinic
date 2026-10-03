@@ -41,5 +41,8 @@ abstract class RepositoryModule {
     abstract fun bindConsultRepository(impl: SupabaseConsultRepository): ConsultRepository
 
     @Binds @Singleton
+    abstract fun bindAuditRepository(impl: com.myclinic.app.data.audit.SupabaseAuditRepository): com.myclinic.app.data.audit.AuditRepository
+
+    @Binds @Singleton
     abstract fun bindNotificationRepository(impl: SupabaseNotificationRepository): NotificationRepository
 }

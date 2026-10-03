@@ -13,6 +13,10 @@ import com.myclinic.app.ui.navigation.AuthNavHost
 import com.myclinic.app.ui.navigation.MainNavHost
 import com.myclinic.app.ui.navigation.StaffNavHost
 import com.myclinic.app.ui.profile.ProfileScreen
+import com.myclinic.app.ui.lock.LockScreen
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 
 /** Top of the screen tree: picks the flow that matches the current [RootState]. */
 @Composable
@@ -20,6 +24,7 @@ fun MyClinicRoot(viewModel: RootViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val linkMessage by viewModel.linkMessage.collectAsStateWithLifecycle()
     val openRequest by viewModel.openRequest.collectAsStateWithLifecycle()
+    val locked by viewModel.locked.collectAsStateWithLifecycle()
     when (val s = state) {
         RootState.Loading -> FullScreenLoading()
         RootState.SignedOut -> AuthNavHost(linkMessage = linkMessage, onDismissLinkMessage = viewModel::clearLinkMessage)
@@ -29,11 +34,18 @@ fun MyClinicRoot(viewModel: RootViewModel = hiltViewModel()) {
             onRetry = viewModel::loadProfile,
             onSignOut = viewModel::signOut,
         )
-        is RootState.NeedsProfile -> ProfileScreen(setupMode = true, onBack = null, onSignOut = viewModel::signOut)
-        is RootState.Ready -> if (s.doctor.isStaff) {
-            StaffNavHost(staff = s.doctor, onSignOut = viewModel::signOut, openRequest, viewModel::onOpenHandled)
-        } else {
-            MainNavHost(doctor = s.doctor, onSignOut = viewModel::signOut, openRequest, viewModel::onOpenHandled)
+        is RootState.NeedsProfile, is RootState.Ready -> Box(Modifier.fillMaxSize()) {
+            // The screens stay underneath the lock, so nothing being typed is lost.
+            when (s) {
+                is RootState.NeedsProfile -> ProfileScreen(setupMode = true, onBack = null, onSignOut = viewModel::signOut)
+                is RootState.Ready -> if (s.doctor.isStaff) {
+                    StaffNavHost(staff = s.doctor, onSignOut = viewModel::signOut, openRequest, viewModel::onOpenHandled)
+                } else {
+                    MainNavHost(doctor = s.doctor, onSignOut = viewModel::signOut, openRequest, viewModel::onOpenHandled)
+                }
+                else -> Unit
+            }
+            if (locked) LockScreen(onUnlocked = viewModel::unlock, onSignOut = viewModel::signOut)
         }
     }
 }

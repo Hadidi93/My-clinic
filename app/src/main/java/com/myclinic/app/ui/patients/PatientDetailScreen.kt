@@ -20,6 +20,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.AssistChip
 import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -83,8 +85,17 @@ fun PatientDetailScreen(
     onConsult: (patientId: String) -> Unit,
     onRefer: (patientId: String) -> Unit,
     onOpenReferrals: () -> Unit,
+    onOpenAccessLog: (patientId: String) -> Unit,
     viewModel: PatientDetailViewModel = hiltViewModel(),
 ) {
+    val exportState by viewModel.exportState.collectAsStateWithLifecycle()
+    var confirmExport by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val language = currentAppLanguage()
+    LaunchedEffect(exportState.share) {
+        exportState.share?.let { context.startActivity(it) }
+        if (exportState.share != null) viewModel.onExportHandled()
+    }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val endState by viewModel.endState.collectAsStateWithLifecycle()
     var confirmEnd by remember { mutableStateOf(false) }
@@ -154,7 +165,9 @@ fun PatientDetailScreen(
                             onRefer = { onRefer(record.patient.id) },
                             onOpenReferrals = onOpenReferrals,
                             onEndComanagement = { confirmEnd = true },
-                            working = endState.working,
+                            onAccessLog = { onOpenAccessLog(record.patient.id) },
+                            onExport = { confirmExport = true },
+                            working = endState.working || exportState.working,
                         )
                     }
                     PrimaryTabRow(selectedTabIndex = tab) {
@@ -181,6 +194,25 @@ fun PatientDetailScreen(
             }
         }
 
+        if (confirmExport) {
+            AlertDialog(
+                onDismissRequest = { confirmExport = false },
+                title = { Text(stringResource(R.string.export_pdf)) },
+                text = { Text(stringResource(R.string.export_warning)) },
+                confirmButton = {
+                    TextButton(onClick = { confirmExport = false; viewModel.export(language) }) { Text(stringResource(R.string.export_confirm)) }
+                },
+                dismissButton = { TextButton(onClick = { confirmExport = false }) { Text(stringResource(R.string.cancel)) } },
+            )
+        }
+        exportState.error?.let { e ->
+            AlertDialog(
+                onDismissRequest = viewModel::onExportHandled,
+                title = { Text(stringResource(R.string.export_pdf)) },
+                text = { Text(stringResource(R.string.export_failed, e.message())) },
+                confirmButton = { TextButton(onClick = viewModel::onExportHandled) { Text(stringResource(R.string.ok)) } },
+            )
+        }
         if (confirmEnd) {
             AlertDialog(
                 onDismissRequest = { confirmEnd = false },
@@ -244,6 +276,8 @@ private fun PatientActions(
     onRefer: () -> Unit,
     onOpenReferrals: () -> Unit,
     onEndComanagement: () -> Unit,
+    onAccessLog: () -> Unit,
+    onExport: () -> Unit,
     working: Boolean,
 ) {
     FlowRow(
@@ -257,6 +291,10 @@ private fun PatientActions(
                 leadingIcon = { Icon(Icons.Filled.SwapHoriz, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))
             AssistChip(onClick = onOpenReferrals, label = { Text(stringResource(R.string.referrals_title)) },
                 modifier = Modifier.heightIn(min = 48.dp))
+            AssistChip(onClick = onAccessLog, label = { Text(stringResource(R.string.access_log_title)) },
+                leadingIcon = { Icon(Icons.Filled.History, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))
+            AssistChip(onClick = onExport, enabled = !working, label = { Text(stringResource(R.string.export_pdf)) },
+                leadingIcon = { Icon(Icons.Filled.PictureAsPdf, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))
         } else {
             AssistChip(onClick = onEndComanagement, enabled = !working, label = { Text(stringResource(R.string.referral_end)) },
                 leadingIcon = { Icon(Icons.Filled.SwapHoriz, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))

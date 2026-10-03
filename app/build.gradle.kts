@@ -156,6 +156,10 @@ dependencies {
     implementation(libs.sqlcipher)
     implementation(libs.androidx.sqlite)
 
+    // App lock (fingerprint / face / phone PIN)
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.lifecycle.process)
+
     // Push notifications (no patient data is ever sent through them)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)

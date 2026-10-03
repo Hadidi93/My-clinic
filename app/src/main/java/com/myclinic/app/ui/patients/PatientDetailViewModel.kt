@@ -4,7 +4,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import android.content.Context
+import android.content.Intent
+import com.myclinic.app.R
 import com.myclinic.app.data.DataError
+import com.myclinic.app.data.audit.AuditRepository
+import com.myclinic.app.data.export.PdfExporter
+import com.myclinic.domain.record.ExportLabels
+import com.myclinic.domain.record.RecordExport
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.myclinic.app.data.consults.ConsultRepository
 import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.toDataError
@@ -42,6 +50,9 @@ data class PatientDetailUiState(
     val selectedTrend: Trend? = null,
 )
 
+/** Making a PDF of the record: [share] is the share sheet to open once ready. */
+data class ExportState(val working: Boolean = false, val share: Intent? = null, val error: DataError? = null)
+
 /** Ending co-management from the record (co-manager side). */
 data class EndComanagementState(val working: Boolean = false, val ended: Boolean = false, val error: DataError? = null)
 
@@ -49,9 +60,51 @@ data class EndComanagementState(val working: Boolean = false, val ended: Boolean
 class PatientDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: PatientRepository,
-    doctorRepository: DoctorRepository,
+    private val doctorRepository: DoctorRepository,
     private val consults: ConsultRepository,
+    private val audit: AuditRepository,
+    private val pdf: PdfExporter,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
+
+    private val _exportState = MutableStateFlow(ExportState())
+    val exportState: StateFlow<ExportState> = _exportState.asStateFlow()
+
+    /**
+     * Exports the record as a PDF in [language]. The export is written to the
+     * audit log first; if that fails (e.g. offline), nothing is exported.
+     */
+    fun export(language: String) {
+        val record = state.value.record ?: return
+        _exportState.value = ExportState(working = true)
+        viewModelScope.launch {
+            audit.logExport(patientId).onFailure { e ->
+                _exportState.value = ExportState(error = e.toDataError())
+                return@launch
+            }
+            runCatching {
+                val doc = RecordExport.build(
+                    record, language, LocalDate.now(), ::formatDate, ::formatDateTime,
+                    ExportLabels(
+                        ageYears = { context.getString(R.string.age_years_short, it) },
+                        noKnownAllergies = context.getString(R.string.export_no_allergies),
+                        current = context.getString(R.string.current),
+                        stopped = context.getString(R.string.stopped),
+                        investigations = context.getString(R.string.section_investigations),
+                        checklist = { done, total -> context.getString(R.string.checklist_progress, done, total) },
+                    ),
+                )
+                val file = pdf.write(doc, doctorRepository.myProfile.value?.fullName.orEmpty())
+                pdf.shareIntent(file, record.patient.fullName)
+            }
+                .onSuccess { _exportState.value = ExportState(share = it) }
+                .onFailure { _exportState.value = ExportState(error = DataError.UNKNOWN) }
+        }
+    }
+
+    fun onExportHandled() {
+        _exportState.value = ExportState()
+    }
 
     private val _endState = MutableStateFlow(EndComanagementState())
     val endState: StateFlow<EndComanagementState> = _endState.asStateFlow()

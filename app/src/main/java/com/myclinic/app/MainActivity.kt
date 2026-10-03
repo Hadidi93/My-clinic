@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.push.PushManager
+import com.myclinic.app.security.AppLockManager
 import com.myclinic.app.ui.root.MyClinicRoot
 import com.myclinic.app.ui.theme.MyClinicTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var authRepository: AuthRepository
     @Inject lateinit var push: PushManager
+    @Inject lateinit var appLock: AppLockManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -36,6 +38,14 @@ class MainActivity : AppCompatActivity() {
                 MyClinicRoot()
             }
         }
+        // Ignore touches while another app draws over this one (tap-jacking protection).
+        window.decorView.filterTouchesWhenObscured = true
+    }
+
+    /** Every touch counts as "in use" for the 5-minute app lock. */
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        appLock.onUserInteraction()
     }
 
     /** Called when an email link (verify / reset password) opens the already-running app. */

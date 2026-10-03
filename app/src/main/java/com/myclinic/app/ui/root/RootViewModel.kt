@@ -6,6 +6,7 @@ import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.auth.AuthState
 import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.notifications.NotificationRepository
+import com.myclinic.app.security.AppLockManager
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.domain.model.Doctor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,7 +48,12 @@ class RootViewModel @Inject constructor(
     private val doctorRepository: DoctorRepository,
     private val patientRepository: PatientRepository,
     private val notificationRepository: NotificationRepository,
+    private val appLock: AppLockManager,
 ) : ViewModel() {
+
+    /** The app is covered by the lock screen until fingerprint / face / PIN. */
+    val locked = appLock.locked
+    fun unlock() = appLock.unlock()
 
     private val profileLoadFailed = MutableStateFlow(false)
 
@@ -87,7 +93,13 @@ class RootViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            var previous: AuthState = AuthState.Loading
             authRepository.authState.collect { auth ->
+                // Just signed in with the password: no need to unlock again.
+                // (A session restored at start stays locked.)
+                if (previous == AuthState.SignedOut && auth is AuthState.SignedIn) appLock.unlock()
+                if (auth == AuthState.SignedOut) appLock.lock()
+                previous = auth
                 when (auth) {
                     is AuthState.SignedIn -> {
                         loadProfile()

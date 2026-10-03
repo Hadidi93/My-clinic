@@ -2,4 +2,6 @@
 <!-- Only the temporary camera folder is shared, and only with the camera app for one photo. -->
 <paths>
     <cache-path name="camera" path="camera/" />
+    <!-- A PDF the doctor chose to share; deleted at the next app start. -->
+    <cache-path name="exports" path="exports/" />
 </paths>

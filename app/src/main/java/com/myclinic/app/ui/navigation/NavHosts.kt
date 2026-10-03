@@ -20,6 +20,7 @@ import com.myclinic.app.ui.consults.NewReferralScreen
 import com.myclinic.app.ui.consults.NotificationsScreen
 import com.myclinic.app.ui.consults.ReferralsScreen
 import com.myclinic.app.ui.files.FileViewerScreen
+import com.myclinic.app.ui.audit.AccessLogScreen
 import com.myclinic.domain.consult.NotificationKind
 import com.myclinic.app.ui.patients.EntryFormScreen
 import com.myclinic.app.ui.patients.InvestigationScreen
@@ -70,6 +71,8 @@ import kotlinx.serialization.Serializable
 @Serializable object ReferralsRoute
 @Serializable data class NewReferralRoute(val patientId: String)
 @Serializable object NotificationsRoute
+/** A patient's access log, or (patientId = null) the admin's app-wide activity log. */
+@Serializable data class AccessLogRoute(val patientId: String? = null)
 
 // Lab/radiology staff
 @Serializable object StaffHomeRoute
@@ -141,6 +144,7 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit, openRequest: String?, onO
                 onOpenConsults = { nav.navigate(ConsultsRoute) },
                 onOpenReferrals = { nav.navigate(ReferralsRoute) },
                 onOpenNotifications = { nav.navigate(NotificationsRoute) },
+                onOpenActivityLog = { nav.navigate(AccessLogRoute(null)) },
             )
         }
         composable<ConsultsRoute> {
@@ -198,7 +202,11 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit, openRequest: String?, onO
                 onConsult = { nav.navigate(NewConsultRoute(it)) },
                 onRefer = { nav.navigate(NewReferralRoute(it)) },
                 onOpenReferrals = { nav.navigate(ReferralsRoute) },
+                onOpenAccessLog = { nav.navigate(AccessLogRoute(it)) },
             )
+        }
+        composable<AccessLogRoute> {
+            AccessLogScreen(onBack = { nav.popBackStack() })
         }
         composable<EntryFormRoute> {
             EntryFormScreen(onClose = { nav.popBackStack() }, onOpenFile = { nav.navigate(it.viewerRoute()) })

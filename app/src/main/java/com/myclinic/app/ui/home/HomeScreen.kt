@@ -47,6 +47,7 @@ import com.myclinic.app.ui.patients.formatDate
 import com.myclinic.app.ui.patients.formatDateTime
 import com.myclinic.app.ui.components.RequestNotificationPermission
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -71,6 +72,7 @@ fun HomeScreen(
     onOpenConsults: () -> Unit,
     onOpenReferrals: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenActivityLog: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -87,6 +89,9 @@ fun HomeScreen(
                     if (doctor.isAdmin) {
                         IconButton(onClick = onOpenAdmin) {
                             Icon(Icons.Filled.AdminPanelSettings, contentDescription = stringResource(R.string.admin_approvals))
+                        }
+                        IconButton(onClick = onOpenActivityLog) {
+                            Icon(Icons.Filled.History, contentDescription = stringResource(R.string.activity_log_title))
                         }
                     }
                     IconButton(onClick = onOpenNotifications) {
