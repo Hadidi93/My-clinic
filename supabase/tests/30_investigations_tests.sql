@@ -260,6 +260,11 @@ select tests.ok(tests.affected($$update public.investigation_results set report_
                                  where title = 'CBC (old)'$$) = 1,
                 'a doctor can edit their own typed result');
 
+update public.investigation_requests set status = 'requested', resulted_at = null, clinical_notes = 'Demo: pre-op, edited offline'
+ where id = current_setting('test.labreq')::uuid;
+select tests.ok((select status = 'result_uploaded' and resulted_at is not null
+                   from public.investigation_requests where id = current_setting('test.labreq')::uuid),
+                'an edit from an older offline copy never moves the status backwards');
 update public.investigation_requests set status = 'reviewed' where id = current_setting('test.labreq')::uuid;
 select tests.ok((select reviewed_by = :owner and reviewed_at is not null
                    from public.investigation_requests where id = current_setting('test.labreq')::uuid),

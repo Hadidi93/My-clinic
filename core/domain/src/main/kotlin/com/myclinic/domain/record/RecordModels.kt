@@ -212,6 +212,84 @@ data class PostopFollowup(
     override val deletedAt: String? = null,
 ) : RecordEntry
 
+@Serializable
+data class InvestigationRequest(
+    override val id: String,
+    override val patientId: String,
+    val kind: String = "lab",
+    val tests: List<String> = emptyList(),
+    val urgency: String = "routine",
+    val clinicalNotes: String? = null,
+    /** The department inbox it was sent to; null when the doctor handles it. */
+    val facilityId: String? = null,
+    val status: String = InvestigationStatus.REQUESTED,
+    val requestedAt: String? = null,
+    val sampleTakenAt: String? = null,
+    val resultedAt: String? = null,
+    val reviewedAt: String? = null,
+    val reviewedBy: String? = null,
+    override val createdBy: String? = null,
+    override val createdAt: String? = null,
+    override val updatedAt: String? = null,
+    override val deletedAt: String? = null,
+) : RecordEntry
+
+/** One typed value of a result, e.g. Hb 11.2 g/dL (reference 13–17). */
+@Serializable
+data class LabValue(
+    val test: String,
+    val value: Double? = null,
+    /** For non-numeric results ("positive", "trace"). */
+    val text: String? = null,
+    val unit: String? = null,
+    val low: Double? = null,
+    val high: Double? = null,
+) {
+    val isAbnormal: Boolean
+        get() = value != null && ((low != null && value < low) || (high != null && value > high))
+}
+
+@Serializable
+data class InvestigationResult(
+    override val id: String,
+    override val patientId: String,
+    val requestId: String? = null,
+    val kind: String = "lab",
+    val title: String,
+    val resultDate: String? = null,
+    val reportText: String? = null,
+    val labValues: List<LabValue> = emptyList(),
+    /** "staff" = uploaded by the lab/radiology department; such results can't be edited. */
+    val source: String = "doctor",
+    override val createdBy: String? = null,
+    override val createdAt: String? = null,
+    override val updatedAt: String? = null,
+    override val deletedAt: String? = null,
+) : RecordEntry {
+    val isFromDepartment: Boolean get() = source == "staff"
+}
+
+@Serializable
+data class Attachment(
+    override val id: String,
+    override val patientId: String,
+    /** "investigations" or "surgical_care". */
+    val section: String,
+    val resultId: String? = null,
+    val followupId: String? = null,
+    val storagePath: String,
+    val mimeType: String,
+    val fileName: String? = null,
+    val caption: String? = null,
+    val takenAt: String? = null,
+    override val createdBy: String? = null,
+    override val createdAt: String? = null,
+    override val updatedAt: String? = null,
+    override val deletedAt: String? = null,
+) : RecordEntry {
+    val isPdf: Boolean get() = mimeType == "application/pdf"
+}
+
 /** Everything recorded for one patient, as held in the offline cache. Deleted entries are excluded. */
 data class PatientRecord(
     val patient: Patient,
@@ -225,4 +303,14 @@ data class PatientRecord(
     val examinations: List<Examination> = emptyList(),
     val surgicalCases: List<SurgicalCase> = emptyList(),
     val followups: List<PostopFollowup> = emptyList(),
-)
+    val investigationRequests: List<InvestigationRequest> = emptyList(),
+    val investigationResults: List<InvestigationResult> = emptyList(),
+    val attachments: List<Attachment> = emptyList(),
+) {
+    fun resultsFor(request: InvestigationRequest): List<InvestigationResult> =
+        investigationResults.filter { it.requestId == request.id }
+
+    fun attachmentsForResult(resultId: String): List<Attachment> = attachments.filter { it.resultId == resultId }
+
+    fun attachmentsForFollowup(followupId: String): List<Attachment> = attachments.filter { it.followupId == followupId }
+}

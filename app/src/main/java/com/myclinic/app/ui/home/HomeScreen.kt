@@ -44,14 +44,16 @@ import com.myclinic.app.R
 import com.myclinic.app.ui.components.SecondaryButton
 import com.myclinic.app.ui.patients.SyncBanner
 import com.myclinic.app.ui.patients.formatDate
+import com.myclinic.app.ui.patients.formatDateTime
+import androidx.compose.ui.res.pluralStringResource
 import com.myclinic.app.ui.profile.VerificationStatusCard
 import com.myclinic.app.ui.theme.DashboardNumberStyle
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.record.DateFilter
 
 /**
- * Home dashboard: big cards reachable with one thumb. Consults (Phase 4) and
- * results (Phase 3) are still placeholders.
+ * Home dashboard: big cards reachable with one thumb. Consults are still a
+ * placeholder (Phase 4).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +64,7 @@ fun HomeScreen(
     onOpenPatients: (DateFilter) -> Unit,
     onQuickAdd: () -> Unit,
     onOpenPatient: (String) -> Unit,
+    onOpenInvestigation: (patientId: String, requestId: String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -119,13 +122,37 @@ fun HomeScreen(
                         value = state.upcomingOperations.size.toString(), onClick = null)
                 }
                 item { DashboardCard(Icons.Filled.Forum, stringResource(R.string.home_pending_consults), phase = 4) }
-                item { DashboardCard(Icons.Filled.Science, stringResource(R.string.home_pending_results), phase = 3) }
+                item {
+                    DashboardCard(
+                        Icons.Filled.Science, stringResource(R.string.home_results_to_review),
+                        value = state.investigations.awaitingReview.toString(),
+                        subtitle = pluralStringResource(R.plurals.home_awaiting_results,
+                            state.investigations.awaitingResult, state.investigations.awaitingResult),
+                    )
+                }
 
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     SecondaryButton(
                         text = "${stringResource(R.string.view_all_patients)} (${state.totalPatients})",
                         onClick = { onOpenPatients(DateFilter.ALL) },
                     )
+                }
+                if (state.resultsToReview.isNotEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(stringResource(R.string.home_results_to_review), style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = 8.dp).semantics { heading() })
+                    }
+                    items(state.resultsToReview, key = { it.request.id }, span = { GridItemSpan(maxLineSpan) }) { item ->
+                        Card(Modifier.fillMaxWidth().clickable { onOpenInvestigation(item.patient.id, item.request.id) }) {
+                            Column(Modifier.padding(16.dp).heightIn(min = 40.dp)) {
+                                Text(item.request.tests.joinToString(", "), style = MaterialTheme.typography.titleMedium)
+                                Text(item.patient.fullName, style = MaterialTheme.typography.bodyMedium)
+                                formatDateTime(item.request.resultedAt)?.let {
+                                    Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(stringResource(R.string.home_upcoming_operations), style = MaterialTheme.typography.titleMedium,
@@ -157,6 +184,7 @@ private fun DashboardCard(
     icon: ImageVector,
     title: String,
     value: String? = null,
+    subtitle: String? = null,
     phase: Int? = null,
     onClick: (() -> Unit)? = null,
 ) {
@@ -169,6 +197,9 @@ private fun DashboardCard(
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Text(value ?: "—", style = DashboardNumberStyle)
             Text(title, style = MaterialTheme.typography.titleSmall)
+            subtitle?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             phase?.let {
                 Text(stringResource(R.string.coming_in_phase, it), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)

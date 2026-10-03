@@ -1,6 +1,9 @@
 package com.myclinic.domain.forms
 
 import com.myclinic.domain.record.Dates
+import com.myclinic.domain.record.LabValue
+import com.myclinic.domain.record.RecordJson
+import kotlinx.serialization.builtins.ListSerializer
 import com.myclinic.domain.validation.normalizeDigits
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -25,6 +28,7 @@ enum class FieldError { REQUIRED, TOO_LONG, NOT_A_NUMBER, OUT_OF_RANGE, INVALID_
  *   DATE      "yyyy-MM-dd"
  *   DATETIME  ISO instant, e.g. "2026-09-30T08:15:00Z"
  *   CONDITION the condition name; the code goes in the extra key "condition_code"
+ *   LAB_VALUES the JSON list itself, e.g. [{"test":"Hb","value":11.2,"unit":"g/dL"}]
  */
 object FormCodec {
 
@@ -52,6 +56,7 @@ object FormCodec {
                     ?.keys?.joinToString(",").orEmpty()
                 FieldType.TAGS -> (element as? JsonArray)
                     ?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }?.joinToString(",").orEmpty()
+                FieldType.LAB_VALUES -> (element as? JsonArray)?.takeIf { it.isNotEmpty() }?.toString().orEmpty()
                 else -> (element as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull.orEmpty()
             }
         }
@@ -84,7 +89,10 @@ object FormCodec {
                     }
                 }
                 FieldType.DATETIME -> if (Dates.instant(raw) == null) FieldError.INVALID_DATE else null
-                FieldType.BOOLEAN, FieldType.CHECKLIST, FieldType.TAGS, FieldType.SURGICAL_CASE -> null
+                FieldType.TAGS -> if (raw.split(',').count { it.isNotBlank() } > MAX_TAGS) FieldError.TOO_LONG else null
+                FieldType.LAB_VALUES -> validateLabValues(raw)
+                FieldType.BOOLEAN, FieldType.CHECKLIST, FieldType.SURGICAL_CASE,
+                FieldType.FACILITY, FieldType.INVESTIGATION_REQUEST -> null
             }
             if (error != null) errors[f.key] = error
         }
@@ -116,6 +124,7 @@ object FormCodec {
         FieldType.TAGS -> JsonArray(
             raw.split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinct().map { JsonPrimitive(it) },
         )
+        FieldType.LAB_VALUES -> encodeLabValues(parseLabValues(raw).orEmpty())
         else -> if (raw.isEmpty()) {
             JsonNull
         } else {
@@ -129,6 +138,47 @@ object FormCodec {
         }
     }
 
+    /** Reads the LAB_VALUES text; null if it isn't a valid list. Rows without a test name are dropped. */
+    fun parseLabValues(raw: String): List<LabValue>? {
+        if (raw.isBlank()) return emptyList()
+        return runCatching { RecordJson.decodeFromString(ListSerializer(LabValue.serializer()), raw) }
+            .getOrNull()
+            ?.filter { it.test.isNotBlank() }
+    }
+
+    /** LAB_VALUES text for a list (the editor's output). */
+    fun labValuesText(values: List<LabValue>): String =
+        if (values.isEmpty()) "" else encodeLabValues(values).toString()
+
+    private fun encodeLabValues(values: List<LabValue>): JsonArray = JsonArray(
+        values.filter { it.test.isNotBlank() }.map { v ->
+            // Only the keys that have a value, to keep rows small.
+            JsonObject(buildMap {
+                put("test", JsonPrimitive(v.test.trim()))
+                v.value?.let { put("value", JsonPrimitive(it)) }
+                v.text?.trim()?.takeIf { it.isNotEmpty() }?.let { put("text", JsonPrimitive(it)) }
+                v.unit?.trim()?.takeIf { it.isNotEmpty() }?.let { put("unit", JsonPrimitive(it)) }
+                v.low?.let { put("low", JsonPrimitive(it)) }
+                v.high?.let { put("high", JsonPrimitive(it)) }
+            })
+        },
+    )
+
+    private fun validateLabValues(raw: String): FieldError? {
+        val values = parseLabValues(raw) ?: return FieldError.NOT_A_NUMBER
+        return when {
+            values.size > MAX_LAB_VALUES -> FieldError.TOO_LONG
+            values.any { it.test.length > 100 || it.unit.orEmpty().length > 30 || it.text.orEmpty().length > 200 } ->
+                FieldError.TOO_LONG
+            values.any { it.value == null && it.text.isNullOrBlank() } -> FieldError.REQUIRED
+            values.any { it.low != null && it.high != null && it.low > it.high } -> FieldError.OUT_OF_RANGE
+            else -> null
+        }
+    }
+
+    private const val MAX_TAGS = 50
+    private const val MAX_LAB_VALUES = 100
+
     /** Accepts "37.5", "37,5" and Arabic digits/decimal separator ("٣٧٫٥"). */
     fun parseDecimal(raw: String): Double? =
         raw.normalizeDigits().replace('٫', '.').replace(',', '.').toDoubleOrNull()
@@ -141,7 +191,7 @@ object FormCodec {
 
     /** Dates that describe the past and therefore can't be in the future. */
     private val PAST_ONLY_DATES = setOf(
-        "date_of_birth", "onset_date", "diagnosed_on", "performed_on", "operation_date",
+        "date_of_birth", "onset_date", "diagnosed_on", "performed_on", "operation_date", "result_date",
     )
 
     /** Current value of a field in a row, as text (for display). */

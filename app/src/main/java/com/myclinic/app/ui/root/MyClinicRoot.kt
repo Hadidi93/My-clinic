@@ -11,6 +11,7 @@ import com.myclinic.app.ui.components.FullScreenError
 import com.myclinic.app.ui.components.FullScreenLoading
 import com.myclinic.app.ui.navigation.AuthNavHost
 import com.myclinic.app.ui.navigation.MainNavHost
+import com.myclinic.app.ui.navigation.StaffNavHost
 import com.myclinic.app.ui.profile.ProfileScreen
 
 /** Top of the screen tree: picks the flow that matches the current [RootState]. */
@@ -28,6 +29,10 @@ fun MyClinicRoot(viewModel: RootViewModel = hiltViewModel()) {
             onSignOut = viewModel::signOut,
         )
         is RootState.NeedsProfile -> ProfileScreen(setupMode = true, onBack = null, onSignOut = viewModel::signOut)
-        is RootState.Ready -> MainNavHost(doctor = s.doctor, onSignOut = viewModel::signOut)
+        is RootState.Ready -> if (s.doctor.isStaff) {
+            StaffNavHost(staff = s.doctor, onSignOut = viewModel::signOut)
+        } else {
+            MainNavHost(doctor = s.doctor, onSignOut = viewModel::signOut)
+        }
     }
 }

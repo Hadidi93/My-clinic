@@ -13,6 +13,9 @@ enum class FieldType {
     TAGS,           // list of short labels
     CONDITION,      // chronic-disease list or free text; fills name + condition_code
     SURGICAL_CASE,  // picks one of the patient's surgical cases
+    FACILITY,       // picks a lab/radiology department (or none = handled by the doctor)
+    INVESTIGATION_REQUEST, // picks one of the patient's investigation requests (optional)
+    LAB_VALUES,     // typed results, stored as a JSON list of LabValue
 }
 
 /**
@@ -187,9 +190,43 @@ object FormSpecs {
         ),
     )
 
+    val INVESTIGATION_KINDS = listOf("lab", "imaging", "pathology", "other")
+
+    val INVESTIGATION_REQUEST = FormSpec(
+        RecordTable.INVESTIGATION_REQUESTS,
+        listOf(
+            FieldSpec("kind", FieldType.CHOICE, required = true, options = INVESTIGATION_KINDS, default = "lab"),
+            FieldSpec("tests", FieldType.TAGS, required = true),
+            FieldSpec("urgency", FieldType.CHOICE, required = true,
+                options = listOf("routine", "urgent", "stat"), default = "routine"),
+            FieldSpec("facility_id", FieldType.FACILITY),
+            FieldSpec("clinical_notes", FieldType.MULTILINE, maxLength = 4000),
+            FieldSpec("requested_at", FieldType.DATETIME, required = true, default = "now"),
+        ),
+    )
+
+    val INVESTIGATION_RESULT = FormSpec(
+        RecordTable.INVESTIGATION_RESULTS,
+        listOf(
+            FieldSpec("request_id", FieldType.INVESTIGATION_REQUEST),
+            FieldSpec("kind", FieldType.CHOICE, required = true, options = INVESTIGATION_KINDS, default = "lab"),
+            FieldSpec("title", FieldType.TEXT, required = true, maxLength = 200),
+            FieldSpec("result_date", FieldType.DATE, required = true, default = "today"),
+            FieldSpec("lab_values", FieldType.LAB_VALUES),
+            FieldSpec("report_text", FieldType.MULTILINE, maxLength = 20000),
+        ),
+    )
+
+    /** Files are added from the result or follow-up screen; only the caption is edited as a form. */
+    val ATTACHMENT = FormSpec(
+        RecordTable.ATTACHMENTS,
+        listOf(FieldSpec("caption", FieldType.TEXT, maxLength = 500)),
+    )
+
     val ALL: List<FormSpec> = listOf(
         PATIENT, COMPLAINT, CONDITION, SURGICAL_HISTORY, MEDICATION, ALLERGY,
         FAMILY_HISTORY, SOCIAL_HISTORY, EXAMINATION, SURGICAL_CASE, FOLLOWUP,
+        INVESTIGATION_REQUEST, INVESTIGATION_RESULT, ATTACHMENT,
     )
 
     fun forTable(table: RecordTable): FormSpec = ALL.first { it.table == table }

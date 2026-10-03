@@ -1,5 +1,6 @@
 package com.myclinic.app.data.doctor
 
+import com.myclinic.domain.model.AccountType
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.model.VerificationStatus
 import com.myclinic.domain.validation.ProfileInput
@@ -11,7 +12,8 @@ interface DoctorRepository {
     val myProfile: StateFlow<Doctor?>
 
     suspend fun refreshMyProfile(): Result<Doctor>
-    suspend fun updateMyProfile(input: ProfileInput, language: String): Result<Doctor>
+    /** [facilityId] is the department for staff accounts (null for doctors). */
+    suspend fun updateMyProfile(input: ProfileInput, language: String, accountType: AccountType, facilityId: String?): Result<Doctor>
     suspend fun uploadMyPhoto(jpegBytes: ByteArray): Result<Doctor>
     suspend fun uploadMyLicenseDocument(jpegBytes: ByteArray): Result<Doctor>
 

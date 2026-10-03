@@ -1,5 +1,6 @@
 package com.myclinic.app.data.sync
 
+import com.myclinic.app.data.files.ClinicalFileStore
 import com.myclinic.app.data.local.CachedRowEntity
 import com.myclinic.app.data.local.LocalDao
 import com.myclinic.app.data.local.SyncMetaEntity
@@ -54,6 +55,7 @@ enum class SyncOutcome { SUCCESS, NOT_SIGNED_IN, NETWORK_ERROR, ERROR }
 class SyncEngine @Inject constructor(
     private val supabase: SupabaseClient,
     private val dao: LocalDao,
+    private val files: ClinicalFileStore,
 ) {
     private val mutex = Mutex()
     private val _status = MutableStateFlow(SyncStatus())
@@ -94,6 +96,10 @@ class SyncEngine @Inject constructor(
                 val row = RecordJson.parseToJsonElement(op.json).jsonObject
                 val onServer = dao.getRow(op.tableName, op.rowId)?.onServer == true
                 try {
+                    // A new attachment: upload its file first, so the row never points to a missing file.
+                    if (op.tableName == RecordTable.ATTACHMENTS.tableName) {
+                        row.text("storage_path")?.let { files.uploadStaged(it) }
+                    }
                     if (onServer) update(op.tableName, op.rowId, row) else insertOrUpdate(op.tableName, op.rowId, row)
                     dao.deleteOp(op.opId)
                     dao.markOnServer(op.tableName, op.rowId)
@@ -186,7 +192,10 @@ class SyncEngine @Inject constructor(
         }
     }
 
-    suspend fun clearLocalData() = mutex.withLock { dao.clearEverything() }
+    suspend fun clearLocalData() = mutex.withLock {
+        dao.clearEverything()
+        files.clearStaged()
+    }
 
     private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull
 

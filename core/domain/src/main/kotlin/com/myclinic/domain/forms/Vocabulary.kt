@@ -36,6 +36,9 @@ object Vocabulary {
         RecordTable.EXAMINATIONS to Localized("Examination & vital signs", "الفحص والعلامات الحيوية"),
         RecordTable.SURGICAL_CASES to Localized("Surgery", "الجراحة"),
         RecordTable.POSTOP_FOLLOWUPS to Localized("Post-op follow-up", "المتابعة بعد العملية"),
+        RecordTable.INVESTIGATION_REQUESTS to Localized("Investigation request", "طلب فحوصات"),
+        RecordTable.INVESTIGATION_RESULTS to Localized("Investigation result", "نتيجة الفحوصات"),
+        RecordTable.ATTACHMENTS to Localized("File", "ملف"),
     )
 
     val FIELDS: Map<String, Localized> = mapOf(
@@ -111,6 +114,19 @@ object Vocabulary {
         "surgical_case_id" to Localized("Operation", "العملية"),
         "visit_date" to Localized("Visit date", "تاريخ الزيارة"),
         "wound_status" to Localized("Wound", "حالة الجرح"),
+        // Investigations
+        "kind" to Localized("Type", "النوع"),
+        "tests" to Localized("Tests / studies", "الفحوصات المطلوبة"),
+        "urgency" to Localized("Urgency", "درجة الاستعجال"),
+        "facility_id" to Localized("Send to department", "إرسال إلى القسم"),
+        "clinical_notes" to Localized("Clinical notes for the department", "ملاحظات سريرية للقسم"),
+        "requested_at" to Localized("Requested at", "وقت الطلب"),
+        "request_id" to Localized("For request", "خاص بالطلب"),
+        "title" to Localized("Investigation", "الفحص"),
+        "result_date" to Localized("Result date", "تاريخ النتيجة"),
+        "lab_values" to Localized("Values", "القيم"),
+        "report_text" to Localized("Report", "التقرير"),
+        "caption" to Localized("Caption", "وصف"),
     )
 
     val OPTIONS: Map<String, Localized> = mapOf(
@@ -171,6 +187,20 @@ object Vocabulary {
         "dvt_prophylaxis" to Localized("DVT prophylaxis", "وقاية من الجلطات"),
         "imaging_available" to Localized("Imaging available", "الأشعة متاحة"),
         "anticoagulants_reviewed" to Localized("Anticoagulants reviewed", "مضادات التجلط رُوجعت"),
+        // investigation kinds
+        "lab" to Localized("Lab", "تحاليل"),
+        "imaging" to Localized("Imaging", "أشعة"),
+        "pathology" to Localized("Pathology", "باثولوجي"),
+        "radiology" to Localized("Radiology", "الأشعة"),
+        // urgency
+        "routine" to Localized("Routine", "عادي"),
+        "urgent" to Localized("Urgent", "عاجل"),
+        "stat" to Localized("Emergency (STAT)", "طارئ فورًا"),
+        // request status
+        "requested" to Localized("Requested", "مطلوب"),
+        "sample_taken" to Localized("Sample taken", "تم أخذ العينة"),
+        "result_uploaded" to Localized("Result ready", "النتيجة جاهزة"),
+        "reviewed" to Localized("Reviewed", "تمت المراجعة"),
     )
 }
 

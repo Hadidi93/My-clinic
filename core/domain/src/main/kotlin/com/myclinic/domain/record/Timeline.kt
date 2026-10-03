@@ -13,6 +13,8 @@ enum class TimelineKind {
     OPERATION_PLANNED,
     OPERATION_DONE,
     FOLLOW_UP,
+    INVESTIGATION_REQUESTED,
+    INVESTIGATION_RESULT,
 }
 
 /**
@@ -84,8 +86,47 @@ object TimelineBuilder {
             add(TimelineKind.FOLLOW_UP, it.visitDate, it.woundStatus ?: "", it.notes, RecordTable.POSTOP_FOLLOWUPS, it.id)
         }
 
+        record.investigationRequests.forEach {
+            add(TimelineKind.INVESTIGATION_REQUESTED, it.requestedAt ?: it.createdAt, it.tests.joinToString(", "),
+                it.clinicalNotes, RecordTable.INVESTIGATION_REQUESTS, it.id)
+        }
+        record.investigationResults.forEach {
+            add(TimelineKind.INVESTIGATION_RESULT, it.resultDate ?: it.createdAt, it.title,
+                LabValueFormatter.summary(it.labValues) ?: it.reportText, RecordTable.INVESTIGATION_RESULTS, it.id)
+        }
+
         return events.sortedWith(compareByDescending<TimelineEvent> { it.sortKey }.thenBy { it.kind.ordinal })
     }
+}
+
+/** Short text for typed results, e.g. "Hb 11.2 g/dL ↓ · WBC 7.1". Abnormal values get an arrow. */
+object LabValueFormatter {
+    fun one(v: LabValue): String {
+        val number = v.value?.let { if (it % 1.0 == 0.0) it.toLong().toString() else it.toString() }
+        val shown = listOfNotNull(number ?: v.text, v.unit?.takeIf { number != null }).joinToString(" ")
+        val flag = when {
+            v.value == null -> ""
+            v.low != null && v.value < v.low -> " ↓"
+            v.high != null && v.value > v.high -> " ↑"
+            else -> ""
+        }
+        return "${v.test} $shown$flag".trim()
+    }
+
+    fun summary(values: List<LabValue>, max: Int = 4): String? =
+        values.takeIf { it.isNotEmpty() }?.let { list ->
+            list.take(max).joinToString(" · ") { one(it) } + if (list.size > max) " …" else ""
+        }
+
+    /** "11.2–17" style reference range, or null. */
+    fun range(v: LabValue): String? = when {
+        v.low != null && v.high != null -> "${trim(v.low)}–${trim(v.high)}"
+        v.low != null -> "≥ ${trim(v.low)}"
+        v.high != null -> "≤ ${trim(v.high)}"
+        else -> null
+    }
+
+    private fun trim(d: Double) = if (d % 1.0 == 0.0) d.toLong().toString() else d.toString()
 }
 
 /** Short text for a set of vital signs, e.g. "BP 120/80 · HR 88 · T 37.2 · SpO₂ 98%". */

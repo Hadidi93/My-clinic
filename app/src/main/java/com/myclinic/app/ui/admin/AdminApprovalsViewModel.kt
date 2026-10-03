@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.DataError
 import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.toDataError
+import com.myclinic.app.data.facilities.FacilityRepository
 import com.myclinic.domain.model.Doctor
+import com.myclinic.domain.record.Facility
 import com.myclinic.domain.model.VerificationStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,20 +26,27 @@ data class AdminApprovalsUiState(
     val licenseViewerUrl: String? = null,
     /** Name + decision of the last action, for the snackbar. */
     val lastDecision: Pair<String, VerificationStatus>? = null,
+    /** To show which department a staff account belongs to. */
+    val facilities: List<Facility> = emptyList(),
 )
 
 @HiltViewModel
 class AdminApprovalsViewModel @Inject constructor(
     private val doctorRepository: DoctorRepository,
+    private val facilityRepository: FacilityRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AdminApprovalsUiState())
     val state: StateFlow<AdminApprovalsUiState> = _state.asStateFlow()
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch { facilityRepository.facilities.collect { list -> _state.update { it.copy(facilities = list) } } }
+    }
 
     fun refresh() {
         _state.update { it.copy(loading = true, error = null) }
+        viewModelScope.launch { facilityRepository.refresh() }
         viewModelScope.launch {
             doctorRepository.doctorsAwaitingVerification()
                 .onSuccess { list -> _state.update { it.copy(loading = false, doctors = list) } }

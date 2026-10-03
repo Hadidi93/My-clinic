@@ -32,7 +32,21 @@ enum class AppRole(val dbValue: String) {
     }
 }
 
-/** A doctor's own profile, as stored in the `doctors` table. */
+/** Doctors manage patients; staff work in a lab/radiology department's inbox. Mirrors doctors.account_type. */
+enum class AccountType(val dbValue: String) {
+    DOCTOR("doctor"),
+    STAFF("staff");
+
+    companion object {
+        fun fromDb(value: String?): AccountType = entries.firstOrNull { it.dbValue == value } ?: DOCTOR
+    }
+}
+
+/**
+ * A user's own profile, as stored in the `doctors` table. Lab/radiology staff
+ * use the same table: [specialty] holds their job title and [licenseNumber]
+ * their staff or syndicate ID, and they must belong to a department ([facilityId]).
+ */
 data class Doctor(
     val id: String,
     val email: String,
@@ -47,7 +61,11 @@ data class Doctor(
     val role: AppRole,
     val verificationStatus: VerificationStatus,
     val verificationNote: String?,
+    val accountType: AccountType = AccountType.DOCTOR,
+    val facilityId: String? = null,
 ) {
+    val isStaff: Boolean get() = accountType == AccountType.STAFF
+
     val isVerified: Boolean get() = verificationStatus == VerificationStatus.VERIFIED
 
     /** Admin rights only count when the admin account itself is verified (same rule as the server). */
@@ -63,5 +81,5 @@ data class Doctor(
                 licenseNumber = licenseNumber.orEmpty(),
                 phone = phone.orEmpty(),
             ),
-        ).isEmpty()
+        ).isEmpty() && (!isStaff || facilityId != null)
 }

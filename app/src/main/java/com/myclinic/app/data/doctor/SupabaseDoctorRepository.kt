@@ -1,5 +1,6 @@
 package com.myclinic.app.data.doctor
 
+import com.myclinic.domain.model.AccountType
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.model.VerificationStatus
 import com.myclinic.domain.validation.ProfileInput
@@ -40,7 +41,12 @@ class SupabaseDoctorRepository @Inject constructor(
         doctor
     }
 
-    override suspend fun updateMyProfile(input: ProfileInput, language: String): Result<Doctor> {
+    override suspend fun updateMyProfile(
+        input: ProfileInput,
+        language: String,
+        accountType: AccountType,
+        facilityId: String?,
+    ): Result<Doctor> {
         val update = DoctorProfileUpdate(
             fullName = input.fullName.trim(),
             specialty = input.specialty.trim(),
@@ -48,6 +54,8 @@ class SupabaseDoctorRepository @Inject constructor(
             licenseNumber = ProfileValidator.cleanLicense(input.licenseNumber),
             phone = ProfileValidator.cleanPhone(input.phone),
             preferredLanguage = language,
+            accountType = accountType.dbValue,
+            facilityId = facilityId.takeIf { accountType == AccountType.STAFF },
         )
         return call { supabase.from(TABLE).update(update) { filter { eq("id", currentUserId()) } } }
             .mapCatching { refreshMyProfile().getOrThrow() }

@@ -234,12 +234,26 @@ create table public.attachments (
 create index attachments_patient_idx on public.attachments (patient_id);
 create index attachments_sync_idx on public.attachments (updated_at, id);
 
--- Status timestamps are filled in automatically.
+-- Status timestamps are filled in automatically. An edit made offline on an
+-- older copy never moves the status backwards (e.g. back to "requested" after
+-- the lab uploaded a result) and never clears a recorded time.
 create function public.investigation_requests_status_times() returns trigger
 language plpgsql
 set search_path = ''
 as $$
+declare
+    v_order constant text[] := array['requested', 'sample_taken', 'result_uploaded', 'reviewed'];
 begin
+    if new.status <> 'cancelled' and old.status <> 'cancelled'
+       and array_position(v_order, new.status::text) < array_position(v_order, old.status::text) then
+        new.status := old.status;
+    end if;
+    new.sample_taken_at := coalesce(new.sample_taken_at, old.sample_taken_at);
+    new.resulted_at := coalesce(new.resulted_at, old.resulted_at);
+    if new.status = old.status then
+        new.reviewed_at := old.reviewed_at;
+        new.reviewed_by := old.reviewed_by;
+    end if;
     if new.status is distinct from old.status then
         case new.status
             when 'sample_taken' then new.sample_taken_at := coalesce(new.sample_taken_at, now());

@@ -20,7 +20,12 @@ enum class RecordTable(val tableName: String, val section: RecordSection) {
     SOCIAL_HISTORY("social_history", RecordSection.SOCIAL_HISTORY),
     EXAMINATIONS("examinations", RecordSection.EXAMINATION),
     SURGICAL_CASES("surgical_cases", RecordSection.SURGICAL_CARE),
-    POSTOP_FOLLOWUPS("postop_followups", RecordSection.SURGICAL_CARE);
+    POSTOP_FOLLOWUPS("postop_followups", RecordSection.SURGICAL_CARE),
+    INVESTIGATION_REQUESTS("investigation_requests", RecordSection.INVESTIGATIONS),
+    INVESTIGATION_RESULTS("investigation_results", RecordSection.INVESTIGATIONS),
+
+    /** Photos and PDFs. Their section depends on what they belong to (results or wound photos). */
+    ATTACHMENTS("attachments", RecordSection.INVESTIGATIONS);
 
     companion object {
         fun fromTableName(name: String): RecordTable? = entries.firstOrNull { it.tableName == name }
@@ -72,6 +77,13 @@ object PatientRecordAssembler {
                 .sortedByDescending { Dates.sortKey(it.plannedDate ?: it.createdAt) },
             followups = list(RecordTable.POSTOP_FOLLOWUPS, PostopFollowup.serializer())
                 .sortedByDescending { Dates.sortKey(it.visitDate) },
+            investigationRequests = list(RecordTable.INVESTIGATION_REQUESTS, InvestigationRequest.serializer())
+                .sortedByDescending { Dates.sortKey(it.requestedAt ?: it.createdAt) },
+            investigationResults = list(RecordTable.INVESTIGATION_RESULTS, InvestigationResult.serializer())
+                .sortedWith(compareByDescending<InvestigationResult> { Dates.sortKey(it.resultDate) }
+                    .thenByDescending { Dates.sortKey(it.createdAt) }),
+            attachments = list(RecordTable.ATTACHMENTS, Attachment.serializer())
+                .sortedBy { Dates.sortKey(it.takenAt ?: it.createdAt) },
         )
     }
 

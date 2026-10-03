@@ -12,6 +12,7 @@ import com.myclinic.domain.model.VerificationStatus
 import com.myclinic.domain.validation.ProfileInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 
 /** In-memory stand-ins for the Supabase repositories, for ViewModel tests. Demo data only. */
 class FakeAuthRepository : AuthRepository {
@@ -49,10 +50,16 @@ class FakeDoctorRepository(var stored: Doctor? = null) : DoctorRepository {
         return Result.success(d)
     }
 
-    override suspend fun updateMyProfile(input: ProfileInput, language: String): Result<Doctor> {
+    override suspend fun updateMyProfile(
+        input: ProfileInput,
+        language: String,
+        accountType: com.myclinic.domain.model.AccountType,
+        facilityId: String?,
+    ): Result<Doctor> {
         stored = stored!!.copy(
             fullName = input.fullName, specialty = input.specialty, hospital = input.hospital,
             licenseNumber = input.licenseNumber, phone = input.phone, preferredLanguage = language,
+            accountType = accountType, facilityId = facilityId,
         )
         return refreshMyProfile()
     }
@@ -87,12 +94,35 @@ class FakePatientRepository : com.myclinic.app.data.records.PatientRepository {
     var syncStarted = 0
     var unsynced = 0
     override val records = MutableStateFlow(emptyList<com.myclinic.domain.record.PatientRecord>())
-    override fun record(patientId: String) = MutableStateFlow<com.myclinic.domain.record.PatientRecord?>(null)
+    override fun record(patientId: String): kotlinx.coroutines.flow.Flow<com.myclinic.domain.record.PatientRecord?> =
+        records.map { list -> list.firstOrNull { it.patient.id == patientId } }
     override suspend fun row(table: com.myclinic.domain.record.RecordTable, id: String): kotlinx.serialization.json.JsonObject? = null
     override suspend fun save(table: com.myclinic.domain.record.RecordTable, patientId: String?, rowId: String?, values: Map<String, String>): String {
         saved += table to values
         return rowId ?: "new-id"
     }
+    val changes = mutableListOf<Triple<com.myclinic.domain.record.RecordTable, String?, kotlinx.serialization.json.JsonObject>>()
+    override suspend fun saveChanges(
+        table: com.myclinic.domain.record.RecordTable,
+        patientId: String,
+        rowId: String?,
+        changes: kotlinx.serialization.json.JsonObject,
+    ): String {
+        this.changes += Triple(table, rowId, changes)
+        return rowId ?: "new-id"
+    }
+    val attached = mutableListOf<com.myclinic.app.data.files.PickedFile>()
+    override suspend fun addAttachment(
+        patientId: String,
+        section: com.myclinic.domain.model.RecordSection,
+        resultId: String?,
+        followupId: String?,
+        file: com.myclinic.app.data.files.PickedFile,
+    ): String {
+        attached += file
+        return "attachment-id"
+    }
+    override suspend fun loadFile(storagePath: String) = ByteArray(0)
     override suspend fun markDeleted(table: com.myclinic.domain.record.RecordTable, id: String) = Unit
     override suspend fun setPatientDeleted(patientId: String, deleted: Boolean) = Unit
     override val pendingChanges = MutableStateFlow(0)
@@ -104,4 +134,15 @@ class FakePatientRepository : com.myclinic.app.data.records.PatientRepository {
     override fun startSync() { syncStarted++ }
     override suspend fun unsyncedChangeCount() = unsynced
     override suspend fun clearLocalData() { cleared++ }
+}
+
+class FakeFacilityRepository : com.myclinic.app.data.facilities.FacilityRepository {
+    override val facilities = MutableStateFlow(
+        listOf(com.myclinic.domain.record.Facility("f1", "Demo Main Lab", "lab", "Demo Hospital")),
+    )
+    override suspend fun refresh() = Result.success(facilities.value)
+    override suspend fun add(name: String, kind: String, hospital: String?) =
+        Result.success(com.myclinic.domain.record.Facility("f-new", name, kind, hospital)).also { r ->
+            facilities.value = facilities.value + r.getOrThrow()
+        }
 }

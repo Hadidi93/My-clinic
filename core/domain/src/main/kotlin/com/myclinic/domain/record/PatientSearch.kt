@@ -109,6 +109,8 @@ object PatientSummaries {
             record.examinations.forEach { add(it.updatedAt) }
             record.surgicalCases.forEach { add(it.updatedAt) }
             record.followups.forEach { add(it.updatedAt) }
+            record.investigationRequests.forEach { add(it.updatedAt) }
+            record.investigationResults.forEach { add(it.updatedAt) }
         }
         return PatientSummary(
             patient = record.patient,

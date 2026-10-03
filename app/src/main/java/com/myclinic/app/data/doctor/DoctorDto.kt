@@ -1,5 +1,6 @@
 package com.myclinic.app.data.doctor
 
+import com.myclinic.domain.model.AccountType
 import com.myclinic.domain.model.AppRole
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.model.VerificationStatus
@@ -22,6 +23,8 @@ data class DoctorDto(
     val role: String = "doctor",
     @SerialName("verification_status") val verificationStatus: String = "pending",
     @SerialName("verification_note") val verificationNote: String? = null,
+    @SerialName("account_type") val accountType: String = "doctor",
+    @SerialName("facility_id") val facilityId: String? = null,
 ) {
     fun toDomain() = Doctor(
         id = id,
@@ -37,6 +40,8 @@ data class DoctorDto(
         role = AppRole.fromDb(role),
         verificationStatus = VerificationStatus.fromDb(verificationStatus),
         verificationNote = verificationNote,
+        accountType = AccountType.fromDb(accountType),
+        facilityId = facilityId,
     )
 }
 
@@ -52,6 +57,8 @@ data class DoctorProfileUpdate(
     @SerialName("license_number") val licenseNumber: String,
     val phone: String,
     @SerialName("preferred_language") val preferredLanguage: String,
+    @SerialName("account_type") val accountType: String,
+    @SerialName("facility_id") val facilityId: String?,
 )
 
 @Serializable

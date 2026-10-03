@@ -43,32 +43,78 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.myclinic.app.R
 import com.myclinic.domain.record.Examination
-import com.myclinic.domain.record.VitalPoint
+import com.myclinic.domain.record.InvestigationResult
+import com.myclinic.domain.record.LabTrends
+import java.time.Instant
 import com.myclinic.domain.record.VitalSign
 import com.myclinic.domain.record.VitalsSeries
 import kotlin.math.abs
 
-/** Vital-sign trends: pick one sign, see its chart, and a table of every reading. */
+/** What the trends tab can show: a vital sign, or a lab test from typed results. */
+sealed interface Trend {
+    data class Vital(val sign: VitalSign) : Trend
+    data class Lab(val test: String) : Trend
+}
+
+/** One point on the chart, whatever it measures. */
+data class ChartPoint(val at: Instant, val value: Double, val abnormal: Boolean)
+
+/** Trends: pick a vital sign or a lab test, see its chart, and a table of every reading. */
 @Composable
 fun VitalsTab(
     examinations: List<Examination>,
-    available: List<VitalSign>,
-    selected: VitalSign?,
-    onSelect: (VitalSign) -> Unit,
+    results: List<InvestigationResult>,
+    available: List<Trend>,
+    selected: Trend?,
+    onSelect: (Trend) -> Unit,
 ) {
     if (selected == null) {
         Text(stringResource(R.string.no_vitals), modifier = Modifier.padding(24.dp), style = MaterialTheme.typography.bodyLarge)
         return
     }
-    val points = VitalsSeries.series(examinations, selected)
+    val series = when (selected) {
+        is Trend.Vital -> TrendSeries(
+            label = selected.sign.label(),
+            unit = selected.sign.unit,
+            low = selected.sign.normalLow,
+            high = selected.sign.normalHigh,
+            points = VitalsSeries.series(examinations, selected.sign).map { ChartPoint(it.at, it.value, it.abnormal) },
+        )
+        is Trend.Lab -> {
+            val lab = LabTrends.series(results, selected.test)
+            TrendSeries(
+                label = selected.test,
+                unit = lab.lastOrNull()?.unit.orEmpty(),
+                // The lab's own reference range, from the latest result that gives one.
+                low = lab.lastOrNull { it.low != null }?.low,
+                high = lab.lastOrNull { it.high != null }?.high,
+                points = lab.map { ChartPoint(it.at, it.value, it.abnormal) },
+            )
+        }
+    }
+    TrendContent(series, available, selected, onSelect)
+}
+
+private data class TrendSeries(val label: String, val unit: String, val low: Double?, val high: Double?, val points: List<ChartPoint>)
+
+@Composable
+private fun Trend.chipLabel(): String = when (this) {
+    is Trend.Vital -> sign.label()
+    is Trend.Lab -> test
+}
+
+@Composable
+private fun TrendContent(selectedSeries: TrendSeries, available: List<Trend>, selected: Trend, onSelect: (Trend) -> Unit) {
+    val points = selectedSeries.points
+    val unitSuffix = selectedSeries.unit.takeIf { it.isNotBlank() }?.let { " ($it)" }.orEmpty()
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             LazyRow(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(available) { sign ->
-                    FilterChip(selected = sign == selected, onClick = { onSelect(sign) }, label = { Text(sign.label()) },
+                items(available) { trend ->
+                    FilterChip(selected = trend == selected, onClick = { onSelect(trend) }, label = { Text(trend.chipLabel()) },
                         modifier = Modifier.heightIn(min = 48.dp))
                 }
             }
@@ -76,13 +122,13 @@ fun VitalsTab(
         item {
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 // A single series: the title names it, so no legend box is needed.
-                Text("${selected.label()} (${selected.unit})", style = MaterialTheme.typography.titleMedium)
-                VitalsChart(points, selected)
-                val low = selected.normalLow
-                val high = selected.normalHigh
+                Text(selectedSeries.label + unitSuffix, style = MaterialTheme.typography.titleMedium)
+                VitalsChart(points, selectedSeries)
+                val low = selectedSeries.low
+                val high = selectedSeries.high
                 if (low != null && high != null) {
                     Text(
-                        stringResource(R.string.vital_normal_range, fmt(low), fmt(high), selected.unit),
+                        stringResource(R.string.vital_normal_range, fmt(low), fmt(high), selectedSeries.unit),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -108,14 +154,16 @@ fun VitalsTab(
                     Icon(Icons.Filled.Warning, contentDescription = stringResource(R.string.outside_range),
                         tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(end = 6.dp))
                 }
-                Text("${fmt(p.value)} ${selected.unit}", style = MaterialTheme.typography.bodyLarge)
+                Text("${fmt(p.value)} ${selectedSeries.unit}".trim(), style = MaterialTheme.typography.bodyLarge)
             }
             HorizontalDivider()
         }
     }
 }
 
-private fun fmt(v: Double): String = if (v % 1.0 == 0.0) v.toLong().toString() else "%.1f".format(v)
+private fun fmt(v: Double): String =
+    if (v % 1.0 == 0.0) v.toLong().toString()
+    else java.math.BigDecimal(v).setScale(2, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
 
 /**
  * Line chart drawn by hand on a Canvas (no chart library needed):
@@ -124,14 +172,14 @@ private fun fmt(v: Double): String = if (v % 1.0 == 0.0) v.toLong().toString() e
  * Time always runs left to right, also in Arabic.
  */
 @Composable
-private fun VitalsChart(points: List<VitalPoint>, sign: VitalSign) {
+private fun VitalsChart(points: List<ChartPoint>, sign: TrendSeries) {
     val colors = MaterialTheme.colorScheme
     val measurer = rememberTextMeasurer()
     val labelStyle = TextStyle(fontSize = 11.sp, color = colors.onSurfaceVariant)
     var selectedIndex by remember(points) { mutableStateOf(points.lastIndex) }
-    val description = stringResource(R.string.chart_description, sign.label(), points.size)
+    val description = stringResource(R.string.chart_description, sign.label, points.size)
 
-    val values = points.map { it.value } + listOfNotNull(sign.normalLow, sign.normalHigh)
+    val values = points.map { it.value } + listOfNotNull(sign.low, sign.high)
     val rawMin = values.minOrNull() ?: 0.0
     val rawMax = values.maxOrNull() ?: 1.0
     val pad = ((rawMax - rawMin).takeIf { it > 0 } ?: 1.0) * 0.1
@@ -160,8 +208,8 @@ private fun VitalsChart(points: List<VitalPoint>, sign: VitalSign) {
         fun y(v: Double) = (bottom - (v - yMin) / (yMax - yMin) * (bottom - top)).toFloat()
 
         // Typical range band (recessive).
-        val low = sign.normalLow
-        val high = sign.normalHigh
+        val low = sign.low
+        val high = sign.high
         if (low != null && high != null) {
             val yTop = y(high.coerceAtMost(yMax))
             val yBottom = y(low.coerceAtLeast(yMin))
@@ -206,7 +254,7 @@ private fun VitalsChart(points: List<VitalPoint>, sign: VitalSign) {
         // Tooltip for the selected point: value in text ink, never in the series colour.
         if (sel != null && selXY != null) {
             val label = measurer.measure(
-                "${fmt(sel.value)} ${sign.unit} · ${formatDateTime(sel.at.toString()).orEmpty()}",
+                "${fmt(sel.value)} ${sign.unit} · ${formatDateTime(sel.at.toString()).orEmpty()}".replace("  ", " "),
                 TextStyle(fontSize = 12.sp, color = colors.onSurface),
             )
             val w = label.size.width + 12.dp.toPx()

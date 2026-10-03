@@ -61,6 +61,11 @@ import com.myclinic.app.ui.components.errorMessage
 import com.myclinic.app.ui.components.message
 import com.myclinic.app.ui.components.setAppLanguage
 import com.myclinic.domain.validation.ProfileField
+import com.myclinic.domain.model.AccountType
+import com.myclinic.app.ui.components.MessageCard
+import com.myclinic.app.ui.patients.FacilityPicker
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.heightIn
 
 /**
  * Doctor profile. In [setupMode] it is the first screen after sign-up
@@ -155,6 +160,26 @@ fun ProfileScreen(
 
                 fun err(field: ProfileField) = state.showErrors && field in state.invalidFields
 
+                // Doctor or lab/radiology staff
+                Text(stringResource(R.string.account_type), style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AccountType.entries.forEach { type ->
+                        FilterChip(
+                            selected = state.accountType == type,
+                            onClick = { viewModel.onAccountTypeChange(type) },
+                            label = { Text(stringResource(if (type == AccountType.STAFF) R.string.account_staff else R.string.account_doctor)) },
+                            modifier = Modifier.heightIn(min = 48.dp),
+                        )
+                    }
+                }
+                Text(
+                    stringResource(if (state.isStaff) R.string.account_staff_help else R.string.account_doctor_help),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (!setupMode && state.accountType != state.savedAccountType) {
+                    MessageCard(title = stringResource(R.string.account_type_change_warning))
+                }
+
                 AppTextField(
                     value = state.fullName, onValueChange = viewModel::onFullNameChange,
                     label = stringResource(R.string.full_name),
@@ -163,7 +188,7 @@ fun ProfileScreen(
                 )
                 AppTextField(
                     value = state.specialty, onValueChange = viewModel::onSpecialtyChange,
-                    label = stringResource(R.string.specialty),
+                    label = stringResource(if (state.isStaff) R.string.job_title else R.string.specialty),
                     capitalization = KeyboardCapitalization.Words,
                     error = if (err(ProfileField.SPECIALTY)) ProfileField.SPECIALTY.errorMessage() else null,
                 )
@@ -175,7 +200,7 @@ fun ProfileScreen(
                 )
                 AppTextField(
                     value = state.licenseNumber, onValueChange = viewModel::onLicenseChange,
-                    label = stringResource(R.string.license_number),
+                    label = stringResource(if (state.isStaff) R.string.staff_id else R.string.license_number),
                     capitalization = KeyboardCapitalization.Characters,
                     supportingText = if (!setupMode) stringResource(R.string.license_change_warning) else null,
                     error = if (err(ProfileField.LICENSE_NUMBER)) ProfileField.LICENSE_NUMBER.errorMessage() else null,
@@ -188,9 +213,23 @@ fun ProfileScreen(
                     error = if (err(ProfileField.PHONE)) ProfileField.PHONE.errorMessage() else null,
                 )
 
+                if (state.isStaff) {
+                    FacilityPicker(
+                        label = stringResource(R.string.your_department),
+                        selectedId = state.facilityId,
+                        facilities = state.facilities,
+                        requestKind = "",
+                        noneLabel = null,
+                        onSelect = viewModel::onFacilityChange,
+                        onAdd = viewModel::addFacility,
+                        error = if (state.showErrors && state.facilityMissing) stringResource(R.string.department_required) else null,
+                    )
+                }
+
                 // Licence document
                 Text(stringResource(R.string.license_document), style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.license_document_help), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(if (state.isStaff) R.string.staff_document_help else R.string.license_document_help),
+                    style = MaterialTheme.typography.bodyMedium)
                 if (state.hasLicenseDocument) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)

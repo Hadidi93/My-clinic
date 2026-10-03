@@ -102,6 +102,7 @@ fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel 
                     items(state.doctors, key = { it.id }) { doctor ->
                         PendingDoctorCard(
                             doctor = doctor,
+                            department = state.facilities.firstOrNull { it.id == doctor.facilityId }?.label,
                             busy = state.busyDoctorId == doctor.id,
                             onApprove = { viewModel.approve(doctor) },
                             onReject = { rejecting = doctor },
@@ -142,6 +143,7 @@ fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel 
 @Composable
 private fun PendingDoctorCard(
     doctor: Doctor,
+    department: String?,
     busy: Boolean,
     onApprove: () -> Unit,
     onReject: () -> Unit,
@@ -151,6 +153,13 @@ private fun PendingDoctorCard(
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(doctor.fullName.ifBlank { doctor.email }, style = MaterialTheme.typography.titleMedium)
             Text(doctor.email, style = MaterialTheme.typography.bodyMedium)
+            if (doctor.isStaff) {
+                // Staff never see patient records, only their department's requests.
+                Text(
+                    stringResource(R.string.admin_staff_account, department ?: stringResource(R.string.department_unknown)),
+                    style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary,
+                )
+            }
             listOfNotNull(doctor.specialty, doctor.hospital).takeIf { it.isNotEmpty() }?.let {
                 Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium)
             }

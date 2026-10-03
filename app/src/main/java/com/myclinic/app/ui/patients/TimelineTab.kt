@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.filled.Healing
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Biotech
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.MonitorHeart
@@ -98,4 +100,6 @@ private fun TimelineKind.icon(): ImageVector = when (this) {
     TimelineKind.ALLERGY_RECORDED -> Icons.Filled.Warning
     TimelineKind.EXAMINATION -> Icons.Filled.MonitorHeart
     TimelineKind.FOLLOW_UP -> Icons.Filled.Healing
+    TimelineKind.INVESTIGATION_REQUESTED -> Icons.Filled.Science
+    TimelineKind.INVESTIGATION_RESULT -> Icons.Filled.Biotech
 }

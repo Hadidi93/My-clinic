@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.domain.record.Dashboard
+import com.myclinic.domain.record.InvestigationCounts
+import com.myclinic.domain.record.InvestigationDashboard
+import com.myclinic.domain.record.ResultToReview
 import com.myclinic.domain.record.PatientSummaries
 import com.myclinic.domain.record.UpcomingOperation
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +23,8 @@ data class HomeUiState(
     val todaysPatients: Int = 0,
     val totalPatients: Int = 0,
     val upcomingOperations: List<UpcomingOperation> = emptyList(),
+    val investigations: InvestigationCounts = InvestigationCounts(0, 0),
+    val resultsToReview: List<ResultToReview> = emptyList(),
     val pendingChanges: Int = 0,
     val failedChanges: Int = 0,
     val offline: Boolean = false,
@@ -43,6 +48,8 @@ class HomeViewModel @Inject constructor(
             todaysPatients = Dashboard.todaysPatients(live.map { PatientSummaries.from(it, today) }, today).size,
             totalPatients = live.size,
             upcomingOperations = Dashboard.upcomingOperations(live, today),
+            investigations = InvestigationDashboard.counts(live),
+            resultsToReview = InvestigationDashboard.toReview(live),
             pendingChanges = pending,
             failedChanges = failed,
             offline = sync.offline,

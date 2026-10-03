@@ -40,12 +40,23 @@ import com.myclinic.app.ui.components.PrimaryButton
 import com.myclinic.app.ui.components.SecondaryButton
 import com.myclinic.app.ui.components.SecureScreen
 import com.myclinic.app.ui.components.currentAppLanguage
+import com.myclinic.app.ui.components.MessageCard
+import com.myclinic.app.ui.components.message
+import com.myclinic.app.ui.files.AttachFileButtons
+import com.myclinic.app.ui.files.FileItem
+import com.myclinic.app.ui.files.FileList
+import androidx.compose.material3.LinearProgressIndicator
 import com.myclinic.domain.forms.Vocabulary
+import com.myclinic.domain.record.Attachment
 import com.myclinic.domain.record.RecordTable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EntryFormScreen(onClose: () -> Unit, viewModel: EntryFormViewModel = hiltViewModel()) {
+fun EntryFormScreen(
+    onClose: () -> Unit,
+    onOpenFile: (Attachment) -> Unit,
+    viewModel: EntryFormViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var confirmDiscard by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -72,8 +83,10 @@ fun EntryFormScreen(onClose: () -> Unit, viewModel: EntryFormViewModel = hiltVie
                         }
                     },
                     actions = {
-                        TextButton(onClick = viewModel::save, enabled = !state.saving && !state.loading) {
-                            Text(stringResource(R.string.save))
+                        if (state.departmentResult == null) {
+                            TextButton(onClick = viewModel::save, enabled = !state.saving && !state.loading && !state.readingFile) {
+                                Text(stringResource(R.string.save))
+                            }
                         }
                     },
                 )
@@ -93,18 +106,60 @@ fun EntryFormScreen(onClose: () -> Unit, viewModel: EntryFormViewModel = hiltVie
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    viewModel.spec.fields.forEach { field ->
-                        FieldEditor(
-                            field = field,
-                            values = state.values,
-                            error = state.errors[field.key],
-                            surgicalCases = state.surgicalCases,
-                            onValue = viewModel::onValue,
-                            onValues = viewModel::onValues,
+                    val departmentResult = state.departmentResult
+                    if (departmentResult != null) {
+                        // Uploaded by the lab/radiology department: shown as it was sent, never edited.
+                        MessageCard(
+                            title = stringResource(R.string.result_from_department),
+                            body = stringResource(R.string.result_from_department_body),
+                            container = MaterialTheme.colorScheme.secondaryContainer,
+                            content = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
+                        ResultDetails(departmentResult, state.attachments, onOpenFile)
+                    } else {
+                        val context = FieldContext(
+                            surgicalCases = state.surgicalCases,
+                            openRequests = state.openRequests,
+                            facilities = state.facilities,
+                            onAddFacility = viewModel::addFacility,
+                            onRequestPicked = viewModel::onRequestPicked,
+                        )
+                        viewModel.spec.fields.forEach { field ->
+                            FieldEditor(
+                                field = field,
+                                values = state.values,
+                                error = state.errors[field.key],
+                                context = context,
+                                onValue = viewModel::onValue,
+                                onValues = viewModel::onValues,
+                            )
+                        }
+                        if (viewModel.canAttachFiles) {
+                            Text(stringResource(R.string.files_title), style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.files_help), style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            FileList(
+                                items = state.attachments.map { it.toFileItem() },
+                                onOpen = { item -> state.attachments.firstOrNull { it.id == item.key }?.let(onOpenFile) },
+                                onRemove = { item -> viewModel.removeAttachment(item.key) },
+                            )
+                            val waiting = stringResource(R.string.file_will_attach)
+                            val photo = stringResource(R.string.file_photo)
+                            FileList(
+                                items = state.newFiles.mapIndexed { i, f ->
+                                    FileItem(i.toString(), f.fileName ?: photo, f.isPdf, note = waiting)
+                                },
+                                onOpen = null,
+                                onRemove = { item -> viewModel.removeNewFile(item.key.toInt()) },
+                            )
+                            if (state.readingFile) LinearProgressIndicator(Modifier.fillMaxWidth())
+                            AttachFileButtons(onImage = viewModel::onImage, onPdf = viewModel::onPdf, enabled = !state.readingFile)
+                        }
+                        state.error?.let { ErrorMessage(it.message()) }
+                        if (state.errors.isNotEmpty()) ErrorMessage(stringResource(R.string.fix_errors))
+                        PrimaryButton(stringResource(R.string.save), onClick = viewModel::save, loading = state.saving,
+                            enabled = !state.readingFile)
                     }
-                    if (state.errors.isNotEmpty()) ErrorMessage(stringResource(R.string.fix_errors))
-                    PrimaryButton(stringResource(R.string.save), onClick = viewModel::save, loading = state.saving)
                     if (!viewModel.isNew && viewModel.table != RecordTable.PATIENTS) {
                         SecondaryButton(stringResource(R.string.delete_entry), onClick = { confirmDelete = true })
                     }

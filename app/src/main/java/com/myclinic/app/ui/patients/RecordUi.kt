@@ -148,6 +148,8 @@ fun TimelineKind.label(): String = stringResource(
         TimelineKind.OPERATION_PLANNED -> R.string.tl_operation_planned
         TimelineKind.OPERATION_DONE -> R.string.tl_operation_done
         TimelineKind.FOLLOW_UP -> R.string.tl_follow_up
+        TimelineKind.INVESTIGATION_REQUESTED -> R.string.tl_investigation_requested
+        TimelineKind.INVESTIGATION_RESULT -> R.string.tl_investigation_result
     },
 )
 

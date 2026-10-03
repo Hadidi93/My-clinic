@@ -57,7 +57,11 @@ import com.myclinic.domain.forms.PreopChecklist
 import com.myclinic.domain.forms.Vocabulary
 import com.myclinic.domain.record.PatientRecord
 import com.myclinic.domain.record.RecordTable
+import com.myclinic.domain.record.InvestigationRules
+import com.myclinic.domain.record.LabValueFormatter
 import com.myclinic.domain.record.VitalsFormatter
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.text.font.FontWeight
 
 /**
  * The patient's record. [onEdit] opens the form for (table, entry id or null for a new entry).
@@ -67,6 +71,7 @@ import com.myclinic.domain.record.VitalsFormatter
 fun PatientDetailScreen(
     onBack: () -> Unit,
     onEdit: (patientId: String, table: RecordTable, entryId: String?) -> Unit,
+    onOpenInvestigation: (patientId: String, requestId: String) -> Unit,
     viewModel: PatientDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -136,11 +141,16 @@ fun PatientDetailScreen(
                     val editable = !record.patient.isDeleted
                     val edit: (RecordTable, String?) -> Unit = { t, id -> if (editable) onEdit(record.patient.id, t, id) }
                     when (tab) {
-                        0 -> RecordTab(record, editable, edit)
+                        0 -> RecordTab(record, editable, edit, onOpenInvestigation = { onOpenInvestigation(record.patient.id, it) })
                         1 -> TimelineTab(state.timeline, onOpen = { t, id ->
-                            edit(t, if (t == RecordTable.PATIENTS) record.patient.id else id)
+                            when (t) {
+                                RecordTable.INVESTIGATION_REQUESTS -> onOpenInvestigation(record.patient.id, id)
+                                RecordTable.PATIENTS -> edit(t, record.patient.id)
+                                else -> edit(t, id)
+                            }
                         })
-                        else -> VitalsTab(record.examinations, state.vitalSigns, state.selectedVital, viewModel::selectVital)
+                        else -> VitalsTab(record.examinations, record.investigationResults, state.trends, state.selectedTrend,
+                            viewModel::selectTrend)
                     }
                 }
             }
@@ -182,7 +192,12 @@ private fun PatientHeader(state: PatientDetailUiState) {
 private data class EntryLine(val id: String, val title: String, val detail: String?)
 
 @Composable
-private fun RecordTab(record: PatientRecord, editable: Boolean, onEdit: (RecordTable, String?) -> Unit) {
+private fun RecordTab(
+    record: PatientRecord,
+    editable: Boolean,
+    onEdit: (RecordTable, String?) -> Unit,
+    onOpenInvestigation: (String) -> Unit,
+) {
     val lang = currentAppLanguage()
     fun opt(v: String?) = v?.let { Vocabulary.option(it).get(lang) }
     val current = stringResource(R.string.current)
@@ -231,29 +246,118 @@ private fun RecordTab(record: PatientRecord, editable: Boolean, onEdit: (RecordT
         },
         RecordTable.POSTOP_FOLLOWUPS to record.followups.map { f ->
             val case = record.surgicalCases.firstOrNull { it.id == f.surgicalCaseId }
+            val files = record.attachmentsForFollowup(f.id).size
             EntryLine(f.id, listOfNotNull(formatDate(f.visitDate), opt(f.woundStatus)).joinToString(" · "),
-                listOfNotNull(case?.plannedOperation ?: case?.diagnosis, f.notes).joinToString(" — "))
+                listOfNotNull(
+                    case?.plannedOperation ?: case?.diagnosis, f.notes,
+                    if (files > 0) pluralStringResource(R.plurals.file_count, files, files) else null,
+                ).joinToString(" — "))
         },
     )
+    // Investigations go after the examination, before surgery.
+    val beforeInvestigations = sections.takeWhile { it.first != RecordTable.SURGICAL_CASES }
+    val afterInvestigations = sections.drop(beforeInvestigations.size)
 
     LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { PersonalDataCard(record, editable, onEdit) }
-        items(sections, key = { it.first.tableName }) { (table, lines) ->
-            // Social history is a single entry: "Add" becomes "Edit" once it exists.
-            val single = table == RecordTable.SOCIAL_HISTORY
-            val canAdd = editable && !(single && lines.isNotEmpty()) &&
-                !(table == RecordTable.POSTOP_FOLLOWUPS && record.surgicalCases.isEmpty())
-            SectionCard(
-                title = Vocabulary.section(table).get(lang),
-                lines = lines,
-                onAdd = if (canAdd) ({ onEdit(table, null) }) else null,
-                onOpen = { id -> onEdit(table, id) },
-                emptyHint = if (table == RecordTable.POSTOP_FOLLOWUPS && record.surgicalCases.isEmpty()) {
-                    stringResource(R.string.no_surgical_cases)
-                } else {
-                    null
-                },
-            )
+        items(beforeInvestigations, key = { it.first.tableName }) { (table, lines) ->
+            RecordSectionCard(record, table, lines, editable, onEdit)
+        }
+        item(key = "investigations") { InvestigationsCard(record, editable, onEdit, onOpenInvestigation) }
+        items(afterInvestigations, key = { it.first.tableName }) { (table, lines) ->
+            RecordSectionCard(record, table, lines, editable, onEdit)
+        }
+    }
+}
+
+@Composable
+private fun RecordSectionCard(
+    record: PatientRecord,
+    table: RecordTable,
+    lines: List<EntryLine>,
+    editable: Boolean,
+    onEdit: (RecordTable, String?) -> Unit,
+) {
+    val lang = currentAppLanguage()
+    // Social history is a single entry: "Add" becomes "Edit" once it exists.
+    val single = table == RecordTable.SOCIAL_HISTORY
+    val noOperations = table == RecordTable.POSTOP_FOLLOWUPS && record.surgicalCases.isEmpty()
+    val canAdd = editable && !(single && lines.isNotEmpty()) && !noOperations
+    SectionCard(
+        title = Vocabulary.section(table).get(lang),
+        lines = lines,
+        onAdd = if (canAdd) ({ onEdit(table, null) }) else null,
+        onOpen = { id -> onEdit(table, id) },
+        emptyHint = if (noOperations) stringResource(R.string.no_surgical_cases) else null,
+    )
+}
+
+/**
+ * Requests (with their status) and results typed without a request.
+ * A request opens its own screen with the results and the review button.
+ */
+@Composable
+private fun InvestigationsCard(
+    record: PatientRecord,
+    editable: Boolean,
+    onEdit: (RecordTable, String?) -> Unit,
+    onOpenInvestigation: (String) -> Unit,
+) {
+    val lang = currentAppLanguage()
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(vertical = 8.dp)) {
+            Row(Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.section_investigations), style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f).semantics { heading() })
+            }
+            if (editable) {
+                Row(Modifier.padding(horizontal = 8.dp)) {
+                    TextButton(onClick = { onEdit(RecordTable.INVESTIGATION_REQUESTS, null) }, modifier = Modifier.heightIn(min = TouchTarget)) {
+                        Icon(Icons.Filled.Add, contentDescription = null)
+                        Text(stringResource(R.string.new_request))
+                    }
+                    TextButton(onClick = { onEdit(RecordTable.INVESTIGATION_RESULTS, null) }, modifier = Modifier.heightIn(min = TouchTarget)) {
+                        Icon(Icons.Filled.Add, contentDescription = null)
+                        Text(stringResource(R.string.add_result))
+                    }
+                }
+            }
+            val standalone = record.investigationResults.filter { r -> r.requestId == null || record.investigationRequests.none { it.id == r.requestId } }
+            if (record.investigationRequests.isEmpty() && standalone.isEmpty()) {
+                Text(stringResource(R.string.no_entries), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+            }
+            record.investigationRequests.forEach { r ->
+                val ready = InvestigationRules.isAwaitingReview(r)
+                Column(
+                    Modifier.fillMaxWidth().heightIn(min = TouchTarget).clickable { onOpenInvestigation(r.id) }
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    Text(r.tests.joinToString(", "), style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (ready) FontWeight.Bold else FontWeight.Normal)
+                    Text(
+                        listOfNotNull(Vocabulary.option(r.status).get(lang), Vocabulary.option(r.urgency).get(lang).takeIf { r.urgency != "routine" },
+                            formatDate(r.requestedAt)).joinToString(" · "),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (ready) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            standalone.forEach { res ->
+                val files = record.attachmentsForResult(res.id).size
+                Column(
+                    Modifier.fillMaxWidth().heightIn(min = TouchTarget).clickable { onEdit(RecordTable.INVESTIGATION_RESULTS, res.id) }
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    Text(res.title, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        listOfNotNull(formatDate(res.resultDate), LabValueFormatter.summary(res.labValues),
+                            if (files > 0) pluralStringResource(R.plurals.file_count, files, files) else null).joinToString(" · "),
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
         }
     }
 }

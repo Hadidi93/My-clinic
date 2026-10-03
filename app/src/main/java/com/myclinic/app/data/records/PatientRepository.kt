@@ -1,5 +1,7 @@
 package com.myclinic.app.data.records
 
+import com.myclinic.app.data.files.ClinicalFileStore
+import com.myclinic.app.data.files.PickedFile
 import com.myclinic.app.data.local.CachedRowEntity
 import com.myclinic.app.data.local.LocalDao
 import com.myclinic.app.data.local.PendingOpEntity
@@ -51,6 +53,18 @@ interface PatientRepository {
     /** Creates or updates a row from form values. Returns the row id. */
     suspend fun save(table: RecordTable, patientId: String?, rowId: String?, values: Map<String, String>): String
 
+    /**
+     * Saves [changes] over the stored row (or a new row), for changes that
+     * don't come from a form: a request's status, a new attachment. Returns the row id.
+     */
+    suspend fun saveChanges(table: RecordTable, patientId: String, rowId: String?, changes: JsonObject): String
+
+    /** Attaches a photo/PDF to a result or a post-op follow-up. Works offline: the file uploads with the next sync. */
+    suspend fun addAttachment(patientId: String, section: RecordSection, resultId: String?, followupId: String?, file: PickedFile): String
+
+    /** The bytes of an attached file (from the phone if not uploaded yet). */
+    suspend fun loadFile(storagePath: String): ByteArray
+
     /** "Delete" = mark as entered in error. The row stays in the medical record. */
     suspend fun markDeleted(table: RecordTable, id: String)
     suspend fun setPatientDeleted(patientId: String, deleted: Boolean)
@@ -79,6 +93,7 @@ class CachedPatientRepository @Inject constructor(
     private val supabase: SupabaseClient,
     private val scheduler: SyncScheduler,
     private val engine: SyncEngine,
+    private val files: ClinicalFileStore,
 ) : PatientRepository {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -124,6 +139,48 @@ class CachedPatientRepository @Inject constructor(
         write(table, id, ownerPatientId, row, onServer = existing?.onServer == true)
         return id
     }
+
+    override suspend fun saveChanges(table: RecordTable, patientId: String, rowId: String?, changes: JsonObject): String {
+        val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not signed in")
+        val existing = rowId?.let { dao.getRow(table.tableName, it) }
+        val id = existing?.id ?: rowId ?: UUID.randomUUID().toString()
+        val now = Instant.now().toString()
+        val base: JsonObject = existing?.json?.let(::parse) ?: buildJsonObject {
+            put("id", id)
+            put("patient_id", patientId)
+            put("created_by", userId)
+            put("created_at", now)
+            put("deleted_at", JsonNull)
+        }
+        write(table, id, patientId, JsonObject(base + changes).withLocalUpdatedAt(now), onServer = existing?.onServer == true)
+        return id
+    }
+
+    override suspend fun addAttachment(
+        patientId: String,
+        section: RecordSection,
+        resultId: String?,
+        followupId: String?,
+        file: PickedFile,
+    ): String {
+        val path = files.newPath(section.dbValue, patientId, file.mimeType)
+        files.stage(path, file.bytes)
+        return saveChanges(
+            RecordTable.ATTACHMENTS, patientId, null,
+            buildJsonObject {
+                put("section", section.dbValue)
+                put("result_id", resultId)
+                put("followup_id", followupId)
+                put("storage_path", path)
+                put("mime_type", file.mimeType)
+                put("file_name", file.fileName)
+                put("caption", JsonNull)
+                put("taken_at", Instant.now().toString())
+            },
+        )
+    }
+
+    override suspend fun loadFile(storagePath: String): ByteArray = files.load(storagePath)
 
     override suspend fun markDeleted(table: RecordTable, id: String) = setDeletedAt(table, id, Instant.now().toString())
 

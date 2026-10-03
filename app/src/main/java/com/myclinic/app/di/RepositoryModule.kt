@@ -4,6 +4,10 @@ import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.auth.SupabaseAuthRepository
 import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.doctor.SupabaseDoctorRepository
+import com.myclinic.app.data.facilities.FacilityRepository
+import com.myclinic.app.data.facilities.SupabaseFacilityRepository
+import com.myclinic.app.data.staff.StaffRepository
+import com.myclinic.app.data.staff.SupabaseStaffRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,4 +26,10 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindDoctorRepository(impl: SupabaseDoctorRepository): DoctorRepository
+
+    @Binds @Singleton
+    abstract fun bindFacilityRepository(impl: SupabaseFacilityRepository): FacilityRepository
+
+    @Binds @Singleton
+    abstract fun bindStaffRepository(impl: SupabaseStaffRepository): StaffRepository
 }

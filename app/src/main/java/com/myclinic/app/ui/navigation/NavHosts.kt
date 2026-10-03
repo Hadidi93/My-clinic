@@ -13,7 +13,12 @@ import com.myclinic.app.ui.auth.ForgotPasswordScreen
 import com.myclinic.app.ui.auth.LoginScreen
 import com.myclinic.app.ui.auth.SignUpScreen
 import com.myclinic.app.ui.home.HomeScreen
+import com.myclinic.app.ui.files.FileViewerScreen
 import com.myclinic.app.ui.patients.EntryFormScreen
+import com.myclinic.app.ui.patients.InvestigationScreen
+import com.myclinic.app.ui.staff.StaffHomeScreen
+import com.myclinic.app.ui.staff.StaffRequestScreen
+import com.myclinic.domain.record.Attachment
 import com.myclinic.app.ui.patients.PatientDetailScreen
 import com.myclinic.app.ui.patients.PatientListScreen
 import com.myclinic.domain.record.DateFilter
@@ -32,8 +37,22 @@ import kotlinx.serialization.Serializable
 @Serializable object AdminApprovalsRoute
 @Serializable data class PatientListRoute(val dateFilter: String = "ALL", val quickAdd: Boolean = false)
 @Serializable data class PatientDetailRoute(val patientId: String)
-/** Add (entryId = null) or edit one entry of [table] ("patients" = personal data). */
-@Serializable data class EntryFormRoute(val patientId: String, val table: String, val entryId: String? = null)
+/**
+ * Add (entryId = null) or edit one entry of [table] ("patients" = personal data).
+ * [requestId]: a new result for that investigation request.
+ */
+@Serializable data class EntryFormRoute(
+    val patientId: String,
+    val table: String,
+    val entryId: String? = null,
+    val requestId: String? = null,
+)
+@Serializable data class InvestigationRoute(val patientId: String, val requestId: String)
+@Serializable data class FileViewerRoute(val path: String, val mimeType: String, val title: String? = null)
+
+// Lab/radiology staff
+@Serializable object StaffHomeRoute
+@Serializable data class StaffRequestRoute(val requestId: String)
 
 /** Screens for signed-out users. [linkMessage] explains an email link that couldn't sign in. */
 @Composable
@@ -85,6 +104,7 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
                 onOpenPatients = { filter -> nav.navigate(PatientListRoute(dateFilter = filter.name)) },
                 onQuickAdd = { nav.navigate(PatientListRoute(quickAdd = true)) },
                 onOpenPatient = { id -> nav.navigate(PatientDetailRoute(id)) },
+                onOpenInvestigation = { patientId, requestId -> nav.navigate(InvestigationRoute(patientId, requestId)) },
             )
         }
         composable<PatientListRoute> { entry ->
@@ -100,10 +120,24 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
             PatientDetailScreen(
                 onBack = { nav.popBackStack() },
                 onEdit = { patientId, table, entryId -> nav.navigate(EntryFormRoute(patientId, table.tableName, entryId)) },
+                onOpenInvestigation = { patientId, requestId -> nav.navigate(InvestigationRoute(patientId, requestId)) },
             )
         }
         composable<EntryFormRoute> {
-            EntryFormScreen(onClose = { nav.popBackStack() })
+            EntryFormScreen(onClose = { nav.popBackStack() }, onOpenFile = { nav.navigate(it.viewerRoute()) })
+        }
+        composable<InvestigationRoute> { entry ->
+            val route = entry.toRoute<InvestigationRoute>()
+            InvestigationScreen(
+                onBack = { nav.popBackStack() },
+                onEdit = { table, entryId, requestId ->
+                    nav.navigate(EntryFormRoute(route.patientId, table.tableName, entryId, requestId))
+                },
+                onOpenFile = { nav.navigate(it.viewerRoute()) },
+            )
+        }
+        composable<FileViewerRoute> {
+            FileViewerScreen(onBack = { nav.popBackStack() })
         }
         composable<ProfileRoute> {
             ProfileScreen(setupMode = false, onBack = { nav.popBackStack() }, onSignOut = onSignOut)
@@ -118,3 +152,26 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
         }
     }
 }
+
+/** Screens for lab/radiology staff: the department inbox, one request, and the profile. */
+@Composable
+fun StaffNavHost(staff: Doctor, onSignOut: () -> Unit) {
+    val nav = rememberNavController()
+    NavHost(navController = nav, startDestination = StaffHomeRoute) {
+        composable<StaffHomeRoute> {
+            StaffHomeScreen(
+                staff = staff,
+                onOpenProfile = { nav.navigate(ProfileRoute) },
+                onOpenRequest = { nav.navigate(StaffRequestRoute(it)) },
+            )
+        }
+        composable<StaffRequestRoute> {
+            StaffRequestScreen(onBack = { nav.popBackStack() })
+        }
+        composable<ProfileRoute> {
+            ProfileScreen(setupMode = false, onBack = { nav.popBackStack() }, onSignOut = onSignOut)
+        }
+    }
+}
+
+private fun Attachment.viewerRoute() = FileViewerRoute(storagePath, mimeType, caption ?: fileName)

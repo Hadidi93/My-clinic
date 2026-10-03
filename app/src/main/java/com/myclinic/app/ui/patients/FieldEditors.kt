@@ -58,12 +58,27 @@ import com.myclinic.domain.forms.Vocabulary
 import com.myclinic.domain.record.Dates
 import com.myclinic.domain.record.PatientSearch
 import com.myclinic.domain.record.SUGGESTED_TAGS
+import com.myclinic.domain.record.Facility
+import com.myclinic.domain.record.FacilityValidator
+import com.myclinic.domain.record.InvestigationRequest
+import com.myclinic.domain.record.LabCatalog
 import com.myclinic.domain.record.SurgicalCase
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+
+/** What some editors need besides the field itself: the patient's operations and requests, departments. */
+data class FieldContext(
+    val surgicalCases: List<SurgicalCase> = emptyList(),
+    /** Requests a result can be filed under. */
+    val openRequests: List<InvestigationRequest> = emptyList(),
+    val facilities: List<Facility> = emptyList(),
+    val onAddFacility: ((name: String, kind: String, hospital: String) -> Unit)? = null,
+    /** Called when a request is picked for a result, so the form can fill in its tests. */
+    val onRequestPicked: (InvestigationRequest?) -> Unit = {},
+)
 
 /** Draws the right editor for one form field. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -72,10 +87,11 @@ fun FieldEditor(
     field: FieldSpec,
     values: Map<String, String>,
     error: FieldError?,
-    surgicalCases: List<SurgicalCase>,
+    context: FieldContext,
     onValue: (String, String) -> Unit,
     onValues: (Map<String, String>) -> Unit,
 ) {
+    val surgicalCases = context.surgicalCases
     val lang = currentAppLanguage()
     val label = Vocabulary.field(field.key).get(lang) + if (field.required) " *" else ""
     val value = values[field.key].orEmpty()
@@ -139,7 +155,43 @@ fun FieldEditor(
                 }
             }
         }
-        FieldType.TAGS -> TagsField(label, value, set)
+        FieldType.TAGS -> if (field.key == "tests") {
+            TagsField(label, value, set, suggestions = LabCatalog.REQUEST_SUGGESTIONS[values["kind"]].orEmpty(), hashPrefix = false,
+                error = errorText)
+        } else {
+            TagsField(label, value, set)
+        }
+        FieldType.LAB_VALUES -> LabValuesEditor(label, value, errorText, set)
+        FieldType.FACILITY -> FacilityPicker(
+            label = label,
+            selectedId = value.ifBlank { null },
+            facilities = context.facilities.filter { FacilityValidator.accepts(it.kind, values["kind"].orEmpty()) },
+            requestKind = values["kind"].orEmpty(),
+            noneLabel = stringResource(R.string.facility_none),
+            onSelect = { set(it.orEmpty()) },
+            onAdd = context.onAddFacility,
+        )
+        FieldType.INVESTIGATION_REQUEST -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(label, style = MaterialTheme.typography.labelLarge)
+            if (context.openRequests.isEmpty()) {
+                Text(stringResource(R.string.no_open_requests), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                context.openRequests.forEach { r ->
+                    FilterChip(
+                        selected = value == r.id,
+                        onClick = {
+                            val picked = if (value == r.id) null else r
+                            set(picked?.id.orEmpty())
+                            context.onRequestPicked(picked)
+                        },
+                        label = { Text(listOfNotNull(r.tests.joinToString(", "), formatDate(r.requestedAt)).joinToString(" · ")) },
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    )
+                }
+            }
+        }
         FieldType.CONDITION -> ConditionField(label, value, values[FormCodec.CONDITION_CODE_KEY].orEmpty(), errorText, onValues)
         FieldType.SURGICAL_CASE -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(label, style = MaterialTheme.typography.labelLarge)
@@ -235,7 +287,15 @@ private fun DateField(label: String, value: String, error: String?, withTime: Bo
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TagsField(label: String, value: String, onChange: (String) -> Unit) {
+private fun TagsField(
+    label: String,
+    value: String,
+    onChange: (String) -> Unit,
+    suggestions: List<String> = SUGGESTED_TAGS,
+    hashPrefix: Boolean = true,
+    error: String? = null,
+) {
+    val prefix = if (hashPrefix) "#" else ""
     val tags = value.split(',').map { it.trim() }.filter { it.isNotEmpty() }
     var input by remember { mutableStateOf("") }
     fun add(tag: String) {
@@ -249,7 +309,7 @@ private fun TagsField(label: String, value: String, onChange: (String) -> Unit) 
             tags.forEach { tag ->
                 InputChip(
                     selected = true, onClick = { onChange((tags - tag).joinToString(",")) },
-                    label = { Text("#$tag") },
+                    label = { Text("$prefix$tag") },
                     trailingIcon = { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.clear)) },
                     modifier = Modifier.heightIn(min = 48.dp),
                 )
@@ -257,13 +317,17 @@ private fun TagsField(label: String, value: String, onChange: (String) -> Unit) 
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             AppTextField(input, { text -> if (text.contains(',')) { add(text.substringBefore(',')) } else { input = text } },
-                stringResource(R.string.add_tag), modifier = Modifier.weight(1f), onImeAction = { add(input) })
+                stringResource(if (hashPrefix) R.string.add_tag else R.string.add_test), modifier = Modifier.weight(1f), onImeAction = { add(input) })
             TextButton(onClick = { add(input) }, enabled = input.isNotBlank()) { Text(stringResource(R.string.add_entry)) }
         }
-        Text(stringResource(R.string.suggested_tags), style = MaterialTheme.typography.bodySmall)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SUGGESTED_TAGS.filter { it !in tags }.forEach { tag ->
-                FilterChip(selected = false, onClick = { add(tag) }, label = { Text("#$tag") }, modifier = Modifier.heightIn(min = 48.dp))
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+        val remaining = suggestions.filter { it !in tags }
+        if (remaining.isNotEmpty()) {
+            Text(stringResource(R.string.suggested_tags), style = MaterialTheme.typography.bodySmall)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                remaining.forEach { tag ->
+                    FilterChip(selected = false, onClick = { add(tag) }, label = { Text("$prefix$tag") }, modifier = Modifier.heightIn(min = 48.dp))
+                }
             }
         }
     }
