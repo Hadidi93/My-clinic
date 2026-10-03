@@ -1,5 +1,5 @@
 -- Checks that every table has exactly the access rules (RLS policies) it should
--- have after migrations 1–6. Safe to run any time: it only reads.
+-- have after migrations 1–7. Safe to run any time: it only reads.
 -- Every row should say ✅. Any ❌ means something is missing or extra.
 with expected (tablename, rules) as (
     values
@@ -21,7 +21,9 @@ with expected (tablename, rules) as (
         -- consult messages: read, post
         ('consult_messages', 2),
         -- referrals and ownership history: read only; changes go through the safe functions
-        ('referrals', 1), ('patient_ownership_history', 1)
+        ('referrals', 1), ('patient_ownership_history', 1),
+        -- notifications: read your own, mark them read. Phone push addresses: no API access at all (0 rules)
+        ('notifications', 2), ('device_tokens', 0)
 ),
 actual as (
     select tablename, count(*) as rules

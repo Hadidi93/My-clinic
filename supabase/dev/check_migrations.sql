@@ -12,6 +12,8 @@ from (values
     (4, '20260930000400_storage_profile_files.sql',  exists (select 1 from pg_policies where schemaname = 'storage' and policyname = 'licenses_admin_read')),
     (5, '20261001000500_referrals_and_sync.sql',     to_regprocedure('public.sync_pull(text,timestamp with time zone,uuid,integer)') is not null),
     (6, '20261003000600_investigations_and_files.sql', to_regprocedure('public.staff_submit_result(uuid,text,date,text,jsonb,jsonb)') is not null
-                                                     and exists (select 1 from pg_policies where schemaname = 'storage' and policyname = 'clinical_files_insert'))
+                                                     and exists (select 1 from pg_policies where schemaname = 'storage' and policyname = 'clinical_files_insert')),
+    (7, '20261004000700_notifications_and_consult_files.sql', to_regprocedure('public.my_referrals()') is not null
+                                                     and exists (select 1 from pg_policies where schemaname = 'storage' and policyname = 'consult_files_insert'))
 ) as m (n, file, installed)
 order by m.n;

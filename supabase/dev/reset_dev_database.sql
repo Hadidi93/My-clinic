@@ -23,9 +23,12 @@ drop policy if exists licenses_owner_all on storage.objects;
 drop policy if exists licenses_admin_read on storage.objects;
 drop policy if exists clinical_files_read on storage.objects;
 drop policy if exists clinical_files_insert on storage.objects;
+drop policy if exists consult_files_read on storage.objects;
+drop policy if exists consult_files_insert on storage.objects;
 
 -- Tables (CASCADE also removes their policies, triggers and indexes)
 drop table if exists
+    public.notifications, public.device_tokens,
     public.attachments, public.investigation_results, public.investigation_requests,
     public.patient_ownership_history, public.referrals,
     public.consult_messages, public.consult_sections, public.consults,
@@ -52,7 +55,10 @@ drop function if exists
     public.staff_can_access_patient, public.staff_request_open, public.staff_worklist,
     public.staff_request_detail, public.staff_mark_sample_taken, public.staff_submit_result,
     public.investigation_requests_status_times, public.investigation_results_guard,
-    public.investigation_results_advance_request
+    public.investigation_results_advance_request,
+    public.notify, public.mark_all_notifications_read, public.consults_notify, public.consult_messages_notify,
+    public.referrals_notify, public.investigation_requests_notify, public.register_device, public.unregister_device,
+    public.consult_messages_check_files, public.my_consults, public.my_referrals
     cascade;
 
 -- Types
