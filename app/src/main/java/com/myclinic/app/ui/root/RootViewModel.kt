@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,6 +28,13 @@ sealed interface RootState {
     data class Ready(val doctor: Doctor) : RootState
 }
 
+private val RootState.userId: String?
+    get() = when (this) {
+        is RootState.Ready -> doctor.id
+        is RootState.NeedsProfile -> doctor.id
+        else -> null
+    }
+
 /**
  * Watches the login session and the doctor's profile, and decides what the
  * user should see. Screens never navigate between "signed in" and "signed
@@ -41,6 +49,14 @@ class RootViewModel @Inject constructor(
 
     private val profileLoadFailed = MutableStateFlow(false)
 
+    /**
+     * The screens last shown to a signed-in user. If the session reloads for a
+     * moment (e.g. coming back from the camera app), we keep showing them
+     * instead of a loading screen, which would restart the app at the home page
+     * and lose what the user was doing.
+     */
+    private var lastSignedInState: RootState? = null
+
     val state: StateFlow<RootState> = combine(
         authRepository.authState,
         authRepository.passwordRecoveryPending,
@@ -48,15 +64,22 @@ class RootViewModel @Inject constructor(
         profileLoadFailed,
     ) { auth, recovery, doctor, failed ->
         when (auth) {
-            AuthState.Loading -> RootState.Loading
+            AuthState.Loading -> lastSignedInState ?: RootState.Loading
             AuthState.SignedOut -> RootState.SignedOut
             is AuthState.SignedIn -> when {
                 recovery -> RootState.PasswordRecovery
                 doctor != null && doctor.id == auth.userId ->
                     if (doctor.isProfileComplete) RootState.Ready(doctor) else RootState.NeedsProfile(doctor)
                 failed -> RootState.ProfileLoadFailed
-                else -> RootState.Loading
+                // Profile reloading for the same user: keep the current screens.
+                else -> lastSignedInState?.takeIf { it.userId == auth.userId } ?: RootState.Loading
             }
+        }
+    }.onEach { state ->
+        when (state) {
+            is RootState.Ready, is RootState.NeedsProfile -> lastSignedInState = state
+            RootState.SignedOut -> lastSignedInState = null
+            else -> Unit
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, RootState.Loading)
 

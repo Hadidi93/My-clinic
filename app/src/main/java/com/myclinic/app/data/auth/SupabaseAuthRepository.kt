@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.io.IOException
@@ -44,12 +45,18 @@ class SupabaseAuthRepository @Inject constructor(
     /** Lives as long as the app, so a link is handled even if the screen changes meanwhile. */
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
+    /** The last signed-in user, so a session reload without user details doesn't look like "loading". */
+    @Volatile private var lastSignedIn: AuthState.SignedIn? = null
+
     override val authState: Flow<AuthState> = supabase.auth.sessionStatus
         .map { status ->
             when (status) {
                 is SessionStatus.Authenticated -> {
-                    val user = status.session.user
-                    if (user != null) AuthState.SignedIn(user.id, user.email) else AuthState.Loading
+                    // When the app comes back from another app (e.g. the camera), the
+                    // session is reloaded from storage or refreshed; it may briefly
+                    // arrive without the user's details. Keep showing the same user.
+                    val user = status.session.user ?: supabase.auth.currentUserOrNull()
+                    if (user != null) AuthState.SignedIn(user.id, user.email) else lastSignedIn ?: AuthState.Loading
                 }
                 is SessionStatus.NotAuthenticated -> AuthState.SignedOut
                 is SessionStatus.Initializing -> AuthState.Loading
@@ -58,6 +65,13 @@ class SupabaseAuthRepository @Inject constructor(
                 is SessionStatus.RefreshFailure ->
                     supabase.auth.currentUserOrNull()?.let { AuthState.SignedIn(it.id, it.email) }
                         ?: AuthState.SignedOut
+            }
+        }
+        .onEach { state ->
+            when (state) {
+                is AuthState.SignedIn -> lastSignedIn = state
+                AuthState.SignedOut -> lastSignedIn = null
+                AuthState.Loading -> Unit
             }
         }
         .distinctUntilChanged()

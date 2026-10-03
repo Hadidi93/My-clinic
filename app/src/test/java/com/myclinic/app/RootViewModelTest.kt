@@ -35,6 +35,18 @@ class RootViewModelTest {
     }
 
     @Test
+    fun `a brief session reload keeps the open screens instead of restarting at home`() {
+        val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor(complete = true)), patients)
+        auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
+        val ready = vm.state.value
+        assertTrue(ready is RootState.Ready)
+        auth.state.value = AuthState.Loading // e.g. back from the camera app
+        assertEquals(ready, vm.state.value)
+        auth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
+        assertEquals(ready, vm.state.value)
+    }
+
+    @Test
     fun `password reset link takes priority`() {
         val vm = RootViewModel(auth, FakeDoctorRepository(demoDoctor()), patients)
         auth.passwordRecoveryPending.value = true
