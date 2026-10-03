@@ -490,4 +490,5 @@
     <string name="export_page">صفحة %1$d</string>
     <string name="export_confidential">سري. ملف طبي من My Clinic.</string>
     <string name="export_no_allergies">لا توجد حساسية مسجلة</string>
+    <string name="home_greeting_doctor">مرحبًا د. %1$s</string>
 </resources>

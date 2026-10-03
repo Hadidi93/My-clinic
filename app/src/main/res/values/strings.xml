@@ -462,4 +462,5 @@
     <string name="export_page">page %1$d</string>
     <string name="export_confidential">CONFIDENTIAL. Medical record from My Clinic.</string>
     <string name="export_no_allergies">No known allergies recorded</string>
+    <string name="home_greeting_doctor">Hello, Dr. %1$s</string>
 </resources>

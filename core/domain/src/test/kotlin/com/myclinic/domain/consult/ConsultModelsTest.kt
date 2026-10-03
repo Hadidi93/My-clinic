@@ -93,6 +93,16 @@ class ConsultModelsTest {
     }
 
     @Test
+    fun `the greeting name drops a Dr the user typed`() {
+        fun name(n: String) = com.myclinic.domain.TestData.doctor("d1").copy(fullName = n).nameWithoutTitle
+        assertEquals("Ahmed Ali", name("Dr. Ahmed Ali"))
+        assertEquals("Ahmed Ali", name("dr Ahmed Ali"))
+        assertEquals("أحمد علي", name("د. أحمد علي"))
+        assertEquals("أحمد علي", name("الدكتور أحمد علي"))
+        assertEquals("Drew Smith", name("Drew Smith"))
+    }
+
+    @Test
     fun `notifications carry only a kind and an id`() {
         val n = RecordJson.decodeFromString(
             AppNotification.serializer(),

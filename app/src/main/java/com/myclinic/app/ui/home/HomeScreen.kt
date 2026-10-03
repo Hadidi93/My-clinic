@@ -124,7 +124,7 @@ fun HomeScreen(
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
-                        text = stringResource(R.string.home_greeting, doctor.fullName),
+                        text = stringResource(R.string.home_greeting_doctor, doctor.nameWithoutTitle),
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.semantics { heading() },
                     )

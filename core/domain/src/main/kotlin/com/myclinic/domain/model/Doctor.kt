@@ -111,6 +111,10 @@ data class Doctor(
     /** A grade change waiting for an admin; colleagues still see [grade] meanwhile. */
     val requestedGrade: String? = null,
 ) {
+    /** The name without a "Dr" the user may have typed, so a greeting never says "Dr. Dr.". */
+    val nameWithoutTitle: String
+        get() = fullName.trim().replace(Regex("^(dr\\.?|doctor|د\\.|دكتور|الدكتور)\\s+", RegexOption.IGNORE_CASE), "").trim()
+
     /** Approved and only waiting for a grade change to be reviewed. */
     val onlyGradeChangePending: Boolean get() = isVerified && requestedGrade != null
 
