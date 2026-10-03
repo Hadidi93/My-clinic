@@ -21,16 +21,19 @@ drop policy if exists avatars_owner_all on storage.objects;
 drop policy if exists avatars_verified_read on storage.objects;
 drop policy if exists licenses_owner_all on storage.objects;
 drop policy if exists licenses_admin_read on storage.objects;
+drop policy if exists clinical_files_read on storage.objects;
+drop policy if exists clinical_files_insert on storage.objects;
 
 -- Tables (CASCADE also removes their policies, triggers and indexes)
 drop table if exists
+    public.attachments, public.investigation_results, public.investigation_requests,
     public.patient_ownership_history, public.referrals,
     public.consult_messages, public.consult_sections, public.consults,
     public.postop_followups, public.surgical_cases, public.examinations,
     public.social_history, public.family_history, public.allergies,
     public.medications, public.surgical_history, public.medical_conditions,
     public.presenting_complaints, public.patients,
-    public.audit_log, public.doctors
+    public.audit_log, public.doctors, public.facilities
     cascade;
 
 -- Functions
@@ -44,7 +47,12 @@ drop function if exists
     public.is_verified_doctor, public.log_record_view, public.my_patient_ids,
     public.patients_guard_delete, public.patients_record_initial_owner,
     public.respond_referral, public.revoke_consult, public.search_doctors,
-    public.set_updated_at, public.sync_pull, public.was_owner_at, public.write_audit
+    public.set_updated_at, public.sync_pull, public.was_owner_at, public.write_audit,
+    public.is_doctor_account, public.is_verified_staff, public.my_facility_id, public.try_uuid,
+    public.staff_can_access_patient, public.staff_request_open, public.staff_worklist,
+    public.staff_request_detail, public.staff_mark_sample_taken, public.staff_submit_result,
+    public.investigation_requests_status_times, public.investigation_results_guard,
+    public.investigation_results_advance_request
     cascade;
 
 -- Types
@@ -53,5 +61,7 @@ drop type if exists
     public.record_section, public.patient_sex, public.allergy_severity,
     public.smoking_status, public.surgical_case_status,
     public.consult_status, public.consult_urgency,
-    public.referral_kind, public.referral_status
+    public.referral_kind, public.referral_status,
+    public.facility_kind, public.investigation_kind,
+    public.investigation_urgency, public.investigation_status
     cascade;

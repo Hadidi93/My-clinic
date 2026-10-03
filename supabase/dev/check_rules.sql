@@ -1,5 +1,5 @@
 -- Checks that every table has exactly the access rules (RLS policies) it should
--- have after migrations 1–5. Safe to run any time: it only reads.
+-- have after migrations 1–6. Safe to run any time: it only reads.
 -- Every row should say ✅. Any ❌ means something is missing or extra.
 with expected (tablename, rules) as (
     values
@@ -8,6 +8,10 @@ with expected (tablename, rules) as (
         ('surgical_history', 3), ('medications', 3), ('allergies', 3),
         ('family_history', 3), ('social_history', 3), ('examinations', 3),
         ('surgical_cases', 3), ('postop_followups', 3),
+        -- investigations and files (Phase 3): read, add, edit
+        ('investigation_requests', 3), ('investigation_results', 3), ('attachments', 3),
+        -- departments: everyone reads, anyone adds, only admins edit or remove
+        ('facilities', 4),
         -- doctor profiles: read, edit own profile
         ('doctors', 2),
         -- audit log: two read rules (admins / yourself, and owners of the patient); nobody can write
