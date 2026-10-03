@@ -16,8 +16,8 @@ Android 10+.
 | 1 | Project setup, database schema + ER diagram, auth, doctor profile, admin approval | ✅ approved |
 | 2 | Patients and all record sections, encrypted offline cache + sync, timeline, vitals chart, search; referral rules (database) | ✅ approved |
 | 3 | Investigation requests, results (typed values + photos/PDFs), lab/radiology department inbox, wound photos, lab trends | ✅ approved |
-| 4 | Consultations with section sharing and files, referrals (co-management / transfer), notifications and push | ✅ built, awaiting review |
-| 5 | Security hardening, audit views, testing, Play Store release | ⏳ |
+| 4 | Consultations with section sharing and files, referrals (co-management / transfer), notifications and push | ✅ approved |
+| 5 | App lock, access/activity logs, PDF export, release hardening, Play Store preparation | ✅ built, awaiting review |
 
 ## Where things are
 
@@ -30,6 +30,8 @@ docs/SETUP.md           How to set up Supabase and run the app (start here)
 docs/DATABASE.md        ER diagram and security model
 docs/ARCHITECTURE.md    How the app is organised; Supabase vs Firebase
 docs/COMPLIANCE.md      Health-data law (Egypt 151/2020, GDPR, HIPAA) + backend checklist
+docs/PRIVACY_POLICY.md  Draft privacy policy (for your lawyer, then publish)
+docs/RELEASE.md         Publishing on Google Play (closed testing first)
 ```
 
 ## Quick start

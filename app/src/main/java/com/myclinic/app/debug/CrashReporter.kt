@@ -39,8 +39,9 @@ object CrashReporter {
         }
     }
 
+    /** Never shown in release builds (they don't record crashes either). */
     fun lastCrash(context: Context): String? =
-        File(context.filesDir, FILE).takeIf { it.exists() }?.readText()
+        if (!BuildConfig.DEBUG) null else File(context.filesDir, FILE).takeIf { it.exists() }?.readText()
 
     fun clear(context: Context) {
         File(context.filesDir, FILE).delete()

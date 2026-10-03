@@ -60,8 +60,10 @@ android {
         applicationId = "com.myclinic.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // Each GitHub build gets a higher number, as the Play Store requires.
+        val build = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+        versionCode = build
+        versionName = "1.0.$build"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -84,6 +86,17 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // The real Play Store upload key: only from secrets (never in git).
+        // RELEASE_KEYSTORE_FILE points to the decoded keystore (see .github/workflows/ci.yml).
+        create("release") {
+            val path = secret("RELEASE_KEYSTORE_FILE", "")
+            if (path.isNotEmpty()) {
+                storeFile = file(path)
+                storePassword = secret("RELEASE_KEYSTORE_PASSWORD", "")
+                keyAlias = secret("RELEASE_KEY_ALIAS", "")
+                keyPassword = secret("RELEASE_KEY_PASSWORD", "")
+            }
+        }
     }
 
     buildTypes {
@@ -91,6 +104,14 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Without the upload key (e.g. CI test runs) the release build is
+            // signed with the test key, so it can be installed and tested;
+            // the Play Store refuses such builds, so they can't be published by mistake.
+            signingConfig = if (secret("RELEASE_KEYSTORE_FILE", "").isNotEmpty()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 

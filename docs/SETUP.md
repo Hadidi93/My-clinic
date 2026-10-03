@@ -28,8 +28,9 @@ Doing this the first time takes about 30–45 minutes. You need:
 3. Do the same for the other migration files, **in filename order**:
    `…0200_patient_records.sql`, `…0300_consultations.sql`,
    `…0400_storage_profile_files.sql`, `…0500_referrals_and_sync.sql`,
-   `…0600_investigations_and_files.sql`, `…0700_notifications_and_consult_files.sql`, `…0800_doctor_grade_and_search.sql`, `…0900_grade_change_requests.sql`.
-   (Already set up Phase 4? Just run the new `…0800` and `…0900` files. Supabase may warn
+   `…0600_investigations_and_files.sql`, `…0700_notifications_and_consult_files.sql`, `…0800_doctor_grade_and_search.sql`, `…0900_grade_change_requests.sql`,
+   `…1000_access_logs_and_export.sql`.
+   (Already set up Phase 4? Just run the new `…1000` file. Supabase may warn
    that a file "includes destructive operations": that is expected, because
    it replaces a few security rules with stricter versions. No data is deleted.)
 
@@ -205,6 +206,20 @@ if you want real phone notifications; everything else works without it.
 | 9 | Lab account (from Phase 3): with section 9 done, Doctor A sends a request to the lab | The lab phone gets "New request in your department"; tapping it opens the inbox |
 | 10 | Try a screenshot of a consult or the shared record | Blocked |
 | 11 | Profile → Sign out on Doctor B, then send B a new consult | No notification arrives on that phone |
+
+## 7e. Test checklist for Phase 5 (lock, logs, export)
+
+| # | Try this | Expected |
+|---|---|---|
+| 1 | Close the app completely and open it again | "My Clinic is locked": fingerprint/face/PIN prompt; the app opens after it |
+| 2 | Leave the app open untouched for 5 minutes | It locks by itself; after unlocking you are on the same screen with nothing lost |
+| 3 | Switch to another app for 1 minute and back | No lock (less than 5 minutes) |
+| 4 | Sign out, sign in with your password | No extra lock prompt right after signing in |
+| 5 | Open a patient → **Access log** | Every open/change/share/export with names and times, "via consult" or "via the department" where relevant |
+| 6 | Open a patient → **Export PDF** → read the warning → Export | The share sheet opens; choose e.g. Drive or WhatsApp to yourself; the PDF shows the record (Arabic too); the access log now shows "exported" |
+| 7 | Airplane mode on → Export PDF | "Could not be exported": the export can't be logged offline, so it isn't made |
+| 8 | Admin: Home → 🕘 icon (**Activity log**) | Everything in the app, newest first; **Show older** pages back |
+| 9 | As a co-managing doctor, look for Export PDF / Access log | Not offered (main doctor only) |
 
 ## 8. Run the automated tests
 

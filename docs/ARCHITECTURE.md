@@ -115,8 +115,24 @@
 | Lab/radiology staff see the minimum | `staff_*` functions in migration 6; no table access |
 | Record views audit-logged | `PatientRepository.logView` → `log_record_view` |
 
-Coming in Phase 5:
-- biometric/PIN lock with auto-lock
-- certificate pinning
-- release hardening (R8 obfuscation review, Play Integrity)
-- penetration-test checklist
+## Security measures added in Phase 5
+
+| Measure | Where |
+|---|---|
+| App lock: fingerprint / face / phone PIN at start and after 5 min without use | `AppLockManager`, `LockScreen`, `LockPolicy` |
+| Phones without a screen lock must set one | `LockScreen` |
+| Access log per patient and app-wide activity log | migration 10, `AccessLogScreen` |
+| PDF export logged before the file is made; main doctor only; temporary file deleted at next start | `log_record_export`, `PdfExporter` |
+| Tap-jacking protection (touches ignored under overlays) | `MainActivity` |
+| Release build shrunk and obfuscated (R8); logging stripped; test-build crash screen off | `proguard-rules.pro`, `CrashReporter` |
+| The release build is also launch-tested on an emulator in CI (catches broken shrink rules) | `.github/workflows/ci.yml` |
+
+Decided not to do (for now):
+- **Certificate pinning.** Supabase rotates its certificates; a pinned app
+  would stop working without warning until updated. TLS with the system's
+  trusted certificates, HTTPS-only, is used instead.
+- **Root / Play Integrity checks.** They mainly protect paid content; our data
+  is protected by the server rules, encryption and the app lock. Can be added
+  if a hospital requires it.
+- **Penetration test.** Recommended before go-live with real patients by an
+  independent tester; the automated security tests are a starting point, not a replacement.

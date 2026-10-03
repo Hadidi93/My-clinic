@@ -5,7 +5,8 @@
 #      crashes it and shows the right message on the sign-in screen.
 # The full device log, screen text and a screenshot are saved for diagnosis.
 set -uo pipefail
-APK=$(ls app-apk/*.apk | head -1)
+APK=$(ls "${1:-app-apk}"/*.apk | head -1)
+echo "Testing $APK"
 adb install -r "$APK"
 adb logcat -c
 fail=0

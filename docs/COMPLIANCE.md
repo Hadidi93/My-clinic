@@ -72,10 +72,13 @@
 - [x] Photo metadata (GPS) stripped before upload
 
 **To do in later phases**
-- [ ] Push notifications with **no patient data** in the text (Phase 4)
-- [ ] No patient data in logs, crash reports or analytics (Phase 5 review + lint check)
-- [ ] Biometric/PIN lock and auto-lock (Phase 5)
-- [ ] Optional extra column encryption for national ID (Supabase Vault/pgsodium) (Phase 5)
-- [ ] Audit-log retention and export for inspections (Phase 5)
+- [x] Push notifications with **no patient data** in the text: only the kind of event is sent
+- [x] No patient data in logs, crash reports or analytics: no analytics/crash SDKs; release builds strip logging; the test-build crash screen is disabled in release
+- [x] Biometric/PIN lock at start and after 5 minutes without use; phones without a screen lock are asked to set one
+- [ ] Optional extra column encryption for national ID (Supabase Vault/pgsodium). Not done: data is already encrypted on disk and protected by row-level security, and column encryption would break search. Revisit with your lawyer
+- [x] Access log per patient (main doctor) and app-wide activity log (admin) in the app. Retention: the log is never deleted by the app; decide a retention period with your lawyer
+- [x] PDF export of a record: main doctor only, with a warning, written to the audit log before the file is made
+- [x] Tap-jacking protection, screenshot blocking (FLAG_SECURE), app data excluded from backups
 - [ ] Written policies: privacy notice (Arabic + English), consent form text,
-      incident-response plan, retention schedule, DPO contact (Phase 5, with your lawyer)
+      incident-response plan, retention schedule, DPO contact, with your lawyer.
+      A draft privacy policy is in docs/PRIVACY_POLICY.md
