@@ -146,3 +146,19 @@ class FakeFacilityRepository : com.myclinic.app.data.facilities.FacilityReposito
             facilities.value = facilities.value + r.getOrThrow()
         }
 }
+
+class FakeNotificationRepository : com.myclinic.app.data.notifications.NotificationRepository {
+    var registered = 0
+    var unregistered = 0
+    override val notifications = MutableStateFlow(emptyList<com.myclinic.domain.consult.AppNotification>())
+    override val unreadCount = MutableStateFlow(0)
+    override suspend fun refresh() = Result.success(Unit)
+    override suspend fun markRead(ids: Collection<String>) = Unit
+    override suspend fun markAllRead() = Unit
+    override suspend fun registerDevice() { registered++ }
+    override suspend fun unregisterDevice() { unregistered++ }
+    override fun clear() { notifications.value = emptyList() }
+    override val pushReceived = kotlinx.coroutines.flow.MutableSharedFlow<String>()
+    override val openRequest = MutableStateFlow<String?>(null)
+    override fun onOpenHandled() { openRequest.value = null }
+}

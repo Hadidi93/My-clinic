@@ -201,6 +201,16 @@ object Vocabulary {
         "sample_taken" to Localized("Sample taken", "تم أخذ العينة"),
         "result_uploaded" to Localized("Result ready", "النتيجة جاهزة"),
         "reviewed" to Localized("Reviewed", "تمت المراجعة"),
+        // consults and referrals
+        "emergency" to Localized("Emergency", "طارئ"),
+        "pending" to Localized("Waiting", "في الانتظار"),
+        "answered" to Localized("Answered", "تم الرد"),
+        "closed" to Localized("Closed", "مغلقة"),
+        "accepted" to Localized("Accepted", "مقبولة"),
+        "declined" to Localized("Declined", "مرفوضة"),
+        "ended" to Localized("Ended", "انتهت"),
+        "comanagement" to Localized("Co-management", "متابعة مشتركة"),
+        "transfer" to Localized("Transfer of care", "نقل الحالة"),
     )
 }
 

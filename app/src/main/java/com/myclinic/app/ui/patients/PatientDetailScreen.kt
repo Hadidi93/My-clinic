@@ -57,6 +57,7 @@ import com.myclinic.domain.forms.PreopChecklist
 import com.myclinic.domain.forms.Vocabulary
 import com.myclinic.domain.record.PatientRecord
 import com.myclinic.domain.record.RecordTable
+import com.myclinic.domain.model.RecordSection
 import com.myclinic.domain.record.InvestigationRules
 import com.myclinic.domain.record.LabValueFormatter
 import com.myclinic.domain.record.VitalsFormatter
@@ -72,6 +73,8 @@ fun PatientDetailScreen(
     onBack: () -> Unit,
     onEdit: (patientId: String, table: RecordTable, entryId: String?) -> Unit,
     onOpenInvestigation: (patientId: String, requestId: String) -> Unit,
+    onConsult: (patientId: String) -> Unit,
+    onRefer: (patientId: String) -> Unit,
     viewModel: PatientDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -108,6 +111,14 @@ fun PatientDetailScreen(
                                             onClick = { menuOpen = false; viewModel.setDeleted(false) },
                                         )
                                     } else {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.ask_colleague)) },
+                                            onClick = { menuOpen = false; onConsult(record.patient.id) },
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.refer_patient)) },
+                                            onClick = { menuOpen = false; onRefer(record.patient.id) },
+                                        )
                                         DropdownMenuItem(
                                             text = { Text(stringResource(R.string.delete_patient)) },
                                             onClick = { menuOpen = false; confirmDelete = true },
@@ -191,13 +202,20 @@ private fun PatientHeader(state: PatientDetailUiState) {
 /** One line in a section card. */
 private data class EntryLine(val id: String, val title: String, val detail: String?)
 
+/**
+ * The record, section by section. [visibleSections] limits it to what a
+ * consult shared (null = everything), so a section that wasn't shared is
+ * left out rather than shown as empty.
+ */
 @Composable
-private fun RecordTab(
+internal fun RecordTab(
     record: PatientRecord,
     editable: Boolean,
     onEdit: (RecordTable, String?) -> Unit,
     onOpenInvestigation: (String) -> Unit,
+    visibleSections: Set<RecordSection>? = null,
 ) {
+    fun visible(section: RecordSection) = visibleSections == null || section in visibleSections
     val lang = currentAppLanguage()
     fun opt(v: String?) = v?.let { Vocabulary.option(it).get(lang) }
     val current = stringResource(R.string.current)
@@ -255,15 +273,18 @@ private fun RecordTab(
         },
     )
     // Investigations go after the examination, before surgery.
-    val beforeInvestigations = sections.takeWhile { it.first != RecordTable.SURGICAL_CASES }
-    val afterInvestigations = sections.drop(beforeInvestigations.size)
+    val beforeAll = sections.takeWhile { it.first != RecordTable.SURGICAL_CASES }
+    val beforeInvestigations = beforeAll.filter { visible(it.first.section) }
+    val afterInvestigations = sections.drop(beforeAll.size).filter { visible(it.first.section) }
 
     LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { PersonalDataCard(record, editable, onEdit) }
+        if (visible(RecordSection.IDENTIFIERS)) item { PersonalDataCard(record, editable, onEdit) }
         items(beforeInvestigations, key = { it.first.tableName }) { (table, lines) ->
             RecordSectionCard(record, table, lines, editable, onEdit)
         }
-        item(key = "investigations") { InvestigationsCard(record, editable, onEdit, onOpenInvestigation) }
+        if (visible(RecordSection.INVESTIGATIONS)) {
+            item(key = "investigations") { InvestigationsCard(record, editable, onEdit, onOpenInvestigation) }
+        }
         items(afterInvestigations, key = { it.first.tableName }) { (table, lines) ->
             RecordSectionCard(record, table, lines, editable, onEdit)
         }

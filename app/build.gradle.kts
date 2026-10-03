@@ -19,6 +19,32 @@ val localProps = Properties().apply {
 fun secret(name: String, default: String): String =
     (localProps.getProperty(name) ?: System.getenv(name))?.trim()?.takeIf { it.isNotBlank() } ?: default
 
+// Push notifications (Firebase Cloud Messaging). The Firebase settings come
+// from google-services.json: the file app/google-services.json (git-ignored)
+// or, in CI, the GOOGLE_SERVICES_JSON secret holding the file's text. Only
+// four public identifiers are taken from it; without it, push is just off.
+data class FirebaseConfig(val projectId: String, val appId: String, val apiKey: String, val senderId: String)
+
+fun firebaseConfig(): FirebaseConfig {
+    val text = System.getenv("GOOGLE_SERVICES_JSON")?.takeIf { it.isNotBlank() }
+        ?: rootProject.file("app/google-services.json").takeIf { it.exists() }?.readText()
+        ?: return FirebaseConfig("", "", "", "")
+    @Suppress("UNCHECKED_CAST")
+    val json = groovy.json.JsonSlurper().parseText(text) as Map<String, Any?>
+    val info = json["project_info"] as Map<String, Any?>
+    val client = (json["client"] as List<Map<String, Any?>>).firstOrNull { c ->
+        ((c["client_info"] as Map<String, Any?>)["android_client_info"] as Map<String, Any?>)["package_name"] == "com.myclinic.app"
+    } ?: error("google-services.json has no Android app with package com.myclinic.app")
+    val apiKey = (client["api_key"] as List<Map<String, Any?>>).first()["current_key"] as String
+    return FirebaseConfig(
+        projectId = info["project_id"] as String,
+        appId = (client["client_info"] as Map<String, Any?>)["mobilesdk_app_id"] as String,
+        apiKey = apiKey,
+        senderId = info["project_number"] as String,
+    )
+}
+val firebase = firebaseConfig()
+
 // Accept the URL as copied from any Supabase settings page: drop a trailing
 // "/rest/v1" (or auth/storage/realtime) and slashes, which the library rejects.
 fun supabaseProjectUrl(raw: String): String =
@@ -41,6 +67,10 @@ android {
 
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseProjectUrl(secret("SUPABASE_URL", "https://example.supabase.co"))}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY", "missing-anon-key")}\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${firebase.projectId}\"")
+        buildConfigField("String", "FIREBASE_APP_ID", "\"${firebase.appId}\"")
+        buildConfigField("String", "FIREBASE_API_KEY", "\"${firebase.apiKey}\"")
+        buildConfigField("String", "FIREBASE_SENDER_ID", "\"${firebase.senderId}\"")
     }
 
     signingConfigs {
@@ -125,6 +155,10 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.sqlcipher)
     implementation(libs.androidx.sqlite)
+
+    // Push notifications (no patient data is ever sent through them)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 
     // Background sync
     implementation(libs.work.runtime)

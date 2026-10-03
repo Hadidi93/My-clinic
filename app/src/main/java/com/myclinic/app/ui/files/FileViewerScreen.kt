@@ -50,6 +50,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.myclinic.app.R
 import com.myclinic.app.data.DataError
+import com.myclinic.app.data.consults.ConsultRepository
 import com.myclinic.app.data.files.ClinicalFileStore
 import com.myclinic.app.data.files.PickedFile
 import com.myclinic.app.data.toDataError
@@ -88,6 +89,7 @@ class FileViewerViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     @ApplicationContext private val context: Context,
     private val files: ClinicalFileStore,
+    private val consults: ConsultRepository,
 ) : ViewModel() {
 
     val route: FileViewerRoute = savedStateHandle.toRoute()
@@ -102,7 +104,7 @@ class FileViewerViewModel @Inject constructor(
         _state.value = FileViewerUiState()
         viewModelScope.launch {
             try {
-                val bytes = files.load(route.path)
+                val bytes = if (route.consultFile) consults.loadConsultFile(route.path) else files.load(route.path)
                 val pages = withContext(Dispatchers.Default) {
                     if (route.mimeType == PickedFile.MIME_PDF) renderPdf(bytes) else listOf(decodeImage(bytes)) to false
                 }

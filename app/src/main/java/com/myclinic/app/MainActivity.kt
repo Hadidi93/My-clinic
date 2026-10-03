@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.myclinic.app.data.auth.AuthRepository
+import com.myclinic.app.data.push.PushManager
 import com.myclinic.app.ui.root.MyClinicRoot
 import com.myclinic.app.ui.theme.MyClinicTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,12 +21,16 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var authRepository: AuthRepository
+    @Inject lateinit var push: PushManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // Only on a fresh start: after rotation the same link was already handled.
-        if (savedInstanceState == null) authRepository.handleDeepLink(intent)
+        if (savedInstanceState == null) {
+            authRepository.handleDeepLink(intent)
+            push.onNotificationTapped(intent?.getStringExtra(PushManager.EXTRA_OPEN))
+        }
         setContent {
             MyClinicTheme {
                 MyClinicRoot()
@@ -38,5 +43,6 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         authRepository.handleDeepLink(intent)
+        push.onNotificationTapped(intent.getStringExtra(PushManager.EXTRA_OPEN))
     }
 }

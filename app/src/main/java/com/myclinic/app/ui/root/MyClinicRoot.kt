@@ -19,6 +19,7 @@ import com.myclinic.app.ui.profile.ProfileScreen
 fun MyClinicRoot(viewModel: RootViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val linkMessage by viewModel.linkMessage.collectAsStateWithLifecycle()
+    val openRequest by viewModel.openRequest.collectAsStateWithLifecycle()
     when (val s = state) {
         RootState.Loading -> FullScreenLoading()
         RootState.SignedOut -> AuthNavHost(linkMessage = linkMessage, onDismissLinkMessage = viewModel::clearLinkMessage)
@@ -30,9 +31,9 @@ fun MyClinicRoot(viewModel: RootViewModel = hiltViewModel()) {
         )
         is RootState.NeedsProfile -> ProfileScreen(setupMode = true, onBack = null, onSignOut = viewModel::signOut)
         is RootState.Ready -> if (s.doctor.isStaff) {
-            StaffNavHost(staff = s.doctor, onSignOut = viewModel::signOut)
+            StaffNavHost(staff = s.doctor, onSignOut = viewModel::signOut, openRequest, viewModel::onOpenHandled)
         } else {
-            MainNavHost(doctor = s.doctor, onSignOut = viewModel::signOut)
+            MainNavHost(doctor = s.doctor, onSignOut = viewModel::signOut, openRequest, viewModel::onOpenHandled)
         }
     }
 }

@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+: asked once; notifications never contain patient details. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Lets the app open the camera app (the camera app itself takes the photo; no camera permission needed). -->
     <queries>
@@ -69,6 +71,15 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+
+        <!-- Receives push notifications from Firebase (event kind only, no patient data). -->
+        <service
+            android:name=".data.push.PushService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <!-- Lets the camera app save one photo into our temporary folder (see xml/file_paths.xml). -->
         <provider

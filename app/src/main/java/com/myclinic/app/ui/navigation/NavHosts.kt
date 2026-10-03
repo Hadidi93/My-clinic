@@ -13,7 +13,14 @@ import com.myclinic.app.ui.auth.ForgotPasswordScreen
 import com.myclinic.app.ui.auth.LoginScreen
 import com.myclinic.app.ui.auth.SignUpScreen
 import com.myclinic.app.ui.home.HomeScreen
+import com.myclinic.app.ui.consults.ConsultDetailScreen
+import com.myclinic.app.ui.consults.ConsultsScreen
+import com.myclinic.app.ui.consults.NewConsultScreen
+import com.myclinic.app.ui.consults.NewReferralScreen
+import com.myclinic.app.ui.consults.NotificationsScreen
+import com.myclinic.app.ui.consults.ReferralsScreen
 import com.myclinic.app.ui.files.FileViewerScreen
+import com.myclinic.domain.consult.NotificationKind
 import com.myclinic.app.ui.patients.EntryFormScreen
 import com.myclinic.app.ui.patients.InvestigationScreen
 import com.myclinic.app.ui.staff.StaffHomeScreen
@@ -48,7 +55,21 @@ import kotlinx.serialization.Serializable
     val requestId: String? = null,
 )
 @Serializable data class InvestigationRoute(val patientId: String, val requestId: String)
-@Serializable data class FileViewerRoute(val path: String, val mimeType: String, val title: String? = null)
+/** [consultFile]: the file is in a consult conversation (consult-files), not the patient record. */
+@Serializable data class FileViewerRoute(
+    val path: String,
+    val mimeType: String,
+    val title: String? = null,
+    val consultFile: Boolean = false,
+)
+
+// Consults, referrals, notifications
+@Serializable object ConsultsRoute
+@Serializable data class ConsultRoute(val consultId: String)
+@Serializable data class NewConsultRoute(val patientId: String)
+@Serializable object ReferralsRoute
+@Serializable data class NewReferralRoute(val patientId: String)
+@Serializable object NotificationsRoute
 
 // Lab/radiology staff
 @Serializable object StaffHomeRoute
@@ -91,10 +112,22 @@ fun AuthNavHost(linkMessage: LinkMessage?, onDismissLinkMessage: () -> Unit) {
     }
 }
 
-/** Screens for signed-in doctors with a complete profile. */
+/**
+ * Screens for signed-in doctors with a complete profile. [openRequest] is the
+ * kind of a notification the user tapped to open the app.
+ */
 @Composable
-fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
+fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit, openRequest: String?, onOpenHandled: () -> Unit) {
     val nav = rememberNavController()
+    LaunchedEffect(openRequest) {
+        when {
+            openRequest == null -> return@LaunchedEffect
+            NotificationKind.isConsult(openRequest) -> nav.navigate(ConsultsRoute) { launchSingleTop = true }
+            NotificationKind.isReferral(openRequest) -> nav.navigate(ReferralsRoute) { launchSingleTop = true }
+            else -> nav.navigate(NotificationsRoute) { launchSingleTop = true }
+        }
+        onOpenHandled()
+    }
     NavHost(navController = nav, startDestination = HomeRoute) {
         composable<HomeRoute> {
             HomeScreen(
@@ -105,6 +138,47 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
                 onQuickAdd = { nav.navigate(PatientListRoute(quickAdd = true)) },
                 onOpenPatient = { id -> nav.navigate(PatientDetailRoute(id)) },
                 onOpenInvestigation = { patientId, requestId -> nav.navigate(InvestigationRoute(patientId, requestId)) },
+                onOpenConsults = { nav.navigate(ConsultsRoute) },
+                onOpenReferrals = { nav.navigate(ReferralsRoute) },
+                onOpenNotifications = { nav.navigate(NotificationsRoute) },
+            )
+        }
+        composable<ConsultsRoute> {
+            ConsultsScreen(onBack = { nav.popBackStack() }, onOpen = { nav.navigate(ConsultRoute(it)) })
+        }
+        composable<ConsultRoute> {
+            ConsultDetailScreen(
+                onBack = { nav.popBackStack() },
+                onOpenConsultFile = { path, mime -> nav.navigate(FileViewerRoute(path, mime, consultFile = true)) },
+                onOpenRecordFile = { nav.navigate(it.viewerRoute()) },
+            )
+        }
+        composable<NewConsultRoute> {
+            NewConsultScreen(
+                onClose = { nav.popBackStack() },
+                onCreated = { id -> nav.navigate(ConsultRoute(id)) { popUpTo<NewConsultRoute> { inclusive = true } } },
+            )
+        }
+        composable<ReferralsRoute> {
+            ReferralsScreen(onBack = { nav.popBackStack() }, onOpenPatient = { nav.navigate(PatientDetailRoute(it)) })
+        }
+        composable<NewReferralRoute> {
+            NewReferralScreen(
+                onClose = { nav.popBackStack() },
+                onSent = { nav.navigate(ReferralsRoute) { popUpTo<NewReferralRoute> { inclusive = true } } },
+            )
+        }
+        composable<NotificationsRoute> {
+            NotificationsScreen(
+                onBack = { nav.popBackStack() },
+                onOpen = { n ->
+                    val consultId = n.refId
+                    when {
+                        NotificationKind.isConsult(n.kind) && consultId != null -> nav.navigate(ConsultRoute(consultId))
+                        NotificationKind.isReferral(n.kind) -> nav.navigate(ReferralsRoute)
+                        else -> Unit
+                    }
+                },
             )
         }
         composable<PatientListRoute> { entry ->
@@ -121,6 +195,8 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
                 onBack = { nav.popBackStack() },
                 onEdit = { patientId, table, entryId -> nav.navigate(EntryFormRoute(patientId, table.tableName, entryId)) },
                 onOpenInvestigation = { patientId, requestId -> nav.navigate(InvestigationRoute(patientId, requestId)) },
+                onConsult = { nav.navigate(NewConsultRoute(it)) },
+                onRefer = { nav.navigate(NewReferralRoute(it)) },
             )
         }
         composable<EntryFormRoute> {
@@ -155,8 +231,15 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit) {
 
 /** Screens for lab/radiology staff: the department inbox, one request, and the profile. */
 @Composable
-fun StaffNavHost(staff: Doctor, onSignOut: () -> Unit) {
+fun StaffNavHost(staff: Doctor, onSignOut: () -> Unit, openRequest: String?, onOpenHandled: () -> Unit) {
     val nav = rememberNavController()
+    // A tapped "new request" notification: the inbox is the first screen anyway.
+    LaunchedEffect(openRequest) {
+        if (openRequest != null) {
+            nav.popBackStack(StaffHomeRoute, inclusive = false)
+            onOpenHandled()
+        }
+    }
     NavHost(navController = nav, startDestination = StaffHomeRoute) {
         composable<StaffHomeRoute> {
             StaffHomeScreen(

@@ -45,16 +45,19 @@ import com.myclinic.app.ui.components.SecondaryButton
 import com.myclinic.app.ui.patients.SyncBanner
 import com.myclinic.app.ui.patients.formatDate
 import com.myclinic.app.ui.patients.formatDateTime
+import com.myclinic.app.ui.components.RequestNotificationPermission
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.res.pluralStringResource
 import com.myclinic.app.ui.profile.VerificationStatusCard
 import com.myclinic.app.ui.theme.DashboardNumberStyle
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.record.DateFilter
 
-/**
- * Home dashboard: big cards reachable with one thumb. Consults are still a
- * placeholder (Phase 4).
- */
+/** Home dashboard: big cards reachable with one thumb. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -65,9 +68,17 @@ fun HomeScreen(
     onQuickAdd: () -> Unit,
     onOpenPatient: (String) -> Unit,
     onOpenInvestigation: (patientId: String, requestId: String) -> Unit,
+    onOpenConsults: () -> Unit,
+    onOpenReferrals: () -> Unit,
+    onOpenNotifications: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(Unit) {
+        viewModel.refreshNotifications()
+        onPauseOrDispose { }
+    }
+    RequestNotificationPermission()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -76,6 +87,11 @@ fun HomeScreen(
                     if (doctor.isAdmin) {
                         IconButton(onClick = onOpenAdmin) {
                             Icon(Icons.Filled.AdminPanelSettings, contentDescription = stringResource(R.string.admin_approvals))
+                        }
+                    }
+                    IconButton(onClick = onOpenNotifications) {
+                        BadgedBox(badge = { if (state.unreadNotifications > 0) Badge { Text(state.unreadNotifications.toString()) } }) {
+                            Icon(Icons.Filled.Notifications, contentDescription = stringResource(R.string.notifications_title))
                         }
                     }
                     IconButton(onClick = onOpenProfile) {
@@ -121,7 +137,16 @@ fun HomeScreen(
                     DashboardCard(Icons.AutoMirrored.Filled.EventNote, stringResource(R.string.home_upcoming_operations),
                         value = state.upcomingOperations.size.toString(), onClick = null)
                 }
-                item { DashboardCard(Icons.Filled.Forum, stringResource(R.string.home_pending_consults), phase = 4) }
+                item {
+                    DashboardCard(Icons.Filled.Forum, stringResource(R.string.home_consults),
+                        value = state.unreadConsults.toString(), subtitle = stringResource(R.string.home_new_messages),
+                        onClick = onOpenConsults)
+                }
+                item {
+                    DashboardCard(Icons.Filled.SwapHoriz, stringResource(R.string.referrals_title),
+                        value = state.unreadReferrals.toString(), subtitle = stringResource(R.string.home_new_messages),
+                        onClick = onOpenReferrals)
+                }
                 item {
                     DashboardCard(
                         Icons.Filled.Science, stringResource(R.string.home_results_to_review),

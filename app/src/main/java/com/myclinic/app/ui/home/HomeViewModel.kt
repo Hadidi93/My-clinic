@@ -2,7 +2,9 @@ package com.myclinic.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.myclinic.app.data.notifications.NotificationRepository
 import com.myclinic.app.data.records.PatientRepository
+import com.myclinic.domain.consult.NotificationKind
 import com.myclinic.domain.record.Dashboard
 import com.myclinic.domain.record.InvestigationCounts
 import com.myclinic.domain.record.InvestigationDashboard
@@ -28,11 +30,15 @@ data class HomeUiState(
     val pendingChanges: Int = 0,
     val failedChanges: Int = 0,
     val offline: Boolean = false,
+    val unreadNotifications: Int = 0,
+    val unreadConsults: Int = 0,
+    val unreadReferrals: Int = 0,
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: PatientRepository,
+    private val notifications: NotificationRepository,
 ) : ViewModel() {
 
     val state: StateFlow<HomeUiState> = combine(
@@ -40,7 +46,9 @@ class HomeViewModel @Inject constructor(
         repository.pendingChanges,
         repository.failedChanges,
         repository.syncStatus,
-    ) { records, pending, failed, sync ->
+        notifications.notifications,
+    ) { records, pending, failed, sync, alerts ->
+        val unread = alerts.filterNot { it.isRead }
         val today = LocalDate.now()
         val live = records.filterNot { it.patient.isDeleted }
         HomeUiState(
@@ -53,8 +61,16 @@ class HomeViewModel @Inject constructor(
             pendingChanges = pending,
             failedChanges = failed,
             offline = sync.offline,
+            unreadNotifications = unread.size,
+            unreadConsults = unread.count { NotificationKind.isConsult(it.kind) },
+            unreadReferrals = unread.count { NotificationKind.isReferral(it.kind) },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
+
+    /** Called when Home is shown: new notifications may have arrived. */
+    fun refreshNotifications() {
+        viewModelScope.launch { notifications.refresh() }
+    }
 
     fun discardFailedChanges() {
         viewModelScope.launch { repository.discardFailedChanges() }

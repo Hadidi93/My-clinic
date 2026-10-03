@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.auth.AuthState
 import com.myclinic.app.data.doctor.DoctorRepository
+import com.myclinic.app.data.notifications.NotificationRepository
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.domain.model.Doctor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +46,7 @@ class RootViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val doctorRepository: DoctorRepository,
     private val patientRepository: PatientRepository,
+    private val notificationRepository: NotificationRepository,
 ) : ViewModel() {
 
     private val profileLoadFailed = MutableStateFlow(false)
@@ -90,9 +92,14 @@ class RootViewModel @Inject constructor(
                     is AuthState.SignedIn -> {
                         loadProfile()
                         patientRepository.startSync()
+                        launch {
+                            notificationRepository.registerDevice()
+                            notificationRepository.refresh()
+                        }
                     }
                     AuthState.SignedOut -> {
                         doctorRepository.clear()
+                        notificationRepository.clear()
                         // No patient data stays on the phone after sign-out
                         // (also covers a session that expired on its own).
                         patientRepository.clearLocalData()
@@ -114,7 +121,15 @@ class RootViewModel @Inject constructor(
     val linkMessage = authRepository.linkMessage
     fun clearLinkMessage() = authRepository.clearLinkMessage()
 
+    /** A tapped notification's kind, so the right screen opens. */
+    val openRequest = notificationRepository.openRequest
+    fun onOpenHandled() = notificationRepository.onOpenHandled()
+
     fun signOut() {
-        viewModelScope.launch { authRepository.signOut() }
+        viewModelScope.launch {
+            // While still signed in: stop pushes to this phone for this account.
+            notificationRepository.unregisterDevice()
+            authRepository.signOut()
+        }
     }
 }

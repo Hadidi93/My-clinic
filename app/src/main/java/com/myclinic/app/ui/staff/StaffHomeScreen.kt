@@ -37,7 +37,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.myclinic.app.R
 import com.myclinic.app.data.DataError
+import com.myclinic.app.data.notifications.NotificationRepository
 import com.myclinic.app.data.staff.StaffRepository
+import com.myclinic.app.ui.components.RequestNotificationPermission
 import com.myclinic.app.data.toDataError
 import com.myclinic.app.ui.components.ErrorMessage
 import com.myclinic.app.ui.components.SecureScreen
@@ -66,15 +68,24 @@ data class StaffHomeUiState(
 @HiltViewModel
 class StaffHomeViewModel @Inject constructor(
     private val repository: StaffRepository,
+    private val notifications: NotificationRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(StaffHomeUiState())
     val state: StateFlow<StaffHomeUiState> = _state.asStateFlow()
+
+    init {
+        // A new request pushed while the inbox is open: reload it.
+        viewModelScope.launch { notifications.pushReceived.collect { refresh() } }
+    }
 
     fun refresh() {
         _state.update { it.copy(loading = true, error = null) }
         viewModelScope.launch {
             repository.worklist()
-                .onSuccess { list -> _state.update { it.copy(loading = false, loaded = true, items = list) } }
+                .onSuccess { list ->
+                    _state.update { it.copy(loading = false, loaded = true, items = list) }
+                    notifications.markAllRead() // the inbox shows every new request
+                }
                 .onFailure { e -> _state.update { it.copy(loading = false, error = e.toDataError()) } }
         }
     }
@@ -93,6 +104,7 @@ fun StaffHomeScreen(
     viewModel: StaffHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    RequestNotificationPermission()
     // Reload whenever the screen comes back (e.g. after submitting a result).
     LifecycleResumeEffect(staff.isVerified) {
         if (staff.isVerified) viewModel.refresh()

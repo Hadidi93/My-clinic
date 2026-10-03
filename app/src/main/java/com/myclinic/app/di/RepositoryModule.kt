@@ -3,7 +3,11 @@ package com.myclinic.app.di
 import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.auth.SupabaseAuthRepository
 import com.myclinic.app.data.doctor.DoctorRepository
+import com.myclinic.app.data.consults.ConsultRepository
+import com.myclinic.app.data.consults.SupabaseConsultRepository
 import com.myclinic.app.data.doctor.SupabaseDoctorRepository
+import com.myclinic.app.data.notifications.NotificationRepository
+import com.myclinic.app.data.notifications.SupabaseNotificationRepository
 import com.myclinic.app.data.facilities.FacilityRepository
 import com.myclinic.app.data.facilities.SupabaseFacilityRepository
 import com.myclinic.app.data.staff.StaffRepository
@@ -32,4 +36,10 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindStaffRepository(impl: SupabaseStaffRepository): StaffRepository
+
+    @Binds @Singleton
+    abstract fun bindConsultRepository(impl: SupabaseConsultRepository): ConsultRepository
+
+    @Binds @Singleton
+    abstract fun bindNotificationRepository(impl: SupabaseNotificationRepository): NotificationRepository
 }
