@@ -160,7 +160,8 @@ private fun PendingDoctorCard(
                     style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary,
                 )
             }
-            listOfNotNull(doctor.specialty, doctor.hospital).takeIf { it.isNotEmpty() }?.let {
+            listOfNotNull(doctor.grade?.let { com.myclinic.domain.forms.Vocabulary.option(it).get(com.myclinic.app.ui.components.currentAppLanguage()) },
+                doctor.specialty, doctor.hospital).takeIf { it.isNotEmpty() }?.let {
                 Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium)
             }
             Text(

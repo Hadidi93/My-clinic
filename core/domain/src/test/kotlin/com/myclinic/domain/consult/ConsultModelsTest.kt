@@ -80,6 +80,19 @@ class ConsultModelsTest {
     }
 
     @Test
+    fun `doctor cards carry the grade, and every grade and specialty has both languages`() {
+        val card = RecordJson.decodeFromString(
+            DoctorCard.serializer(),
+            """{"id":"d1","full_name":"Dr Demo","specialty":"Cardiology","hospital":null,"photo_path":null,"grade":"consultant"}""",
+        )
+        assertEquals("consultant", card.grade)
+        com.myclinic.domain.model.DoctorGrade.ALL.forEach {
+            assertTrue(it, com.myclinic.domain.forms.Vocabulary.OPTIONS.containsKey(it))
+        }
+        com.myclinic.domain.model.Specialties.ALL.forEach { assertTrue(it.en.isNotBlank() && it.ar.isNotBlank()) }
+    }
+
+    @Test
     fun `notifications carry only a kind and an id`() {
         val n = RecordJson.decodeFromString(
             AppNotification.serializer(),

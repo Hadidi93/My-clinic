@@ -13,7 +13,13 @@ interface DoctorRepository {
 
     suspend fun refreshMyProfile(): Result<Doctor>
     /** [facilityId] is the department for staff accounts (null for doctors). */
-    suspend fun updateMyProfile(input: ProfileInput, language: String, accountType: AccountType, facilityId: String?): Result<Doctor>
+    suspend fun updateMyProfile(
+        input: ProfileInput,
+        language: String,
+        accountType: AccountType,
+        facilityId: String?,
+        grade: String?,
+    ): Result<Doctor>
     suspend fun uploadMyPhoto(jpegBytes: ByteArray): Result<Doctor>
     suspend fun uploadMyLicenseDocument(jpegBytes: ByteArray): Result<Doctor>
 

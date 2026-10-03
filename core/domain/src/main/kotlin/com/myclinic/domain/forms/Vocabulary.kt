@@ -211,6 +211,10 @@ object Vocabulary {
         "ended" to Localized("Ended", "انتهت"),
         "comanagement" to Localized("Co-management", "متابعة مشتركة"),
         "transfer" to Localized("Transfer of care", "نقل الحالة"),
+        // doctor grades
+        "resident" to Localized("Resident", "طبيب مقيم"),
+        "specialist" to Localized("Specialist", "أخصائي"),
+        "consultant" to Localized("Consultant", "استشاري"),
     )
 }
 

@@ -12,7 +12,10 @@ data class DoctorCard(
     val specialty: String? = null,
     val hospital: String? = null,
     val photoPath: String? = null,
+    /** "resident", "specialist" or "consultant" (may be missing for older profiles). */
+    val grade: String? = null,
 ) {
+    /** Hospital and specialty, for places that show one line. */
     val subtitle: String get() = listOfNotNull(specialty, hospital).filter { it.isNotBlank() }.joinToString(" · ")
 }
 

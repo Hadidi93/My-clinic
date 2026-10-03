@@ -53,6 +53,8 @@ data class ProfileUiState(
     val facilities: List<Facility> = emptyList(),
     /** What the account was when the screen opened, to warn that changing it needs re-approval. */
     val savedAccountType: AccountType = AccountType.DOCTOR,
+    /** resident / specialist / consultant (doctors only). */
+    val grade: String? = null,
 ) {
     val input get() = ProfileInput(fullName, specialty, hospital, licenseNumber, phone)
     val invalidFields: Set<ProfileField> get() = ProfileValidator.validate(input)
@@ -93,6 +95,7 @@ class ProfileViewModel @Inject constructor(
                 accountType = doctor.accountType,
                 savedAccountType = doctor.accountType,
                 facilityId = doctor.facilityId,
+                grade = doctor.grade,
             )
         }
         doctor.photoPath?.let { path ->
@@ -119,6 +122,7 @@ class ProfileViewModel @Inject constructor(
     fun onLanguageChange(v: String) = _state.update { it.copy(language = v) }
     fun onAccountTypeChange(v: AccountType) = _state.update { it.copy(accountType = v, error = null) }
     fun onFacilityChange(id: String?) = _state.update { it.copy(facilityId = id, error = null) }
+    fun onGradeChange(v: String?) = _state.update { it.copy(grade = v, error = null) }
 
     fun addFacility(name: String, kind: String, hospital: String) {
         viewModelScope.launch {
@@ -136,7 +140,7 @@ class ProfileViewModel @Inject constructor(
         }
         _state.update { it.copy(saving = true, error = null) }
         viewModelScope.launch {
-            doctorRepository.updateMyProfile(s.input, s.language, s.accountType, s.facilityId)
+            doctorRepository.updateMyProfile(s.input, s.language, s.accountType, s.facilityId, s.grade)
                 .onSuccess { doctor ->
                     refreshStatus(doctor)
                     _state.update { it.copy(savedAccountType = doctor.accountType) }

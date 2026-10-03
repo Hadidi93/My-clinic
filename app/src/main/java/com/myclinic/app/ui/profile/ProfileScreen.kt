@@ -192,6 +192,10 @@ fun ProfileScreen(
                     capitalization = KeyboardCapitalization.Words,
                     error = if (err(ProfileField.SPECIALTY)) ProfileField.SPECIALTY.errorMessage() else null,
                 )
+                if (!state.isStaff) {
+                    SpecialtySuggestions(state.specialty, viewModel::onSpecialtyChange)
+                    GradeDropdown(state.grade, viewModel::onGradeChange)
+                }
                 AppTextField(
                     value = state.hospital, onValueChange = viewModel::onHospitalChange,
                     label = stringResource(R.string.hospital),

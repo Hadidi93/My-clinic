@@ -30,6 +30,11 @@ import com.myclinic.app.ui.components.TouchTarget
 import com.myclinic.app.ui.patients.optionLabel
 import com.myclinic.domain.consult.DoctorCard
 import com.myclinic.domain.model.RecordSection
+import com.myclinic.domain.model.Specialties
+import com.myclinic.app.ui.components.currentAppLanguage
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilterChip
 
 /**
  * Find a colleague by name, specialty or hospital. Only verified doctors are
@@ -51,6 +56,20 @@ fun DoctorPicker(
             DoctorRow(selected, selected = true, onClick = null)
         }
         AppTextField(query, onQuery, stringResource(R.string.search_doctors_hint), error = error)
+        // One tap searches a specialty.
+        if (selected == null || query.isNotEmpty()) {
+            val lang = currentAppLanguage()
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(Specialties.ALL) { s ->
+                    FilterChip(
+                        selected = query.trim().equals(s.en, ignoreCase = true),
+                        onClick = { onQuery(s.en) },
+                        label = { Text(s.get(lang)) },
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    )
+                }
+            }
+        }
         if (searching) LinearProgressIndicator(Modifier.fillMaxWidth())
         if (!searching && query.isNotBlank() && results.isEmpty()) {
             Text(stringResource(R.string.no_doctors_found), style = MaterialTheme.typography.bodyMedium,
@@ -78,12 +97,29 @@ fun DoctorRow(doctor: DoctorCard, selected: Boolean, onClick: (() -> Unit)?) {
                 tint = MaterialTheme.colorScheme.primary)
             Column(Modifier.weight(1f)) {
                 Text(doctor.fullName, style = MaterialTheme.typography.titleSmall)
-                doctor.subtitle.takeIf { it.isNotEmpty() }?.let {
+                doctorRoleLine(doctor).takeIf { it.isNotEmpty() }?.let {
+                    Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                }
+                doctor.hospital?.takeIf { it.isNotBlank() }?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
     }
+}
+
+/** "Consultant · Cardiology" (grade and specialty, whichever are filled in). */
+@Composable
+fun doctorRoleLine(doctor: DoctorCard): String = listOfNotNull(
+    optionLabel(doctor.grade),
+    doctor.specialty?.takeIf { it.isNotBlank() }?.let { specialtyLabel(it) },
+).joinToString(" · ")
+
+/** A specialty in the app's language when it is one of the common ones, else as typed. */
+@Composable
+fun specialtyLabel(specialty: String): String {
+    val lang = currentAppLanguage()
+    return Specialties.ALL.firstOrNull { it.en.equals(specialty.trim(), ignoreCase = true) }?.get(lang) ?: specialty
 }
 
 /** "Patient consent obtained" checkbox: required before any sharing. */

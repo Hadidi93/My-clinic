@@ -166,6 +166,9 @@ private fun ConsultCard(c: ConsultSummary, onClick: () -> Unit) {
                     fontWeight = if (c.unread > 0) FontWeight.Bold else FontWeight.Normal)
                 if (c.unread > 0) Badge { Text(c.unread.toString()) }
             }
+            doctorRoleLine(c.otherDoctor).takeIf { it.isNotEmpty() }?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Text(patientLabel(c.patientName, c.patientAge, c.patientSex), style = MaterialTheme.typography.bodyMedium)
             Text(c.question, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)

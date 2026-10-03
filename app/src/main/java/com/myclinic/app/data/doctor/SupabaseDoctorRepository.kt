@@ -46,6 +46,7 @@ class SupabaseDoctorRepository @Inject constructor(
         language: String,
         accountType: AccountType,
         facilityId: String?,
+        grade: String?,
     ): Result<Doctor> {
         val update = DoctorProfileUpdate(
             fullName = input.fullName.trim(),
@@ -56,6 +57,7 @@ class SupabaseDoctorRepository @Inject constructor(
             preferredLanguage = language,
             accountType = accountType.dbValue,
             facilityId = facilityId.takeIf { accountType == AccountType.STAFF },
+            grade = grade.takeIf { accountType == AccountType.DOCTOR },
         )
         return call { supabase.from(TABLE).update(update) { filter { eq("id", currentUserId()) } } }
             .mapCatching { refreshMyProfile().getOrThrow() }

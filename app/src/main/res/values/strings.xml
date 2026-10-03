@@ -334,7 +334,7 @@
     <string name="refer_patient">Refer patient</string>
     <string name="choose_colleague">Colleague</string>
     <string name="choose_colleague_error">Choose a colleague.</string>
-    <string name="search_doctors_hint">Search by name, specialty or hospital</string>
+    <string name="search_doctors_hint">Search by name, specialty, grade or hospital</string>
     <string name="no_doctors_found">No verified doctor found.</string>
     <string name="consent_required">Patient consent is required before sharing.</string>
     <string name="anonymous_patient">Anonymous patient</string>
@@ -416,4 +416,6 @@
         <item quantity="other">%1$d days</item>
     </plurals>
     <string name="referral_end_self_confirm">You will stop co-managing this patient and lose access to the record straight away. It is removed from this phone.</string>
+    <string name="grade">Grade</string>
+    <string name="grade_choose">Resident, specialist or consultant</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.myclinic.domain.model
 
+import com.myclinic.domain.forms.Localized
 import com.myclinic.domain.validation.ProfileInput
 import com.myclinic.domain.validation.ProfileValidator
 
@@ -30,6 +31,48 @@ enum class AppRole(val dbValue: String) {
     companion object {
         fun fromDb(value: String?): AppRole = entries.firstOrNull { it.dbValue == value } ?: DOCTOR
     }
+}
+
+/** A doctor's grade, shown to colleagues. Mirrors the check on doctors.grade. */
+object DoctorGrade {
+    val ALL = listOf("resident", "specialist", "consultant")
+}
+
+/** Common specialties, offered as quick picks so everyone spells them the same way (helps search). */
+object Specialties {
+    val ALL: List<Localized> = listOf(
+        Localized("General Surgery", "الجراحة العامة"),
+        Localized("Internal Medicine", "الباطنة"),
+        Localized("Cardiology", "أمراض القلب"),
+        Localized("Cardiothoracic Surgery", "جراحة القلب والصدر"),
+        Localized("Orthopaedics", "العظام"),
+        Localized("Neurosurgery", "جراحة المخ والأعصاب"),
+        Localized("Neurology", "المخ والأعصاب"),
+        Localized("Urology", "المسالك البولية"),
+        Localized("Vascular Surgery", "جراحة الأوعية الدموية"),
+        Localized("Plastic Surgery", "جراحة التجميل"),
+        Localized("Paediatrics", "الأطفال"),
+        Localized("Paediatric Surgery", "جراحة الأطفال"),
+        Localized("Obstetrics & Gynaecology", "النساء والتوليد"),
+        Localized("Anaesthesia", "التخدير"),
+        Localized("Intensive Care", "الرعاية المركزة"),
+        Localized("Emergency Medicine", "الطوارئ"),
+        Localized("Gastroenterology", "الجهاز الهضمي"),
+        Localized("Hepatology", "الكبد"),
+        Localized("Nephrology", "الكلى"),
+        Localized("Endocrinology", "الغدد الصماء"),
+        Localized("Chest Diseases", "الأمراض الصدرية"),
+        Localized("Oncology", "الأورام"),
+        Localized("Haematology", "أمراض الدم"),
+        Localized("Radiology", "الأشعة"),
+        Localized("Clinical Pathology", "الباثولوجيا الإكلينيكية"),
+        Localized("Dermatology", "الجلدية"),
+        Localized("Ophthalmology", "الرمد"),
+        Localized("ENT", "الأنف والأذن والحنجرة"),
+        Localized("Psychiatry", "الطب النفسي"),
+        Localized("Rheumatology", "الروماتيزم"),
+        Localized("Family Medicine", "طب الأسرة"),
+    )
 }
 
 /** Doctors manage patients; staff work in a lab/radiology department's inbox. Mirrors doctors.account_type. */
@@ -63,6 +106,8 @@ data class Doctor(
     val verificationNote: String?,
     val accountType: AccountType = AccountType.DOCTOR,
     val facilityId: String? = null,
+    /** Doctors only: resident, specialist or consultant (see [DoctorGrade]). */
+    val grade: String? = null,
 ) {
     val isStaff: Boolean get() = accountType == AccountType.STAFF
 

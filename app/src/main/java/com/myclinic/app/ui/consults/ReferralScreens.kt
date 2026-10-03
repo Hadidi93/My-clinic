@@ -378,6 +378,10 @@ private fun ReferralCard(
                 stringResource(if (r.received) R.string.referral_from else R.string.referral_to, r.otherDoctor.fullName),
                 style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
             )
+            listOf(doctorRoleLine(r.otherDoctor), r.otherDoctor.hospital.orEmpty()).filter { it.isNotBlank() }
+                .joinToString(" · ").takeIf { it.isNotEmpty() }?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             Text(patientLabel(r.patientName, r.patientAge, r.patientSex), style = MaterialTheme.typography.titleMedium)
             r.primaryDiagnosis?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             Text(listOfNotNull(optionLabel(r.kind), optionLabel(r.status), formatDateTime(r.createdAt)).joinToString(" · "),

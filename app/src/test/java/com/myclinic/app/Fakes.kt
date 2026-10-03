@@ -55,11 +55,12 @@ class FakeDoctorRepository(var stored: Doctor? = null) : DoctorRepository {
         language: String,
         accountType: com.myclinic.domain.model.AccountType,
         facilityId: String?,
+        grade: String?,
     ): Result<Doctor> {
         stored = stored!!.copy(
             fullName = input.fullName, specialty = input.specialty, hospital = input.hospital,
             licenseNumber = input.licenseNumber, phone = input.phone, preferredLanguage = language,
-            accountType = accountType, facilityId = facilityId,
+            accountType = accountType, facilityId = facilityId, grade = grade,
         )
         return refreshMyProfile()
     }

@@ -28,8 +28,8 @@ Doing this the first time takes about 30–45 minutes. You need:
 3. Do the same for the other migration files, **in filename order**:
    `…0200_patient_records.sql`, `…0300_consultations.sql`,
    `…0400_storage_profile_files.sql`, `…0500_referrals_and_sync.sql`,
-   `…0600_investigations_and_files.sql`, `…0700_notifications_and_consult_files.sql`.
-   (Already set up Phase 3? Just run the new `…0700` file. Supabase may warn
+   `…0600_investigations_and_files.sql`, `…0700_notifications_and_consult_files.sql`, `…0800_doctor_grade_and_search.sql`.
+   (Already set up Phase 4? Just run the new `…0800` file. Supabase may warn
    that a file "includes destructive operations": that is expected, because
    it replaces a few security rules with stricter versions. No data is deleted.)
 

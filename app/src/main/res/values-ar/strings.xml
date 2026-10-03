@@ -358,7 +358,7 @@
     <string name="refer_patient">إحالة المريض</string>
     <string name="choose_colleague">الزميل</string>
     <string name="choose_colleague_error">اختر زميلًا.</string>
-    <string name="search_doctors_hint">ابحث بالاسم أو التخصص أو المستشفى</string>
+    <string name="search_doctors_hint">ابحث بالاسم أو التخصص أو الدرجة أو المستشفى</string>
     <string name="no_doctors_found">لم يُعثر على طبيب موثَّق.</string>
     <string name="consent_required">موافقة المريض مطلوبة قبل المشاركة.</string>
     <string name="anonymous_patient">مريض مجهول الهوية</string>
@@ -444,4 +444,6 @@
         <item quantity="other">%1$d يوم</item>
     </plurals>
     <string name="referral_end_self_confirm">ستتوقف عن المتابعة المشتركة لهذا المريض وتفقد الوصول إلى ملفه فورًا، وسيُحذف من هذا الهاتف.</string>
+    <string name="grade">الدرجة الوظيفية</string>
+    <string name="grade_choose">مقيم أو أخصائي أو استشاري</string>
 </resources>

@@ -13,6 +13,7 @@ schema can run on Supabase Cloud or a self-hosted server later.
 | `…0500_referrals_and_sync.sql` | 2 | Referrals (co-management / transfer), ownership history, soft delete of entries, offline-sync functions |
 | `…0600_investigations_and_files.sql` | 3 | Departments (`facilities`), lab/radiology staff accounts, investigation requests and results, attachments, the `clinical-files` bucket, the staff inbox functions |
 | `…0700_notifications_and_consult_files.sql` | 4 | Notifications, push device registration, the `consult-files` bucket, `my_consults` / `my_referrals` lists |
+| `…0800_doctor_grade_and_search.sql` | 4 | Doctor grade (resident / specialist / consultant); directory search matches every word against name, specialty, hospital or grade |
 
 Migration 3 (consults) was written early so the whole security model could be
 designed and tested as one piece. Its screens come in Phase 4.
@@ -68,6 +69,7 @@ erDiagram
         text preferred_language "en or ar"
         enum role "doctor or admin"
         enum verification_status "pending, verified, rejected, suspended"
+        text grade "resident, specialist or consultant"
         text account_type "doctor or staff"
         uuid facility_id FK "staff only"
     }
@@ -313,8 +315,8 @@ them.**
 - `supabase/tests/10_security_tests.sql` (77 checks),
   `20_referral_and_sync_tests.sql` (43 checks) and
   `30_investigations_tests.sql` (61 checks) and
-  `40_notifications_and_consult_files_tests.sql` (31 checks) run against the
-  real migrations. Anonymous users, the owner, a stranger, a consultant, a
+  `40_notifications_and_consult_files_tests.sql` (31 checks) and
+  `50_doctor_grade_tests.sql` (8 checks) run against the real migrations. Anonymous users, the owner, a stranger, a consultant, a
   co-manager, a pending doctor and an admin each try allowed and forbidden
   actions. Run them with `supabase/tests/run_local.sh`; CI runs them on
   every push.
