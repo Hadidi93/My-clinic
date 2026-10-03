@@ -70,6 +70,17 @@
   owner's read-only history after a transfer, and the whole lab/radiology
   staff side (their inbox is never stored on the phone).
 
+## Notifications, in plain words
+
+```
+ something happens ──▶ database trigger writes a notification row (kind + id only)
+                         │
+                         ├──▶ the app's bell list reads it (when open)
+                         └──▶ Database Webhook ──▶ Edge Function send-push ──▶ Firebase ──▶ phone
+                                                    (data only: {"kind": ...})
+ phone ──▶ shows a translated generic text ("New consult request") ──▶ tap ──▶ app loads details after sign-in
+```
+
 ## Decision: Supabase vs Firebase
 
 | | Supabase (chosen) | Firebase |

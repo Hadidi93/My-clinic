@@ -12,6 +12,7 @@ schema can run on Supabase Cloud or a self-hosted server later.
 | `…0400_storage_profile_files.sql` | 1 | Private buckets for profile photos and licence documents |
 | `…0500_referrals_and_sync.sql` | 2 | Referrals (co-management / transfer), ownership history, soft delete of entries, offline-sync functions |
 | `…0600_investigations_and_files.sql` | 3 | Departments (`facilities`), lab/radiology staff accounts, investigation requests and results, attachments, the `clinical-files` bucket, the staff inbox functions |
+| `…0700_notifications_and_consult_files.sql` | 4 | Notifications, push device registration, the `consult-files` bucket, `my_consults` / `my_referrals` lists |
 
 Migration 3 (consults) was written early so the whole security model could be
 designed and tested as one piece. Its screens come in Phase 4.
@@ -52,6 +53,8 @@ erDiagram
     PATIENTS ||--o{ PATIENT_OWNERSHIP_HISTORY : "owned by, over time"
     CONSULTS ||--|{ CONSULT_SECTIONS : "ticked sections"
     CONSULTS ||--o{ CONSULT_MESSAGES : thread
+    DOCTORS ||--o{ NOTIFICATIONS : receives
+    DOCTORS ||--o{ DEVICE_TOKENS : "phones (push)"
 
     DOCTORS {
         uuid id PK "same as auth.users.id"
@@ -192,6 +195,17 @@ erDiagram
         timestamptz owned_from
         timestamptz owned_until "set on transfer"
     }
+    NOTIFICATIONS {
+        uuid id PK
+        uuid recipient_id FK
+        text kind "consult_request, consult_message, referral_request, referral_response, lab_request"
+        uuid ref_id "the consult, referral or request; no patient data"
+        timestamptz read_at
+    }
+    DEVICE_TOKENS {
+        text token PK "push address; not readable through the API"
+        uuid user_id FK
+    }
     AUDIT_LOG {
         bigint id PK
         timestamptz occurred_at
@@ -278,7 +292,13 @@ Consult screen.
     `<section>/<patient id>/<random name>`, readable only by those who may
     read that section (and staff while a request is open). Files can't be
     changed or deleted, only their attachment marked "entered in error".
-11. **Offline copies.**
+11. **Notifications** hold only what happened and an id, never patient data.
+    Only database triggers create them, so nobody can send fake alerts. A
+    push says only e.g. "New consult request"; the app loads the details after
+    sign-in. Push addresses can't be read through the API, and a phone moves to
+    whoever signed in on it last. Consult files (`consult-files` bucket) are
+    visible only to the two doctors of that consult.
+12. **Offline copies.**
    - `sync_pull()` returns only patients the doctor may edit (owned or
      co-managed); consult readers never get an offline copy.
    - `my_patient_ids()` tells the phone which patients to delete from its
@@ -292,8 +312,9 @@ them.**
 
 - `supabase/tests/10_security_tests.sql` (77 checks),
   `20_referral_and_sync_tests.sql` (43 checks) and
-  `30_investigations_tests.sql` (61 checks) run against the real
-  migrations. Anonymous users, the owner, a stranger, a consultant, a
+  `30_investigations_tests.sql` (61 checks) and
+  `40_notifications_and_consult_files_tests.sql` (31 checks) run against the
+  real migrations. Anonymous users, the owner, a stranger, a consultant, a
   co-manager, a pending doctor and an admin each try allowed and forbidden
   actions. Run them with `supabase/tests/run_local.sh`; CI runs them on
   every push.

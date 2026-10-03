@@ -28,10 +28,10 @@ Doing this the first time takes about 30–45 minutes. You need:
 3. Do the same for the other migration files, **in filename order**:
    `…0200_patient_records.sql`, `…0300_consultations.sql`,
    `…0400_storage_profile_files.sql`, `…0500_referrals_and_sync.sql`,
-   `…0600_investigations_and_files.sql`.
-   (Already set up Phase 2? Just run the new `…0600` file. Supabase may warn
-   that it "includes destructive operations": that is expected, because it
-   replaces a few security rules with stricter versions. No data is deleted.)
+   `…0600_investigations_and_files.sql`, `…0700_notifications_and_consult_files.sql`.
+   (Already set up Phase 3? Just run the new `…0700` file. Supabase may warn
+   that a file "includes destructive operations": that is expected, because
+   it replaces a few security rules with stricter versions. No data is deleted.)
 
 Each should end with "Success. No rows returned".
 
@@ -41,7 +41,7 @@ Each should end with "Success. No rows returned".
 > It only reads, so it is always safe. Then run only the files marked ❌,
 > in order.
 > After all files are installed, run `supabase/dev/check_rules.sql` to
-> confirm every table is protected: all 22 rows should say ✅.
+> confirm every table is protected: all 24 rows should say ✅.
 > If a run stopped halfway and a file keeps failing, the development
 > database can be wiped with `supabase/dev/reset_dev_database.sql` (fake
 > data only, **never** on real patients), then all files run again from
@@ -186,6 +186,26 @@ You need two accounts: your doctor account, and a second one (for example
 | 11 | Try a screenshot on the inbox, a request, or a file | Blocked |
 | 12 | Lab account: look for patients or the doctor directory | Not available: staff only see their inbox |
 
+## 7d. Test checklist for Phase 4 (consults, referrals, notifications)
+
+You need two **doctor** accounts, both approved (for example your own and
+`you+demo2@gmail.com`). Use **fake demo patients only**. Do section 9 first
+if you want real phone notifications; everything else works without it.
+
+| # | Try this | Expected |
+|---|---|---|
+| 1 | Doctor A: open a demo patient → ⋮ → **Ask a colleague**. Search Doctor B, write a question, keep "Hide the patient's identity" on, tick Allergies + Investigations, 7 days, tick consent, **Send consult** | The conversation opens |
+| 2 | Doctor B: Home | Bell shows 1; the Consults card shows 1 new; with section 9 done, a phone notification "New consult request" (no patient details) |
+| 3 | Doctor B: Consults → Asked of me → open it → **Shared record** | Shows "Anonymous patient · age · sex", the allergy banner, the results with values and files. Nothing else from the record |
+| 4 | Doctor B: reply with a message and a photo | Doctor A sees it (and gets a notification); the photo opens full screen |
+| 5 | Doctor A: ⋮ → **Withdraw access** | Doctor B: the Shared record tab disappears; the conversation stays readable but closed |
+| 6 | Doctor A: open the patient → ⋮ → **Refer patient** → Doctor B, **Co-management**, consent, **Send referral** | Listed under Referrals as Waiting |
+| 7 | Doctor B: Referrals → **Accept** | The patient appears in Doctor B's patient list; B can add entries |
+| 8 | Doctor B: **End co-management** | The patient disappears from B's list after the next sync |
+| 9 | Lab account (from Phase 3): with section 9 done, Doctor A sends a request to the lab | The lab phone gets "New request in your department"; tapping it opens the inbox |
+| 10 | Try a screenshot of a consult or the shared record | Blocked |
+| 11 | Profile → Sign out on Doctor B, then send B a new consult | No notification arrives on that phone |
+
 ## 8. Run the automated tests
 
 - **Rules and ViewModel tests:** in Android Studio open the Gradle panel →
@@ -198,3 +218,63 @@ You need two accounts: your doctor account, and a second one (for example
   that APK talk to your Supabase project, add repository secrets
   `SUPABASE_URL` and `SUPABASE_ANON_KEY` (GitHub → Settings → Secrets and
   variables → Actions).
+
+## 9. Phone notifications (Firebase), about 15 minutes
+
+The app works without this; you just won't get alerts when it is closed.
+Notifications only ever say things like "New consult request", never a
+patient's name or any clinical detail.
+
+**A. Create the Firebase project**
+
+1. Go to <https://console.firebase.google.com> and sign in with a Google account.
+2. **Create a project** → name `my-clinic` → turn **off** Google Analytics → **Create**.
+3. On the project page, click the **Android** icon ("Add app"):
+   - Android package name: `com.myclinic.app`
+   - App nickname: `My Clinic`
+   - Click **Register app**, then **Download google-services.json**.
+     Skip the remaining steps of that wizard (click Next / Continue to console).
+
+**B. Give the file to GitHub** (so the test app it builds has notifications)
+
+1. Open `google-services.json` with Notepad, select everything, copy.
+2. GitHub → your repository → **Settings → Secrets and variables → Actions →
+   New repository secret**. Name: `GOOGLE_SERVICES_JSON`, Secret: paste. **Add secret**.
+   (For Android Studio builds, put the file at `app/google-services.json`
+   instead; it is git-ignored.)
+
+**C. Create the key the server uses to send notifications**
+
+1. Firebase console → ⚙️ **Project settings → Service accounts** →
+   **Generate new private key** → **Generate key**. A `.json` file downloads.
+2. ⚠️ This file is a password: never share it or put it in git. You only
+   paste it into Supabase in step D.3, then you can delete it.
+
+**D. Set up the sending function in Supabase**
+
+1. Supabase → **Edge Functions** → **Deploy a new function** → **Via Editor**.
+   Name it exactly `send-push`. Delete the sample code, paste the whole of
+   `supabase/functions/send-push/index.ts` from this repository, click **Deploy**.
+2. Open the function's **Details** and turn **off** "Enforce JWT verification"
+   (the function checks for the server key itself), then **Save**.
+3. **Edge Functions → Secrets → Add new secret**: Name `FCM_SERVICE_ACCOUNT`,
+   Value: open the key file from step C in Notepad and paste all of it. **Save**.
+4. **Database → Webhooks → Create a new hook** (enable webhooks first if asked):
+   - Name: `push_on_notification`
+   - Table: `notifications`, Events: **Insert** only
+   - Type: **Supabase Edge Functions**, function `send-push`, method POST
+   - HTTP headers: click **Add auth header with service key**
+   - **Create webhook**
+
+**E. Try it**
+
+1. Wait for GitHub to build the next test app (any new push to the
+   repository, or **Actions → CI → Run workflow**), install it on both phones.
+2. Sign in, and tap **Allow** when asked about notifications.
+3. Follow step 2 of the checklist in section 7d.
+
+If nothing arrives: Supabase → Edge Functions → `send-push` → **Logs** shows
+each attempt (it never logs patient data). "FCM_SERVICE_ACCOUNT secret is
+missing" means step D.3 wasn't saved; "Forbidden" means the webhook is missing
+the auth header (step D.4).
+

@@ -15,8 +15,8 @@ Android 10+.
 |---|---|---|
 | 1 | Project setup, database schema + ER diagram, auth, doctor profile, admin approval | ✅ approved |
 | 2 | Patients and all record sections, encrypted offline cache + sync, timeline, vitals chart, search; referral rules (database) | ✅ approved |
-| 3 | Investigation requests, results (typed values + photos/PDFs), lab/radiology department inbox, wound photos, lab trends | ✅ built, awaiting review |
-| 4 | Consultations, referrals (co-management / transfer) screens, notifications | ⏳ (database rules already written and tested) |
+| 3 | Investigation requests, results (typed values + photos/PDFs), lab/radiology department inbox, wound photos, lab trends | ✅ approved |
+| 4 | Consultations with section sharing and files, referrals (co-management / transfer), notifications and push | ✅ built, awaiting review |
 | 5 | Security hardening, audit views, testing, Play Store release | ⏳ |
 
 ## Where things are
