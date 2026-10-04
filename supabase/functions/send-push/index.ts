@@ -1,6 +1,7 @@
 // =============================================================================
 // send-push: delivers a phone notification for each new row in
-// public.notifications (called by a Supabase Database Webhook on INSERT).
+// public.notifications (called by the trigger in supabase/setup/push_trigger.sql,
+// or by a Supabase Database Webhook on INSERT).
 //
 // What is sent: only the KIND of event ("consult_request", ...) and the
 // notification id, as a data message. The app turns that into a translated,
@@ -10,6 +11,7 @@
 //
 // Secrets (Supabase Dashboard -> Edge Functions -> Secrets):
 //   FCM_SERVICE_ACCOUNT  the Firebase service-account JSON (see docs/SETUP.md)
+//   PUSH_WEBHOOK_SECRET  the code shown by supabase/setup/push_trigger.sql
 // Provided automatically by Supabase: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 // =============================================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
@@ -27,9 +29,14 @@ interface ServiceAccount {
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
 Deno.serve(async (req) => {
-  // Only the database webhook (which sends the service-role key) may call this.
+  // Only our database may call this: either the trigger from
+  // supabase/setup/push_trigger.sql (sends PUSH_WEBHOOK_SECRET) or a
+  // Database Webhook with the service-role key.
+  const pushSecret = Deno.env.get("PUSH_WEBHOOK_SECRET") ?? "";
   const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-  if (!bearer || bearer !== SERVICE_ROLE_KEY) {
+  const fromTrigger = pushSecret.length >= 32 && req.headers.get("x-push-secret") === pushSecret;
+  const fromWebhook = bearer.length > 0 && bearer === SERVICE_ROLE_KEY;
+  if (!fromTrigger && !fromWebhook) {
     return new Response("Forbidden", { status: 403 });
   }
 

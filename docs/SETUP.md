@@ -274,12 +274,18 @@ patient's name or any clinical detail.
    (the function checks for the server key itself), then **Save**.
 3. **Edge Functions → Secrets → Add new secret**: Name `FCM_SERVICE_ACCOUNT`,
    Value: open the key file from step C in Notepad and paste all of it. **Save**.
-4. **Database → Webhooks → Create a new hook** (enable webhooks first if asked):
-   - Name: `push_on_notification`
-   - Table: `notifications`, Events: **Insert** only
-   - Type: **Supabase Edge Functions**, function `send-push`, method POST
-   - HTTP headers: click **Add auth header with service key**
-   - **Create webhook**
+4. **Connect the database to the function.** In **SQL Editor → New query**,
+   paste all of `supabase/setup/push_trigger.sql`. On the line marked
+   `<<< 1 >>>`, replace `https://YOUR-PROJECT.supabase.co` with your own
+   Project URL (Project Settings → Data API, or API → Project URL; the same
+   address as your `SUPABASE_URL`). Click **Run**.
+   The result is one long code (64 letters and numbers). Copy it.
+5. **Edge Functions → Secrets → Add new secret**: Name `PUSH_WEBHOOK_SECRET`,
+   Value: paste the code from step 4. **Save**.
+   (It proves to the function that a call really comes from your database.)
+
+   *If you already deployed `send-push` before this step was added, deploy it
+   again with the latest `index.ts` (step 1), which knows about this code.*
 
 **E. Try it**
 
@@ -290,6 +296,7 @@ patient's name or any clinical detail.
 
 If nothing arrives: Supabase → Edge Functions → `send-push` → **Logs** shows
 each attempt (it never logs patient data). "FCM_SERVICE_ACCOUNT secret is
-missing" means step D.3 wasn't saved; "Forbidden" means the webhook is missing
-the auth header (step D.4).
+missing" means step D.3 wasn't saved; "Forbidden" means the code from step D.4
+wasn't saved as `PUSH_WEBHOOK_SECRET` (D.5), or the function wasn't redeployed.
+No attempts at all: re-run `push_trigger.sql` and check the Project URL in it.
 
