@@ -57,6 +57,10 @@ data class EntryFormUiState(
     /** A result uploaded by the lab: shown read-only (it can only be marked "entered in error"). */
     val departmentResult: InvestigationResult? = null,
     val error: DataError? = null,
+    /** Entries saved with "Save and add another" while this form was open. */
+    val addedInSession: List<Map<String, String>> = emptyList(),
+    /** Changes each time the form is cleared for the next entry (resets the field editors). */
+    val formRound: Int = 0,
 ) {
     val hasChanges: Boolean get() = !loading && (values != initialValues || newFiles.isNotEmpty())
 }
@@ -76,6 +80,9 @@ class EntryFormViewModel @Inject constructor(
     val entryId: String? = route.entryId
     val spec: FormSpec = FormSpecs.forTable(table)
     val isNew: Boolean get() = entryId == null
+
+    /** History lists where several entries are usually added in a row (conditions, operations, drugs...). */
+    val canAddAnother: Boolean = isNew && table in MULTI_ENTRY_TABLES
 
     /** Results and post-op follow-ups can have photos/PDFs attached. */
     val canAttachFiles: Boolean = table == RecordTable.INVESTIGATION_RESULTS || table == RecordTable.POSTOP_FOLLOWUPS
@@ -177,8 +184,18 @@ class EntryFormViewModel @Inject constructor(
         viewModelScope.launch { repository.markDeleted(RecordTable.ATTACHMENTS, id) }
     }
 
-    fun save() {
+    fun save() = saveEntry(addAnother = false)
+
+    /** Saves this entry and clears the form for the next one, without leaving the screen. */
+    fun saveAndAddAnother() = saveEntry(addAnother = true)
+
+    private fun saveEntry(addAnother: Boolean) {
         val s = _state.value
+        // "Done" after adding several: nothing new was typed, so just close.
+        if (!addAnother && s.addedInSession.isNotEmpty() && !s.hasChanges) {
+            _state.update { it.copy(finished = true) }
+            return
+        }
         val errors = FormCodec.validate(spec, s.values)
         if (errors.isNotEmpty()) {
             _state.update { it.copy(errors = errors) }
@@ -195,7 +212,17 @@ class EntryFormViewModel @Inject constructor(
                     file = file,
                 )
             }
-            _state.update { it.copy(saving = false, finished = true) }
+            if (addAnother) {
+                val fresh = FormCodec.newValues(spec)
+                _state.update {
+                    it.copy(
+                        saving = false, values = fresh, initialValues = fresh, errors = emptyMap(), newFiles = emptyList(),
+                        addedInSession = it.addedInSession + listOf(s.values), formRound = it.formRound + 1,
+                    )
+                }
+            } else {
+                _state.update { it.copy(saving = false, finished = true) }
+            }
         }
     }
 
@@ -205,5 +232,12 @@ class EntryFormViewModel @Inject constructor(
             repository.markDeleted(table, id)
             _state.update { it.copy(finished = true) }
         }
+    }
+
+    private companion object {
+        val MULTI_ENTRY_TABLES = setOf(
+            RecordTable.PRESENTING_COMPLAINTS, RecordTable.MEDICAL_CONDITIONS, RecordTable.SURGICAL_HISTORY,
+            RecordTable.MEDICATIONS, RecordTable.ALLERGIES, RecordTable.FAMILY_HISTORY,
+        )
     }
 }

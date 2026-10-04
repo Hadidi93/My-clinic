@@ -370,7 +370,14 @@
     <string name="consult_sections_help">يرى زميلك الأجزاء المحددة فقط من الملف، وللمدة التي تختارها فقط.</string>
     <string name="consult_no_sections">اختر جزءًا واحدًا على الأقل للمشاركة.</string>
     <string name="consult_anonymize">إخفاء هوية المريض</string>
-    <string name="consult_anonymize_help">يرى زميلك العمر والجنس فقط، دون الاسم أو الرقم القومي أو الهاتف أو العنوان.</string>
+    <string name="consult_anonymize_help">يظل زميلك يرى العمر والجنس، دون الاسم أو الرقم القومي أو الهاتف أو العنوان.</string>
+    <string name="consult_age_sex_always">يُشارَك العمر والجنس دائمًا لأهميتهما في التشخيص والخطة العلاجية.</string>
+    <string name="age_not_recorded">العمر غير مسجّل</string>
+    <string name="sex_not_recorded">الجنس غير مسجّل</string>
+    <string name="save_and_add_another">حفظ وإضافة آخر</string>
+    <string name="added_just_now">أُضيف الآن</string>
+    <string name="entry_added_next">تم الحفظ. يمكنك إضافة التالي.</string>
+    <string name="done">تم</string>
     <string name="consult_duration">مدة الإتاحة</string>
     <string name="consult_consent">وافق المريض على مشاركة هذه الأجزاء من الملف مع هذا الزميل (اليوم).</string>
     <string name="send_consult">إرسال الاستشارة</string>

@@ -264,6 +264,8 @@ fun NewConsultScreen(onClose: () -> Unit, onCreated: (String) -> Unit, viewModel
                                 label = { Text(s.label()) }, modifier = Modifier.heightIn(min = 48.dp))
                         }
                     }
+                    Text(stringResource(R.string.consult_age_sex_always), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (shown(ConsultRequestError.NO_SECTIONS)) {
                         Text(stringResource(R.string.consult_no_sections), color = MaterialTheme.colorScheme.error)
                     }

@@ -346,7 +346,14 @@
     <string name="consult_sections_help">Only the ticked parts of the record are visible to your colleague, and only for the time you choose.</string>
     <string name="consult_no_sections">Choose at least one part to share.</string>
     <string name="consult_anonymize">Hide the patient\'s identity</string>
-    <string name="consult_anonymize_help">Your colleague sees age and sex, but not the name, ID, phone or address.</string>
+    <string name="consult_anonymize_help">Your colleague still sees age and sex, but not the name, ID, phone or address.</string>
+    <string name="consult_age_sex_always">Age and sex are always shared: they matter for the diagnosis and plan.</string>
+    <string name="age_not_recorded">age not recorded</string>
+    <string name="sex_not_recorded">sex not recorded</string>
+    <string name="save_and_add_another">Save and add another</string>
+    <string name="added_just_now">Added just now</string>
+    <string name="entry_added_next">Saved. You can add the next one.</string>
+    <string name="done">Done</string>
     <string name="consult_duration">Access for</string>
     <string name="consult_consent">The patient agreed to share these parts of the record with this colleague (today).</string>
     <string name="send_consult">Send consult</string>

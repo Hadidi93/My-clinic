@@ -156,10 +156,14 @@ fun RecordSection.label(): String = stringResource(
     },
 )
 
-/** "Anonymous patient · 54 y · Male", or the name when it may be shown. */
+/**
+ * "Anonymous patient · 54 y · Male", or the name when it may be shown.
+ * Age and sex are always part of a consult or referral (they matter for the
+ * diagnosis and plan), so a missing one is said plainly rather than left out.
+ */
 @Composable
-fun patientLabel(name: String?, age: Int?, sex: String?): String = listOfNotNull(
+fun patientLabel(name: String?, age: Int?, sex: String?): String = listOf(
     name ?: stringResource(R.string.anonymous_patient),
-    age?.let { stringResource(R.string.age_years_short, it) },
-    optionLabel(sex)?.takeIf { sex != "unknown" },
+    age?.let { stringResource(R.string.age_years_short, it) } ?: stringResource(R.string.age_not_recorded),
+    optionLabel(sex)?.takeIf { sex != "unknown" } ?: stringResource(R.string.sex_not_recorded),
 ).joinToString(" · ")

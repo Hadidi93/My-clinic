@@ -47,6 +47,13 @@ import com.myclinic.app.ui.files.FileItem
 import com.myclinic.app.ui.files.FileList
 import androidx.compose.material3.LinearProgressIndicator
 import com.myclinic.domain.forms.Vocabulary
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.key
+import com.myclinic.domain.forms.FieldType
+import com.myclinic.domain.forms.FormSpec
 import com.myclinic.domain.record.Attachment
 import com.myclinic.domain.record.RecordTable
 
@@ -62,7 +69,11 @@ fun EntryFormScreen(
     var confirmDelete by remember { mutableStateOf(false) }
     val lang = currentAppLanguage()
 
+    val scroll = rememberScrollState()
     LaunchedEffect(state.finished) { if (state.finished) onClose() }
+    // A new blank form after "Save and add another": back to the first field.
+    LaunchedEffect(state.formRound) { if (state.formRound > 0) scroll.animateScrollTo(0) }
+    val saveLabel = stringResource(if (state.addedInSession.isNotEmpty() && !state.hasChanges) R.string.done else R.string.save)
     val requestClose: () -> Unit = {
         if (state.hasChanges) {
             confirmDiscard = true
@@ -85,7 +96,7 @@ fun EntryFormScreen(
                     actions = {
                         if (state.departmentResult == null) {
                             TextButton(onClick = viewModel::save, enabled = !state.saving && !state.loading && !state.readingFile) {
-                                Text(stringResource(R.string.save))
+                                Text(saveLabel)
                             }
                         }
                     },
@@ -102,7 +113,7 @@ fun EntryFormScreen(
                         .widthIn(max = 600.dp)
                         .fillMaxWidth()
                         .imePadding()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(scroll)
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -124,15 +135,21 @@ fun EntryFormScreen(
                             onAddFacility = viewModel::addFacility,
                             onRequestPicked = viewModel::onRequestPicked,
                         )
-                        viewModel.spec.fields.forEach { field ->
-                            FieldEditor(
-                                field = field,
-                                values = state.values,
-                                error = state.errors[field.key],
-                                context = context,
-                                onValue = viewModel::onValue,
-                                onValues = viewModel::onValues,
-                            )
+                        if (state.addedInSession.isNotEmpty()) {
+                            AddedEntriesCard(state.addedInSession.map { entrySummary(viewModel.spec, it) })
+                        }
+                        // Keyed by round so pickers and search boxes start empty for the next entry.
+                        key(state.formRound) {
+                            viewModel.spec.fields.forEach { field ->
+                                FieldEditor(
+                                    field = field,
+                                    values = state.values,
+                                    error = state.errors[field.key],
+                                    context = context,
+                                    onValue = viewModel::onValue,
+                                    onValues = viewModel::onValues,
+                                )
+                            }
                         }
                         if (viewModel.canAttachFiles) {
                             Text(stringResource(R.string.files_title), style = MaterialTheme.typography.titleMedium)
@@ -157,8 +174,12 @@ fun EntryFormScreen(
                         }
                         state.error?.let { ErrorMessage(it.message()) }
                         if (state.errors.isNotEmpty()) ErrorMessage(stringResource(R.string.fix_errors))
-                        PrimaryButton(stringResource(R.string.save), onClick = viewModel::save, loading = state.saving,
+                        PrimaryButton(saveLabel, onClick = viewModel::save, loading = state.saving,
                             enabled = !state.readingFile)
+                        if (viewModel.canAddAnother) {
+                            SecondaryButton(stringResource(R.string.save_and_add_another), onClick = viewModel::saveAndAddAnother,
+                                enabled = !state.saving && !state.readingFile)
+                        }
                     }
                     if (!viewModel.isNew && viewModel.table != RecordTable.PATIENTS) {
                         SecondaryButton(stringResource(R.string.delete_entry), onClick = { confirmDelete = true })
@@ -185,4 +206,38 @@ fun EntryFormScreen(
             )
         }
     }
+}
+
+/** The entries saved so far with "Save and add another", so the doctor sees what is already in. */
+@Composable
+private fun AddedEntriesCard(summaries: List<String>) {
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(stringResource(R.string.added_just_now), style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer)
+            summaries.forEach { line ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Text(line, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+            }
+            Text(stringResource(R.string.entry_added_next), style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer)
+        }
+    }
+}
+
+/** "Metformin · 500 mg", "Father · Diabetes": the required fields, plus the next short text when there is only one. */
+@Composable
+private fun entrySummary(spec: FormSpec, values: Map<String, String>): String {
+    val shown = setOf(FieldType.TEXT, FieldType.CONDITION, FieldType.CHOICE)
+    val required = spec.fields.filter { it.required && it.type in shown }
+    val fields = if (required.size > 1) required else required + spec.fields.filter { !it.required && it.type == FieldType.TEXT }.take(1)
+    return fields.mapNotNull { f ->
+        val v = values[f.key]?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+        if (f.type == FieldType.CHOICE) optionLabel(v) ?: v else v
+    }.joinToString(" · ")
 }
