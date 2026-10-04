@@ -60,7 +60,7 @@ drop function if exists
     public.referrals_notify, public.investigation_requests_notify, public.register_device, public.unregister_device,
     public.consult_messages_check_files, public.my_consults, public.my_referrals,
     public.admin_review_grade, public.admin_review_queue,
-    public.audit_entry_json, public.patient_access_log, public.admin_activity_log, public.log_record_export
+    public.audit_entry_json, public.patient_access_log, public.admin_activity_log, public.log_record_export, public.log_research_export
     cascade;
 
 -- Types

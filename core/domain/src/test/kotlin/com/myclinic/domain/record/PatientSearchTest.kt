@@ -58,6 +58,19 @@ class PatientSearchTest {
     }
 
     @Test
+    fun `discharged patients leave the main list but searching still finds them`() {
+        val withDischarged = all + PatientSummary(
+            patient = Patient(id = "5", ownerId = "d1", fullName = "Discharged Demo", dischargedAt = "2026-09-01T00:00:00Z"),
+            ageYears = null, lastActivity = today, allergies = emptyList(), diagnoses = emptyList(),
+        )
+        fun ids(q: PatientQuery) = PatientSearch.filter(withDischarged, q, today).map { it.patient.id }
+        assertTrue("5" !in ids(PatientQuery()))
+        assertEquals(listOf("5"), ids(PatientQuery(status = StatusFilter.DISCHARGED)))
+        assertTrue("5" in ids(PatientQuery(status = StatusFilter.ALL)))
+        assertEquals(listOf("5"), ids(PatientQuery(text = "discharged")))
+    }
+
+    @Test
     fun `dashboard shows today's patients and upcoming operations`() {
         assertEquals(listOf("1"), Dashboard.todaysPatients(all, today).map { it.patient.id })
         val ops = Dashboard.upcomingOperations(listOf(DemoRecords.record), today)

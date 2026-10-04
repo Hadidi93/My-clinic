@@ -73,6 +73,8 @@ import kotlinx.serialization.Serializable
 @Serializable object NotificationsRoute
 /** A patient's access log, or (patientId = null) the admin's app-wide activity log. */
 @Serializable data class AccessLogRoute(val patientId: String? = null)
+/** De-identified spreadsheet of the doctor's own patients, for research or audit. */
+@Serializable object ResearchExportRoute
 
 // Lab/radiology staff
 @Serializable object StaffHomeRoute
@@ -192,7 +194,11 @@ fun MainNavHost(doctor: Doctor, onSignOut: () -> Unit, openRequest: String?, onO
                 startWithQuickAdd = route.quickAdd,
                 onBack = { nav.popBackStack() },
                 onOpenPatient = { id -> nav.navigate(PatientDetailRoute(id)) },
+                onResearchExport = { nav.navigate(ResearchExportRoute) },
             )
+        }
+        composable<ResearchExportRoute> {
+            com.myclinic.app.ui.research.ResearchExportScreen(onBack = { nav.popBackStack() })
         }
         composable<PatientDetailRoute> {
             PatientDetailScreen(

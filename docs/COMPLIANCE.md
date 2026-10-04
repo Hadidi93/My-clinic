@@ -78,6 +78,13 @@
 - [ ] Optional extra column encryption for national ID (Supabase Vault/pgsodium). Not done: data is already encrypted on disk and protected by row-level security, and column encryption would break search. Revisit with your lawyer
 - [x] Access log per patient (main doctor) and app-wide activity log (admin) in the app. Retention: the log is never deleted by the app; decide a retention period with your lawyer
 - [x] PDF export of a record: main doctor only, with a warning, written to the audit log before the file is made
+- [x] Research export: own patients only, de-identified on the phone (no name, IDs, phone,
+      address or date of birth; random study numbers with no key; ages 90+ grouped; dates
+      year-month and free text left out unless chosen), ethics/audit confirmation required,
+      one audit entry per exported patient before the file is made
+- [ ] Before using exports for research: ethics committee (IRB) approval and, where the law
+      requires it, a data-protection impact assessment. Free text and full dates make
+      re-identification easier: choose them only when the study needs them
 - [x] Tap-jacking protection, screenshot blocking (FLAG_SECURE), app data excluded from backups
 - [ ] Written policies: privacy notice (Arabic + English), consent form text,
       incident-response plan, retention schedule, DPO contact, with your lawyer.

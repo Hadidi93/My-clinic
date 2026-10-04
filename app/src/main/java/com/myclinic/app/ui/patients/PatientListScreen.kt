@@ -61,6 +61,8 @@ import com.myclinic.domain.forms.Vocabulary
 import com.myclinic.domain.record.DateFilter
 import com.myclinic.domain.record.PatientSummary
 import com.myclinic.domain.record.SUGGESTED_TAGS
+import com.myclinic.domain.record.StatusFilter
+import androidx.compose.material.icons.filled.TableView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +71,7 @@ fun PatientListScreen(
     startWithQuickAdd: Boolean,
     onBack: () -> Unit,
     onOpenPatient: (String) -> Unit,
+    onResearchExport: () -> Unit,
     viewModel: PatientListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -88,6 +91,9 @@ fun PatientListScreen(
                         }
                     },
                     actions = {
+                        IconButton(onClick = onResearchExport) {
+                            Icon(Icons.Filled.TableView, contentDescription = stringResource(R.string.research_export_title))
+                        }
                         IconButton(onClick = viewModel::onToggleDeleted) {
                             Icon(
                                 if (state.query.includeDeleted) Icons.Filled.Delete else Icons.Filled.DeleteOutline,
@@ -110,6 +116,7 @@ fun PatientListScreen(
             Column(Modifier.fillMaxSize().padding(padding)) {
                 SyncBanner(state.pendingChanges, state.failedChanges, state.offline, viewModel::discardFailedChanges)
                 SearchField(state.query.text, viewModel::onQueryText)
+                StatusRow(state.query.status, viewModel::onStatus)
                 FilterRow(state.query.date, viewModel::onDateFilter, state.tagsInUse, state.query.tags, viewModel::onToggleTag)
                 LazyColumn(
                     contentPadding = PaddingValues(bottom = 96.dp), // room for the add button
@@ -163,6 +170,25 @@ private fun SearchField(text: String, onChange: (String) -> Unit) {
     )
 }
 
+/** Current patients, discharged ones ("follow-up finished"), or all. */
+@Composable
+private fun StatusRow(status: StatusFilter, onStatus: (StatusFilter) -> Unit) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        val options = listOf(
+            StatusFilter.ACTIVE to R.string.status_current,
+            StatusFilter.DISCHARGED to R.string.status_discharged,
+            StatusFilter.ALL to R.string.status_all,
+        )
+        items(options) { (filter, label) ->
+            FilterChip(selected = status == filter, onClick = { onStatus(filter) }, label = { Text(stringResource(label)) },
+                modifier = Modifier.heightIn(min = 48.dp))
+        }
+    }
+}
+
 @Composable
 private fun FilterRow(
     date: DateFilter,
@@ -212,6 +238,8 @@ private fun PatientRow(summary: PatientSummary, onClick: () -> Unit) {
                         tint = MaterialTheme.colorScheme.error)
                 }
                 if (p.isDeleted) Text(stringResource(R.string.deleted), color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelSmall)
+                if (p.isDischarged) Text(stringResource(R.string.discharged), color = MaterialTheme.colorScheme.tertiary,
                     style = MaterialTheme.typography.labelSmall)
                 summary.lastActivity?.let { Text(formatDate(it.toString()).orEmpty(), style = MaterialTheme.typography.labelSmall) }
             }

@@ -51,6 +51,11 @@ Patient data is shared only:
 A doctor can export a record as a PDF to give to the patient or for their
 care; once exported, the file is under that doctor's responsibility.
 
+A doctor can also export a de-identified spreadsheet of their own patients
+for approved research or a service review. Names, ID and file numbers, phone
+numbers, addresses and dates of birth are removed before the file is made,
+and each export is recorded in the patient's access log.
+
 ## 5. Transfers outside Egypt
 Our servers are in the EU. [State the legal basis / PDPC permit for the
 cross-border transfer here.]

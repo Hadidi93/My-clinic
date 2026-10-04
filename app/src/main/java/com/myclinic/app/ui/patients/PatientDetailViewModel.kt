@@ -37,6 +37,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+import com.myclinic.domain.record.RecordTable
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import java.time.Instant
 
 data class PatientDetailUiState(
     val loading: Boolean = true,
@@ -168,5 +173,15 @@ class PatientDetailViewModel @Inject constructor(
 
     fun setDeleted(deleted: Boolean) {
         viewModelScope.launch { repository.setPatientDeleted(patientId, deleted) }
+    }
+
+    /** "Discharged / follow-up finished": leaves the main list, stays complete and searchable. */
+    fun setDischarged(discharged: Boolean) {
+        viewModelScope.launch {
+            repository.saveChanges(
+                RecordTable.PATIENTS, patientId, patientId,
+                JsonObject(mapOf("discharged_at" to if (discharged) JsonPrimitive(Instant.now().toString()) else JsonNull)),
+            )
+        }
     }
 }

@@ -50,8 +50,11 @@ data class Patient(
     val createdAt: String? = null,
     val updatedAt: String? = null,
     val deletedAt: String? = null,
+    /** Set when the doctor marks the patient "discharged / follow-up finished". Not a deletion. */
+    val dischargedAt: String? = null,
 ) {
     val isDeleted: Boolean get() = deletedAt != null
+    val isDischarged: Boolean get() = dischargedAt != null
 }
 
 @Serializable

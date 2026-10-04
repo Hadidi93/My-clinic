@@ -18,11 +18,15 @@ data class PatientSummary(
 
 enum class DateFilter { ALL, TODAY, LAST_7_DAYS, LAST_30_DAYS }
 
+/** Current patients, those marked "discharged / follow-up finished", or both. */
+enum class StatusFilter { ACTIVE, DISCHARGED, ALL }
+
 data class PatientQuery(
     val text: String = "",
     val tags: Set<String> = emptySet(),
     val date: DateFilter = DateFilter.ALL,
     val includeDeleted: Boolean = false,
+    val status: StatusFilter = StatusFilter.ACTIVE,
 )
 
 /** Suggested tags shown as quick chips; doctors can also type their own. */
@@ -51,11 +55,13 @@ object PatientSearch {
     }.trim()
 
     fun filter(all: List<PatientSummary>, query: PatientQuery, today: LocalDate): List<PatientSummary> {
-        val words = normalize(query.text).split(Regex("\\s+")).filter { it.isNotEmpty() }
+        // "#post-op" searches the tag "post-op".
+        val words = normalize(query.text).split(Regex("\\s+")).map { it.removePrefix("#") }.filter { it.isNotEmpty() }
         val wantedTags = query.tags.map { normalize(it) }.toSet()
 
         return all.asSequence()
             .filter { query.includeDeleted || !it.patient.isDeleted }
+            .filter { s -> matchesStatus(s.patient, query.status, searching = words.isNotEmpty()) }
             .filter { s -> wantedTags.all { tag -> s.patient.tags.any { normalize(it) == tag } } }
             .filter { s -> matchesDate(s.lastActivity, query.date, today) }
             .filter { s ->
@@ -79,6 +85,13 @@ object PatientSearch {
             s.patient.primaryDiagnosis,
         ).plus(s.diagnoses).plus(s.patient.tags).joinToString(" | "),
     )
+
+    /** Typing a search also finds discharged patients, so nobody gets "lost" from the list. */
+    private fun matchesStatus(p: Patient, status: StatusFilter, searching: Boolean): Boolean = when (status) {
+        StatusFilter.ALL -> true
+        StatusFilter.DISCHARGED -> p.isDischarged
+        StatusFilter.ACTIVE -> searching || !p.isDischarged
+    }
 
     private fun matchesDate(day: LocalDate?, filter: DateFilter, today: LocalDate): Boolean = when (filter) {
         DateFilter.ALL -> true

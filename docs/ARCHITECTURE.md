@@ -124,6 +124,8 @@
 | Access log per patient and app-wide activity log | migration 10, `AccessLogScreen` |
 | Consults share name, age and sex unless anonymized | migration 11, `PatientIdentityMasker` |
 | Duplicate warning in history lists | `DuplicateCheck`, `EntryFormViewModel` |
+| Discharged patients (leave the list, stay searchable) | migration 12, `StatusFilter` |
+| De-identified research export (ZIP of CSV files) | migration 12 `log_research_export`, `ResearchExport`, `ResearchExportScreen` |
 | PDF export logged before the file is made; main doctor only; temporary file deleted at next start | `log_record_export`, `PdfExporter` |
 | Tap-jacking protection (touches ignored under overlays) | `MainActivity` |
 | Release build shrunk and obfuscated (R8); logging stripped; test-build crash screen off | `proguard-rules.pro`, `CrashReporter` |

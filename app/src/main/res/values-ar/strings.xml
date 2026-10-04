@@ -503,4 +503,34 @@
     <string name="duplicate_confirm">الملف يحتوي بالفعل على: %1$s. هل تريد حفظ هذا الإدخال على أي حال؟</string>
     <string name="save_anyway">حفظ على أي حال</string>
     <string name="remove_added_entry">إزالة %1$s</string>
+    <string name="status_current">الحاليون</string>
+    <string name="status_discharged">تم خروجهم</string>
+    <string name="status_all">الكل</string>
+    <string name="discharged">تم الخروج</string>
+    <string name="discharge_patient">خروج المريض</string>
+    <string name="reopen_patient">إعادة فتح</string>
+    <string name="discharge_confirm">هل تريد تسجيل خروج هذا المريض / انتهاء المتابعة؟ سيُنقل من قائمتك الحالية لكن يبقى ملفه كاملًا وقابلًا للبحث ومتاحًا للأبحاث. يمكنك إعادة فتحه في أي وقت.</string>
+    <string name="discharged_banner">تم الخروج في %1$s</string>
+    <string name="discharged_banner_body">محفوظ في سجلاتك وقابل للبحث. اضغط إعادة فتح لإرجاعه إلى مرضاك الحاليين.</string>
+    <string name="research_export_title">تصدير للأبحاث</string>
+    <string name="research_intro_title">جدول بيانات مجهول الهوية</string>
+    <string name="research_intro_body">يصدّر مرضاك فقط دون الأسماء أو أرقام الهوية أو رقم الملف أو الهاتف أو العنوان أو تاريخ الميلاد. يحصل كل مريض على رقم دراسة عشوائي، ولا يُحتفظ بأي مفتاح يربطه بالمريض.</string>
+    <string name="research_which_patients">أي المرضى</string>
+    <string name="research_search_hint">التشخيص أو العملية أو #وسم (فارغ = الكل)</string>
+    <string name="research_what">ما يتم تضمينه</string>
+    <string name="research_full_dates">التواريخ الكاملة</string>
+    <string name="research_full_dates_help">عند الإيقاف: السنة والشهر فقط. تُضمَّن دائمًا الأيام بين العملية والمتابعة.</string>
+    <string name="research_free_text">الملاحظات النصية</string>
+    <string name="research_free_text_help">التاريخ المرضي وملاحظات العمليات والتقارير. قد تحتوي على أسماء: راجعها قبل المشاركة.</string>
+    <string name="research_ethics">لدي موافقة لجنة الأخلاقيات على هذا البحث، أو أنه تدقيق داخلي / مراجعة للخدمة، وسأحفظ الملف بشكل آمن.</string>
+    <string name="research_logged">يُسجَّل التصدير في سجل الدخول لكل مريض. يجب أن تكون متصلًا بالإنترنت.</string>
+    <string name="research_export_button">تصدير جدول البيانات</string>
+    <plurals name="research_patient_count">
+        <item quantity="zero">لا يوجد مرضى للتصدير</item>
+        <item quantity="one">سيتم تصدير مريض واحد</item>
+        <item quantity="two">سيتم تصدير مريضين</item>
+        <item quantity="few">سيتم تصدير %1$d مرضى</item>
+        <item quantity="many">سيتم تصدير %1$d مريضًا</item>
+        <item quantity="other">سيتم تصدير %1$d مريض</item>
+    </plurals>
 </resources>

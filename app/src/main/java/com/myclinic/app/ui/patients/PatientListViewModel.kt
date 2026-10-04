@@ -12,6 +12,7 @@ import com.myclinic.domain.record.PatientSearch
 import com.myclinic.domain.record.PatientSummaries
 import com.myclinic.domain.record.PatientSummary
 import com.myclinic.domain.record.RecordTable
+import com.myclinic.domain.record.StatusFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,6 +83,7 @@ class PatientListViewModel @Inject constructor(
         it.copy(tags = if (tag in it.tags) it.tags - tag else it.tags + tag)
     }
     fun onToggleDeleted() = query.update { it.copy(includeDeleted = !it.includeDeleted) }
+    fun onStatus(status: StatusFilter) = query.update { it.copy(status = status) }
 
     private var initialized = false
 

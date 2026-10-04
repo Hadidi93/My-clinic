@@ -475,4 +475,30 @@
     <string name="duplicate_confirm">The record already has: %1$s. Save this entry anyway?</string>
     <string name="save_anyway">Save anyway</string>
     <string name="remove_added_entry">Remove %1$s</string>
+    <string name="status_current">Current</string>
+    <string name="status_discharged">Discharged</string>
+    <string name="status_all">All</string>
+    <string name="discharged">Discharged</string>
+    <string name="discharge_patient">Discharge</string>
+    <string name="reopen_patient">Re-open</string>
+    <string name="discharge_confirm">Mark this patient as discharged / follow-up finished? They leave your current list but stay complete, searchable and available for research. You can re-open them any time.</string>
+    <string name="discharged_banner">Discharged on %1$s</string>
+    <string name="discharged_banner_body">Kept in your records and searchable. Tap Re-open to move them back to your current patients.</string>
+    <string name="research_export_title">Research export</string>
+    <string name="research_intro_title">De-identified spreadsheet</string>
+    <string name="research_intro_body">Exports your own patients without names, ID, file number, phone, address or date of birth. Each patient gets a random study number, and no key back to the patient is kept.</string>
+    <string name="research_which_patients">Which patients</string>
+    <string name="research_search_hint">Diagnosis, operation or #tag (empty = all)</string>
+    <string name="research_what">What to include</string>
+    <string name="research_full_dates">Full dates</string>
+    <string name="research_full_dates_help">Off: year and month only. Days between operation and follow-up are always included.</string>
+    <string name="research_free_text">Free-text notes</string>
+    <string name="research_free_text_help">History, operative notes and reports. They may contain names: check before sharing.</string>
+    <string name="research_ethics">I have ethics committee approval for this research, or it is an internal audit / service review, and I will keep the file secure.</string>
+    <string name="research_logged">The export is recorded in each patient\'s access log. You need to be online.</string>
+    <string name="research_export_button">Export spreadsheet</string>
+    <plurals name="research_patient_count">
+        <item quantity="one">%1$d patient will be exported</item>
+        <item quantity="other">%1$d patients will be exported</item>
+    </plurals>
 </resources>

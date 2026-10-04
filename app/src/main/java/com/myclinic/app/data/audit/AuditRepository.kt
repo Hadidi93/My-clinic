@@ -6,6 +6,8 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import javax.inject.Inject
@@ -19,6 +21,9 @@ interface AuditRepository {
     suspend fun activityLog(before: String? = null): Result<List<AuditEntry>>
     /** Must succeed before a PDF of the record is made. */
     suspend fun logExport(patientId: String): Result<Unit>
+
+    /** Logs a de-identified research export of these patients (one audit entry each), before the file is made. */
+    suspend fun logResearchExport(patientIds: List<String>): Result<Unit>
 }
 
 @Singleton
@@ -41,6 +46,13 @@ class SupabaseAuditRepository @Inject constructor(
 
     override suspend fun logExport(patientId: String) = call {
         supabase.postgrest.rpc("log_record_export", buildJsonObject { put("p_patient_id", patientId) })
+        Unit
+    }
+
+    override suspend fun logResearchExport(patientIds: List<String>) = call {
+        supabase.postgrest.rpc("log_research_export", buildJsonObject {
+            put("p_patient_ids", JsonArray(patientIds.map { JsonPrimitive(it) }))
+        })
         Unit
     }
 

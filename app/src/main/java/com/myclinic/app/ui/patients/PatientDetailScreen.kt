@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
@@ -104,6 +106,7 @@ fun PatientDetailScreen(
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var menuOpen by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var confirmDischarge by remember { mutableStateOf(false) }
     val record = state.record
 
     SecureScreen {
@@ -161,6 +164,8 @@ fun PatientDetailScreen(
                     if (!record.patient.isDeleted) {
                         PatientActions(
                             isOwner = state.isOwner,
+                            discharged = record.patient.isDischarged,
+                            onDischarge = { if (record.patient.isDischarged) viewModel.setDischarged(false) else confirmDischarge = true },
                             onConsult = { onConsult(record.patient.id) },
                             onRefer = { onRefer(record.patient.id) },
                             onOpenReferrals = onOpenReferrals,
@@ -194,6 +199,17 @@ fun PatientDetailScreen(
             }
         }
 
+        if (confirmDischarge) {
+            AlertDialog(
+                onDismissRequest = { confirmDischarge = false },
+                title = { Text(stringResource(R.string.discharge_patient)) },
+                text = { Text(stringResource(R.string.discharge_confirm), style = MaterialTheme.typography.bodyMedium) },
+                confirmButton = {
+                    TextButton(onClick = { confirmDischarge = false; viewModel.setDischarged(true) }) { Text(stringResource(R.string.confirm)) }
+                },
+                dismissButton = { TextButton(onClick = { confirmDischarge = false }) { Text(stringResource(R.string.cancel)) } },
+            )
+        }
         if (confirmExport) {
             AlertDialog(
                 onDismissRequest = { confirmExport = false },
@@ -261,6 +277,14 @@ private fun PatientHeader(state: PatientDetailUiState) {
         if (!state.isOwner) Text(stringResource(R.string.comanaged_badge), style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.tertiary)
         if (p.isDeleted) MessageCard(title = stringResource(R.string.patient_deleted_banner))
+        if (p.isDischarged && !p.isDeleted) {
+            MessageCard(
+                title = stringResource(R.string.discharged_banner, formatDate(p.dischargedAt).orEmpty()),
+                body = stringResource(R.string.discharged_banner_body),
+                container = MaterialTheme.colorScheme.tertiaryContainer,
+                content = MaterialTheme.colorScheme.onTertiaryContainer,
+            )
+        }
     }
 }
 
@@ -272,6 +296,8 @@ private fun PatientHeader(state: PatientDetailUiState) {
 @Composable
 private fun PatientActions(
     isOwner: Boolean,
+    discharged: Boolean,
+    onDischarge: () -> Unit,
     onConsult: () -> Unit,
     onRefer: () -> Unit,
     onOpenReferrals: () -> Unit,
@@ -299,6 +325,14 @@ private fun PatientActions(
             AssistChip(onClick = onEndComanagement, enabled = !working, label = { Text(stringResource(R.string.referral_end)) },
                 leadingIcon = { Icon(Icons.Filled.SwapHoriz, contentDescription = null) }, modifier = Modifier.heightIn(min = 48.dp))
         }
+        AssistChip(
+            onClick = onDischarge, enabled = !working,
+            label = { Text(stringResource(if (discharged) R.string.reopen_patient else R.string.discharge_patient)) },
+            leadingIcon = {
+                Icon(if (discharged) Icons.Filled.Replay else Icons.Filled.TaskAlt, contentDescription = null)
+            },
+            modifier = Modifier.heightIn(min = 48.dp),
+        )
     }
 }
 
