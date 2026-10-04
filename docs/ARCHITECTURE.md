@@ -122,6 +122,8 @@
 | App lock: fingerprint / face / phone PIN at start and after 5 min without use | `AppLockManager`, `LockScreen`, `LockPolicy` |
 | Phones without a screen lock must set one | `LockScreen` |
 | Access log per patient and app-wide activity log | migration 10, `AccessLogScreen` |
+| Consults share name, age and sex unless anonymized | migration 11, `PatientIdentityMasker` |
+| Duplicate warning in history lists | `DuplicateCheck`, `EntryFormViewModel` |
 | PDF export logged before the file is made; main doctor only; temporary file deleted at next start | `log_record_export`, `PdfExporter` |
 | Tap-jacking protection (touches ignored under overlays) | `MainActivity` |
 | Release build shrunk and obfuscated (R8); logging stripped; test-build crash screen off | `proguard-rules.pro`, `CrashReporter` |

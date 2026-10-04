@@ -190,7 +190,7 @@
     <string name="restore_patient">استعادة المريض</string>
     <string name="delete_patient_confirm">سيُخفى المريض من قوائمك. يبقى الملف محفوظًا ويمكن استعادته من «عرض المرضى المحذوفين».</string>
     <string name="patient_deleted_banner">هذا المريض محذوف. استعده لتتمكن من التعديل.</string>
-    <string name="delete_entry">تحديد كإدخال خاطئ</string>
+    <string name="delete_entry">حذف الإدخال (إدخال خاطئ)</string>
     <string name="delete_entry_confirm">سيُزال هذا الإدخال من عرض الملف، ويبقى في سجل التدقيق.</string>
     <string name="confirm">تأكيد</string>
     <string name="saved_offline">تم الحفظ</string>
@@ -369,9 +369,9 @@
     <string name="consult_sections">ما الذي تريد مشاركته</string>
     <string name="consult_sections_help">يرى زميلك الأجزاء المحددة فقط من الملف، وللمدة التي تختارها فقط.</string>
     <string name="consult_no_sections">اختر جزءًا واحدًا على الأقل للمشاركة.</string>
-    <string name="consult_anonymize">إخفاء هوية المريض</string>
-    <string name="consult_anonymize_help">يظل زميلك يرى العمر والجنس، دون الاسم أو الرقم القومي أو الهاتف أو العنوان.</string>
-    <string name="consult_age_sex_always">يُشارَك العمر والجنس دائمًا لأهميتهما في التشخيص والخطة العلاجية.</string>
+    <string name="consult_anonymize">إخفاء اسم المريض</string>
+    <string name="consult_anonymize_help">عند التفعيل يرى زميلك العمر والجنس فقط. لا تُشارَك أرقام الهوية والهاتف والعنوان إلا إذا اخترت البيانات الشخصية.</string>
+    <string name="consult_age_sex_always">يُشارَك العمر والجنس دائمًا لأهميتهما في التشخيص والخطة العلاجية، ويُشارَك الاسم أيضًا ما لم تُخفِه بالأسفل.</string>
     <string name="age_not_recorded">العمر غير مسجّل</string>
     <string name="sex_not_recorded">الجنس غير مسجّل</string>
     <string name="save_and_add_another">حفظ وإضافة آخر</string>
@@ -498,4 +498,9 @@
     <string name="export_confidential">سري. ملف طبي من My Clinic.</string>
     <string name="export_no_allergies">لا توجد حساسية مسجلة</string>
     <string name="home_greeting_doctor">مرحبًا د. %1$s</string>
+    <string name="duplicate_title">موجود بالفعل في الملف؟</string>
+    <string name="duplicate_body">يبدو مطابقًا لـ: %1$s</string>
+    <string name="duplicate_confirm">الملف يحتوي بالفعل على: %1$s. هل تريد حفظ هذا الإدخال على أي حال؟</string>
+    <string name="save_anyway">حفظ على أي حال</string>
+    <string name="remove_added_entry">إزالة %1$s</string>
 </resources>

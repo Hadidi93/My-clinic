@@ -178,7 +178,7 @@
     <string name="restore_patient">Restore patient</string>
     <string name="delete_patient_confirm">The patient will be hidden from your lists. The record is kept and can be restored from “Show deleted patients”.</string>
     <string name="patient_deleted_banner">This patient is deleted. Restore to edit.</string>
-    <string name="delete_entry">Mark as entered in error</string>
+    <string name="delete_entry">Delete entry (entered in error)</string>
     <string name="delete_entry_confirm">This entry will be removed from the record view. It stays in the audit history.</string>
     <string name="confirm">Confirm</string>
     <string name="saved_offline">Saved</string>
@@ -345,9 +345,9 @@
     <string name="consult_sections">What to share</string>
     <string name="consult_sections_help">Only the ticked parts of the record are visible to your colleague, and only for the time you choose.</string>
     <string name="consult_no_sections">Choose at least one part to share.</string>
-    <string name="consult_anonymize">Hide the patient\'s identity</string>
-    <string name="consult_anonymize_help">Your colleague still sees age and sex, but not the name, ID, phone or address.</string>
-    <string name="consult_age_sex_always">Age and sex are always shared: they matter for the diagnosis and plan.</string>
+    <string name="consult_anonymize">Hide the patient\'s name</string>
+    <string name="consult_anonymize_help">When on, your colleague sees only age and sex. ID number, phone and address are shared only if you tick Personal data.</string>
+    <string name="consult_age_sex_always">Age and sex are always shared: they matter for the diagnosis and plan. The name is shared too, unless you hide it below.</string>
     <string name="age_not_recorded">age not recorded</string>
     <string name="sex_not_recorded">sex not recorded</string>
     <string name="save_and_add_another">Save and add another</string>
@@ -470,4 +470,9 @@
     <string name="export_confidential">CONFIDENTIAL. Medical record from My Clinic.</string>
     <string name="export_no_allergies">No known allergies recorded</string>
     <string name="home_greeting_doctor">Hello, Dr. %1$s</string>
+    <string name="duplicate_title">Already in the record?</string>
+    <string name="duplicate_body">This looks the same as: %1$s</string>
+    <string name="duplicate_confirm">The record already has: %1$s. Save this entry anyway?</string>
+    <string name="save_anyway">Save anyway</string>
+    <string name="remove_added_entry">Remove %1$s</string>
 </resources>

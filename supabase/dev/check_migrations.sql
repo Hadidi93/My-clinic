@@ -18,6 +18,9 @@ from (values
     (8, '20261005000800_doctor_grade_and_search.sql',  exists (select 1 from information_schema.columns
                                                               where table_schema = 'public' and table_name = 'doctors' and column_name = 'grade')),
     (9, '20261005000900_grade_change_requests.sql',    to_regprocedure('public.admin_review_grade(uuid,boolean)') is not null),
-    (10, '20261006001000_access_logs_and_export.sql',  to_regprocedure('public.log_record_export(uuid)') is not null)
+    (10, '20261006001000_access_logs_and_export.sql',  to_regprocedure('public.log_record_export(uuid)') is not null),
+    (11, '20261007001100_consult_shares_name.sql',     exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                                                              where n.nspname = 'public' and p.proname = 'get_consult_patient'
+                                                                and p.prosrc like '%name_shown%'))
 ) as m (n, file, installed)
 order by m.n;

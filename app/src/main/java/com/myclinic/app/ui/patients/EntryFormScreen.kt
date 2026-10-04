@@ -56,6 +56,14 @@ import com.myclinic.domain.forms.FieldType
 import com.myclinic.domain.forms.FormSpec
 import com.myclinic.domain.record.Attachment
 import com.myclinic.domain.record.RecordTable
+import com.myclinic.domain.record.Allergy
+import com.myclinic.domain.record.FamilyHistoryItem
+import com.myclinic.domain.record.MedicalCondition
+import com.myclinic.domain.record.Medication
+import com.myclinic.domain.record.PresentingComplaint
+import com.myclinic.domain.record.RecordEntry
+import com.myclinic.domain.record.SurgicalHistoryItem
+import androidx.compose.material.icons.filled.Delete
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,6 +102,11 @@ fun EntryFormScreen(
                         }
                     },
                     actions = {
+                        if (!viewModel.isNew && viewModel.table != RecordTable.PATIENTS) {
+                            IconButton(onClick = { confirmDelete = true }) {
+                                Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_entry))
+                            }
+                        }
                         if (state.departmentResult == null) {
                             TextButton(onClick = viewModel::save, enabled = !state.saving && !state.loading && !state.readingFile) {
                                 Text(saveLabel)
@@ -136,7 +149,10 @@ fun EntryFormScreen(
                             onRequestPicked = viewModel::onRequestPicked,
                         )
                         if (state.addedInSession.isNotEmpty()) {
-                            AddedEntriesCard(state.addedInSession.map { entrySummary(viewModel.spec, it) })
+                            AddedEntriesCard(
+                                entries = state.addedInSession.map { it.id to entrySummary(viewModel.spec, it.values) },
+                                onRemove = viewModel::removeAdded,
+                            )
                         }
                         // Keyed by round so pickers and search boxes start empty for the next entry.
                         key(state.formRound) {
@@ -150,6 +166,14 @@ fun EntryFormScreen(
                                     onValues = viewModel::onValues,
                                 )
                             }
+                        }
+                        state.duplicateOf?.let { dup ->
+                            MessageCard(
+                                title = stringResource(R.string.duplicate_title),
+                                body = stringResource(R.string.duplicate_body, existingSummary(dup)),
+                                container = MaterialTheme.colorScheme.tertiaryContainer,
+                                content = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
                         }
                         if (viewModel.canAttachFiles) {
                             Text(stringResource(R.string.files_title), style = MaterialTheme.typography.titleMedium)
@@ -196,6 +220,19 @@ fun EntryFormScreen(
                 dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text(stringResource(R.string.keep_editing)) } },
             )
         }
+        if (state.confirmDuplicate != null) {
+            val dup = state.duplicateOf
+            AlertDialog(
+                onDismissRequest = viewModel::dismissDuplicate,
+                title = { Text(stringResource(R.string.duplicate_title)) },
+                text = {
+                    Text(stringResource(R.string.duplicate_confirm, dup?.let { existingSummary(it) }.orEmpty()),
+                        style = MaterialTheme.typography.bodyMedium)
+                },
+                confirmButton = { TextButton(onClick = viewModel::confirmDuplicateSave) { Text(stringResource(R.string.save_anyway)) } },
+                dismissButton = { TextButton(onClick = viewModel::dismissDuplicate) { Text(stringResource(R.string.keep_editing)) } },
+            )
+        }
         if (confirmDelete) {
             AlertDialog(
                 onDismissRequest = { confirmDelete = false },
@@ -208,9 +245,9 @@ fun EntryFormScreen(
     }
 }
 
-/** The entries saved so far with "Save and add another", so the doctor sees what is already in. */
+/** The entries saved so far with "Save and add another", so the doctor sees what is already in (and can undo one). */
 @Composable
-private fun AddedEntriesCard(summaries: List<String>) {
+private fun AddedEntriesCard(entries: List<Pair<String, String>>, onRemove: (String) -> Unit) {
     Card(
         Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
@@ -218,10 +255,14 @@ private fun AddedEntriesCard(summaries: List<String>) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(stringResource(R.string.added_just_now), style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer)
-            summaries.forEach { line ->
+            entries.forEach { (id, line) ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Text(line, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    Text(line, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.weight(1f))
+                    IconButton(onClick = { onRemove(id) }) {
+                        Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.remove_added_entry, line))
+                    }
                 }
             }
             Text(stringResource(R.string.entry_added_next), style = MaterialTheme.typography.bodySmall,
@@ -241,3 +282,15 @@ private fun entrySummary(spec: FormSpec, values: Map<String, String>): String {
         if (f.type == FieldType.CHOICE) optionLabel(v) ?: v else v
     }.joinToString(" · ")
 }
+
+/** How an existing entry is named in the duplicate warning. */
+@Composable
+private fun existingSummary(entry: RecordEntry): String = when (entry) {
+    is PresentingComplaint -> listOf(entry.complaint)
+    is MedicalCondition -> listOf(entry.name)
+    is SurgicalHistoryItem -> listOfNotNull(entry.procedure, formatDate(entry.performedOn))
+    is Medication -> listOfNotNull(entry.name, entry.dose?.takeIf { it.isNotBlank() })
+    is Allergy -> listOf(entry.allergen)
+    is FamilyHistoryItem -> listOfNotNull(optionLabel(entry.relation), entry.condition)
+    else -> emptyList()
+}.joinToString(" · ")

@@ -37,9 +37,11 @@ class PatientIdentityMaskerTest {
     }
 
     @Test
-    fun `identifiers not ticked means hidden even when not anonymized`() {
+    fun `a consult that is not anonymized shares the name, but ID and phone need personal data`() {
         val grant = TestData.grant(sections = setOf(RecordSection.ALLERGIES), anonymized = false)
-        assertNull(PatientIdentityMasker.forConsultant(identity, grant, today).fullName)
+        val view = PatientIdentityMasker.forConsultant(identity, grant, today)
+        assertEquals("Demo Patient One", view.fullName)
+        listOf(view.nationalId, view.fileNumber, view.phone, view.address).forEach { assertNull(it) }
     }
 
     @Test

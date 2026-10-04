@@ -88,7 +88,8 @@ data class NewConsultUiState(
     val question: String = "",
     val urgency: String = "routine",
     val sections: Set<RecordSection> = ConsultRules.DEFAULT_SECTIONS,
-    val anonymize: Boolean = true,
+    /** Off by default: the colleague sees the name with age and sex. */
+    val anonymize: Boolean = false,
     val durationDays: Int = 7,
     val consent: Boolean = false,
     val errors: List<ConsultRequestError> = emptyList(),

@@ -19,6 +19,9 @@ import com.myclinic.domain.forms.FormSpecs
 import com.myclinic.domain.model.RecordSection
 import com.myclinic.domain.record.Allergy
 import com.myclinic.domain.record.Attachment
+import com.myclinic.domain.record.DuplicateCheck
+import com.myclinic.domain.record.PatientRecord
+import com.myclinic.domain.record.RecordEntry
 import com.myclinic.domain.record.Facility
 import com.myclinic.domain.record.InvestigationRequest
 import com.myclinic.domain.record.InvestigationResult
@@ -58,12 +61,18 @@ data class EntryFormUiState(
     val departmentResult: InvestigationResult? = null,
     val error: DataError? = null,
     /** Entries saved with "Save and add another" while this form was open. */
-    val addedInSession: List<Map<String, String>> = emptyList(),
+    val addedInSession: List<AddedEntry> = emptyList(),
+    /** An entry already in the record that this one seems to repeat. */
+    val duplicateOf: RecordEntry? = null,
+    /** Set while asking "save anyway?" about a duplicate; the value says whether to add another after. */
+    val confirmDuplicate: Boolean? = null,
     /** Changes each time the form is cleared for the next entry (resets the field editors). */
     val formRound: Int = 0,
 ) {
     val hasChanges: Boolean get() = !loading && (values != initialValues || newFiles.isNotEmpty())
 }
+
+data class AddedEntry(val id: String, val values: Map<String, String>)
 
 /** Add or edit one entry of any record section; the fields come from [FormSpecs]. */
 @HiltViewModel
@@ -88,6 +97,8 @@ class EntryFormViewModel @Inject constructor(
     val canAttachFiles: Boolean = table == RecordTable.INVESTIGATION_RESULTS || table == RecordTable.POSTOP_FOLLOWUPS
     private val fileSection = if (table == RecordTable.POSTOP_FOLLOWUPS) RecordSection.SURGICAL_CARE else RecordSection.INVESTIGATIONS
 
+    private var latestRecord: PatientRecord? = null
+
     private val _state = MutableStateFlow(EntryFormUiState())
     val state: StateFlow<EntryFormUiState> = _state.asStateFlow()
 
@@ -95,7 +106,7 @@ class EntryFormViewModel @Inject constructor(
         viewModelScope.launch {
             val values = entryId?.let { repository.row(table, it) }?.let { FormCodec.fromJson(spec, it) }
                 ?: FormCodec.newValues(spec)
-            _state.update { it.copy(loading = false, values = values, initialValues = values) }
+            _state.update { it.copy(loading = false, values = values, initialValues = values).withDuplicateCheck() }
             // "Add result" from a request: start with that request's tests.
             val request = route.requestId?.takeIf { isNew }?.let { id ->
                 repository.record(patientId).first()?.investigationRequests?.firstOrNull { it.id == id }
@@ -108,6 +119,7 @@ class EntryFormViewModel @Inject constructor(
         viewModelScope.launch {
             // Keep the allergy banner, pickers and attachments current.
             repository.record(patientId).collect { record ->
+                latestRecord = record
                 _state.update { s ->
                     s.copy(
                         allergies = record?.allergies.orEmpty(),
@@ -118,7 +130,7 @@ class EntryFormViewModel @Inject constructor(
                         }.orEmpty(),
                         departmentResult = record?.investigationResults
                             ?.firstOrNull { it.id == entryId && !InvestigationRules.canEditResult(it) },
-                    )
+                    ).withDuplicateCheck()
                 }
             }
         }
@@ -129,12 +141,18 @@ class EntryFormViewModel @Inject constructor(
     }
 
     fun onValue(key: String, value: String) = _state.update {
-        it.copy(values = it.values + (key to value), errors = it.errors - key)
+        it.copy(values = it.values + (key to value), errors = it.errors - key).withDuplicateCheck()
     }
 
     /** For the condition picker, which sets the name and the code together. */
     fun onValues(changes: Map<String, String>) = _state.update {
-        it.copy(values = it.values + changes, errors = it.errors - changes.keys)
+        it.copy(values = it.values + changes, errors = it.errors - changes.keys).withDuplicateCheck()
+    }
+
+    private fun EntryFormUiState.withDuplicateCheck(): EntryFormUiState {
+        val record = latestRecord ?: return copy(duplicateOf = null)
+        // Not while saving: the entry being saved would match itself.
+        return copy(duplicateOf = if (loading || saving || finished) null else DuplicateCheck.find(record, table, values, excludeId = entryId))
     }
 
     /** Filing a result under a request fills in what is still empty: type, title and the requested tests. */
@@ -189,7 +207,22 @@ class EntryFormViewModel @Inject constructor(
     /** Saves this entry and clears the form for the next one, without leaving the screen. */
     fun saveAndAddAnother() = saveEntry(addAnother = true)
 
-    private fun saveEntry(addAnother: Boolean) {
+    /** "Save anyway" after the duplicate warning. */
+    fun confirmDuplicateSave() {
+        val addAnother = _state.value.confirmDuplicate ?: return
+        _state.update { it.copy(confirmDuplicate = null) }
+        saveEntry(addAnother, duplicateConfirmed = true)
+    }
+
+    fun dismissDuplicate() = _state.update { it.copy(confirmDuplicate = null) }
+
+    /** Undo one of the entries added with "Save and add another" (it is marked as entered in error). */
+    fun removeAdded(id: String) {
+        _state.update { s -> s.copy(addedInSession = s.addedInSession.filterNot { it.id == id }) }
+        viewModelScope.launch { repository.markDeleted(table, id) }
+    }
+
+    private fun saveEntry(addAnother: Boolean, duplicateConfirmed: Boolean = false) {
         val s = _state.value
         // "Done" after adding several: nothing new was typed, so just close.
         if (!addAnother && s.addedInSession.isNotEmpty() && !s.hasChanges) {
@@ -199,6 +232,10 @@ class EntryFormViewModel @Inject constructor(
         val errors = FormCodec.validate(spec, s.values)
         if (errors.isNotEmpty()) {
             _state.update { it.copy(errors = errors) }
+            return
+        }
+        if (!duplicateConfirmed && s.duplicateOf != null) {
+            _state.update { it.copy(confirmDuplicate = addAnother) }
             return
         }
         _state.update { it.copy(saving = true) }
@@ -217,7 +254,8 @@ class EntryFormViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         saving = false, values = fresh, initialValues = fresh, errors = emptyMap(), newFiles = emptyList(),
-                        addedInSession = it.addedInSession + listOf(s.values), formRound = it.formRound + 1,
+                        addedInSession = it.addedInSession + AddedEntry(id, s.values), formRound = it.formRound + 1,
+                        duplicateOf = null,
                     )
                 }
             } else {

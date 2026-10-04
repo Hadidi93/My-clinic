@@ -21,9 +21,10 @@ data class PatientIdentity(
 
 /**
  * What a consultant is allowed to see about who the patient is. Age and sex
- * are always included because they are clinically necessary. Everything
- * else is null unless identifiers were shared and the consult is not
- * anonymized. A null [fullName] means the UI shows "Anonymous patient".
+ * are always included because they are clinically necessary. The name comes
+ * with them unless the consult is anonymized. ID, file number, phone,
+ * address and emergency contact also need "Personal data" to be shared.
+ * A null [fullName] means the UI shows "Anonymous patient".
  */
 data class ConsultantPatientView(
     val ageYears: Int?,
@@ -48,7 +49,7 @@ object PatientIdentityMasker {
         return ConsultantPatientView(
             ageYears = ageOn(identity, today),
             sex = identity.sex,
-            fullName = identity.fullName.takeIf { showIdentity },
+            fullName = identity.fullName.takeIf { !grant.anonymized },
             nationalId = identity.nationalId.takeIf { showIdentity },
             fileNumber = identity.fileNumber.takeIf { showIdentity },
             phone = identity.phone.takeIf { showIdentity },

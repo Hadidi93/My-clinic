@@ -267,6 +267,9 @@ Consult screen.
    - the consult isn't revoked, closed or expired
    - their account is verified
    - identifiers are never visible through an anonymized consult
+   - the patient's name, age and sex come with every consult that is not
+     anonymized (migration 11); ID, file number, phone and address need the
+     "Personal data" section
 4. **Read-only.** Consultants can never insert, change or delete record data.
 5. **Sharing only through checks.** Consults can only be created by
    `create_consult()`. It requires both doctors to be verified, patient consent
