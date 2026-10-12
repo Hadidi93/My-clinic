@@ -23,7 +23,7 @@ dependencyResolutionManagement {
 rootProject.name = "MyClinic"
 
 // :app          -> the Android application (screens, Supabase access, DI)
-// :core:domain  -> plain Kotlin: data models, validation and permission rules.
-//                  No Android code, so its unit tests run fast anywhere.
+// :core:domain  -> shared Kotlin (Android + iPhone): data models, validation
+//                  and permission rules. No platform code, so its unit tests run fast anywhere.
 include(":app")
 include(":core:domain")

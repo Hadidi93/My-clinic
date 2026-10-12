@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.patients
 
+import com.myclinic.domain.record.Dates
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.records.PatientRepository
@@ -25,7 +26,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 data class PatientListUiState(
@@ -54,7 +54,7 @@ class PatientListViewModel @Inject constructor(
     private val query = MutableStateFlow(PatientQuery())
 
     private val summaries = repository.records.map { records ->
-        val today = LocalDate.now()
+        val today = Dates.today()
         records.map { PatientSummaries.from(it, today) }
     }
 
@@ -68,7 +68,7 @@ class PatientListViewModel @Inject constructor(
         PatientListUiState(
             loading = false,
             query = q,
-            results = PatientSearch.filter(all, q, LocalDate.now()),
+            results = PatientSearch.filter(all, q, Dates.today()),
             totalPatients = all.count { !it.patient.isDeleted },
             tagsInUse = PatientSearch.tagsInUse(all.filterNot { it.patient.isDeleted }),
             pendingChanges = sync.pending,

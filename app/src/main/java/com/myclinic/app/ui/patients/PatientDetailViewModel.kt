@@ -35,7 +35,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 import com.myclinic.domain.record.RecordTable
 import kotlinx.serialization.json.JsonNull
@@ -89,7 +88,7 @@ class PatientDetailViewModel @Inject constructor(
             }
             runCatching {
                 val doc = RecordExport.build(
-                    record, language, LocalDate.now(), ::formatDate, ::formatDateTime,
+                    record, language, Dates.today(), ::formatDate, ::formatDateTime,
                     ExportLabels(
                         ageYears = { context.getString(R.string.age_years_short, it) },
                         noKnownAllergies = context.getString(R.string.export_no_allergies),
@@ -153,7 +152,7 @@ class PatientDetailViewModel @Inject constructor(
         PatientDetailUiState(
             loading = false,
             record = record,
-            ageYears = Dates.age(record.patient.dateOfBirth, record.patient.ageYears, LocalDate.now()),
+            ageYears = Dates.age(record.patient.dateOfBirth, record.patient.ageYears, Dates.today()),
             isOwner = me != null && AccessPolicy.canManagePatient(
                 me.id, PatientRef(record.patient.id, record.patient.ownerId, record.patient.isDeleted),
             ),

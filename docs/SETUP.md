@@ -225,7 +225,7 @@ if you want real phone notifications; everything else works without it.
 
 - **Rules and ViewModel tests:** in Android Studio open the Gradle panel →
   `MyClinic → Tasks → verification → test`, or in a terminal:
-  `./gradlew :core:domain:test :app:testDebugUnitTest`
+  `./gradlew :core:domain:jvmTest :app:testDebugUnitTest`
 - **Database security tests:** need a local PostgreSQL 15+ install:
   `PGHOST=localhost PGUSER=postgres supabase/tests/run_local.sh`
 - Both also run automatically on GitHub for every push (the **Actions** tab).

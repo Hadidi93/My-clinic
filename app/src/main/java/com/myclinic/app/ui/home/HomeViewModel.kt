@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.home
 
+import com.myclinic.domain.record.Dates
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.doctor.DoctorRepository
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 data class HomeUiState(
@@ -67,7 +67,7 @@ class HomeViewModel @Inject constructor(
         notifications.notifications,
     ) { records, pending, failed, sync, alerts ->
         val unread = alerts.filterNot { it.isRead }
-        val today = LocalDate.now()
+        val today = Dates.today()
         val live = records.filterNot { it.patient.isDeleted }
         HomeUiState(
             loading = false,

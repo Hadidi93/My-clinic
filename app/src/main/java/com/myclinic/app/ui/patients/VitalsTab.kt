@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.patients
 
+import kotlinx.datetime.toJavaInstant
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -78,7 +79,7 @@ fun VitalsTab(
             unit = selected.sign.unit,
             low = selected.sign.normalLow,
             high = selected.sign.normalHigh,
-            points = VitalsSeries.series(examinations, selected.sign).map { ChartPoint(it.at, it.value, it.abnormal) },
+            points = VitalsSeries.series(examinations, selected.sign).map { ChartPoint(it.at.toJavaInstant(), it.value, it.abnormal) },
         )
         is Trend.Lab -> {
             val lab = LabTrends.series(results, selected.test)
@@ -88,7 +89,7 @@ fun VitalsTab(
                 // The lab's own reference range, from the latest result that gives one.
                 low = lab.lastOrNull { it.low != null }?.low,
                 high = lab.lastOrNull { it.high != null }?.high,
-                points = lab.map { ChartPoint(it.at, it.value, it.abnormal) },
+                points = lab.map { ChartPoint(it.at.toJavaInstant(), it.value, it.abnormal) },
             )
         }
     }

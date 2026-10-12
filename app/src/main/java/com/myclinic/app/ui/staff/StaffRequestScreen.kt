@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.staff
 
+import com.myclinic.domain.record.Dates
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -78,7 +79,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 /** The result form staff fill in: the same fields as the doctor's result form, minus the request picker and type. */
@@ -175,7 +175,7 @@ class StaffRequestViewModel @Inject constructor(
     fun submit() {
         val s = _state.value
         val detail = s.detail ?: return
-        val errors = FormCodec.validate(STAFF_RESULT_FORM, s.values, LocalDate.now())
+        val errors = FormCodec.validate(STAFF_RESULT_FORM, s.values, Dates.today())
         val values = FormCodec.parseLabValues(s.values["lab_values"].orEmpty()).orEmpty()
         val nothing = s.values["report_text"].isNullOrBlank() && values.isEmpty() && s.files.isEmpty()
         if (errors.isNotEmpty() || nothing) {

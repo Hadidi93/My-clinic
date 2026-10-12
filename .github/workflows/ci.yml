@@ -3,6 +3,7 @@
 #      PostgreSQL and runs the Row-Level Security tests.
 #   2. android: runs all unit tests and builds a debug APK you can download
 #      from the run's "Artifacts" section and install on a test phone.
+#   3. ios: compiles the shared code for iPhone on a Mac (no Mac needed on your side).
 name: CI
 
 on:
@@ -53,7 +54,7 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           # Optional: the text of google-services.json (push notifications).
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: ./gradlew :core:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease --stacktrace
+        run: ./gradlew :core:domain:jvmTest :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease --stacktrace
       - name: Play Store bundle (only when the upload key secrets are set)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -96,6 +97,26 @@ jobs:
         with:
           name: test-reports
           path: "**/build/reports/tests/"
+
+  # The shared code (rules, and later data and screens) compiled for iPhone.
+  # Mac minutes count 10x against GitHub's free allowance, so this job stays short.
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Cache the Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+      - name: Compile shared code for iPhone and the iPhone simulator
+        run: ./gradlew :core:domain:compileKotlinIosArm64 :core:domain:compileKotlinIosSimulatorArm64 --stacktrace
 
   # Starts the app on an Android emulator and fails if it crashes on launch.
   launch-smoke-test:

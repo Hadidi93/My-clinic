@@ -1,5 +1,7 @@
 package com.myclinic.app.ui.patients
 
+import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toJavaLocalDate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -243,7 +245,7 @@ private fun DateField(label: String, value: String, error: String?, withTime: Bo
     }
 
     if (showDate) {
-        val initialDay = Dates.localDate(value) ?: LocalDate.now()
+        val initialDay = Dates.localDate(value)?.toJavaLocalDate() ?: LocalDate.now()
         val pickerState = rememberDatePickerState(
             initialSelectedDateMillis = initialDay.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
         )
@@ -267,7 +269,7 @@ private fun DateField(label: String, value: String, error: String?, withTime: Bo
     }
 
     pendingDate?.let { day ->
-        val initialTime = Dates.instant(value)?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.now()
+        val initialTime = Dates.instant(value)?.toJavaInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.now()
         val timeState = rememberTimePickerState(initialHour = initialTime.hour, initialMinute = initialTime.minute)
         AlertDialog(
             onDismissRequest = { pendingDate = null },

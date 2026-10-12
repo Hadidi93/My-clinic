@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import com.myclinic.domain.record.Dates
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -173,9 +174,9 @@ class NewConsultViewModel @Inject constructor(
                 anonymize = s.anonymize,
                 durationDays = s.durationDays,
                 consentConfirmed = s.consent,
-                consentDate = if (s.consent) LocalDate.now() else null,
+                consentDate = if (s.consent) Dates.today() else null,
             ),
-            today = LocalDate.now(),
+            today = Dates.today(),
         )
     }
 

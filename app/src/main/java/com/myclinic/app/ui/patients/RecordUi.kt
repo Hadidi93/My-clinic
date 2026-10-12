@@ -1,5 +1,7 @@
 package com.myclinic.app.ui.patients
 
+import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toJavaLocalDate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -114,11 +116,11 @@ fun SyncBanner(pending: Int, failed: Int, offline: Boolean, onDiscardFailed: () 
 
 private fun locale(): Locale = Locale.getDefault()
 
-fun formatDate(iso: String?): String? = Dates.localDate(iso)?.format(
+fun formatDate(iso: String?): String? = Dates.localDate(iso)?.toJavaLocalDate()?.format(
     DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale()),
 )
 
-fun formatDateTime(iso: String?): String? = Dates.instant(iso)?.atZone(ZoneId.systemDefault())?.format(
+fun formatDateTime(iso: String?): String? = Dates.instant(iso)?.toJavaInstant()?.atZone(ZoneId.systemDefault())?.format(
     DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT).withLocale(locale()),
 )
 

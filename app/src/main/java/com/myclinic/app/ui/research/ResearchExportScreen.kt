@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.research
 
+import com.myclinic.domain.record.Dates
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -67,7 +68,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 data class ResearchForm(
@@ -92,7 +92,7 @@ class ResearchExportViewModel @Inject constructor(
     private val form = MutableStateFlow(ResearchForm())
 
     val state: StateFlow<ResearchUiState> = combine(patients.records, doctors.myProfile, form) { records, me, f ->
-        val today = LocalDate.now()
+        val today = Dates.today()
         // Only the doctor's own patients, never co-managed or deleted ones.
         val mine = records.filter { me != null && it.patient.ownerId == me.id && !it.patient.isDeleted }
         val summaries = mine.map { PatientSummaries.from(it, today) }
@@ -116,7 +116,7 @@ class ResearchExportViewModel @Inject constructor(
                 .onFailure { e -> form.update { it.copy(working = false, error = e.toDataError()) } }
                 .onSuccess {
                     runCatching {
-                        val today = LocalDate.now()
+                        val today = Dates.today()
                         exporter.shareIntent(exporter.write(ResearchExport.build(s.matching, s.form.options, today), today), title)
                     }
                         .onSuccess { intent -> form.update { it.copy(working = false, share = intent) } }
