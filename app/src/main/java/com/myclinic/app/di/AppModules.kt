@@ -18,6 +18,7 @@ import com.myclinic.app.data.files.AndroidFileVault
 import com.myclinic.app.data.files.ClinicalFileStore
 import com.myclinic.app.data.files.StagedFileVault
 import com.myclinic.app.data.files.PickedFileReader
+import com.myclinic.app.data.local.AndroidLocalDatabase
 import com.myclinic.app.data.local.LocalDatabase
 import com.myclinic.app.data.media.ImageCompressor
 import com.myclinic.app.data.notifications.NotificationRepository
@@ -31,6 +32,7 @@ import com.myclinic.app.data.staff.StaffRepository
 import com.myclinic.app.data.staff.SupabaseStaffRepository
 import com.myclinic.app.data.sync.SyncEngine
 import com.myclinic.app.data.sync.SyncScheduler
+import com.myclinic.app.data.sync.SyncTrigger
 import com.myclinic.app.data.sync.SyncWorker
 import com.myclinic.app.security.AppLockManager
 import com.myclinic.app.ui.admin.AdminApprovalsViewModel
@@ -91,7 +93,7 @@ fun createAppSupabaseClient(sessionManager: EncryptedSessionManager): SupabaseCl
 val dataModule = module {
     singleOf(::EncryptedSessionManager)
     single { createAppSupabaseClient(get()) }
-    single { LocalDatabase.open(get()) }
+    single { AndroidLocalDatabase.open(get()) }
     single { get<LocalDatabase>().dao() }
 
     singleOf(::SupabaseAuthRepository) { bind<AuthRepository>() }
@@ -111,7 +113,7 @@ val dataModule = module {
     singleOf(::ResearchExporter)
     singleOf(::PushManager) { bind<PushChannel>() }
     singleOf(::SyncEngine)
-    singleOf(::SyncScheduler)
+    singleOf(::SyncScheduler) { bind<SyncTrigger>() }
     singleOf(::AppLockManager)
     workerOf(::SyncWorker)
 }

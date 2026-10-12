@@ -35,12 +35,12 @@ class SyncWorker(
 
 class SyncScheduler(
     private val context: Context,
-) {
+) : SyncTrigger {
     private val workManager get() = WorkManager.getInstance(context)
     private val needsNetwork = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
     /** Sync as soon as there is a connection (after every local change, and on app start). */
-    fun requestSync() {
+    override fun requestSync() {
         val request = OneTimeWorkRequestBuilder<SyncWorker>()
             .setConstraints(needsNetwork)
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
@@ -49,14 +49,14 @@ class SyncScheduler(
     }
 
     /** Background refresh every 15 minutes (the shortest Android allows). */
-    fun schedulePeriodic() {
+    override fun schedulePeriodic() {
         val request = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES)
             .setConstraints(needsNetwork)
             .build()
         workManager.enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP, request)
     }
 
-    fun cancelAll() {
+    override fun cancelAll() {
         workManager.cancelUniqueWork(NOW)
         workManager.cancelUniqueWork(PERIODIC)
     }

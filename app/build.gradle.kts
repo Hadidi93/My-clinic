@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
 }
 
 // Supabase URL and anon key are read from local.properties (git-ignored) or
@@ -172,12 +171,7 @@ dependencies {
 
     implementation(libs.coil.compose)
 
-    // Offline cache: Room on top of SQLCipher (encrypted SQLite)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
-    implementation(libs.sqlcipher)
-    implementation(libs.androidx.sqlite)
+    // Offline cache: Room on top of SQLCipher lives in :shared (androidMain)
 
     // App lock (fingerprint / face / phone PIN)
     implementation(libs.androidx.biometric)

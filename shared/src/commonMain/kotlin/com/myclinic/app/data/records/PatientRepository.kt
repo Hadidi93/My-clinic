@@ -6,7 +6,7 @@ import com.myclinic.app.data.local.CachedRowEntity
 import com.myclinic.app.data.local.LocalDao
 import com.myclinic.app.data.local.PendingOpEntity
 import com.myclinic.app.data.sync.SyncEngine
-import com.myclinic.app.data.sync.SyncScheduler
+import com.myclinic.app.data.sync.SyncTrigger
 import com.myclinic.app.data.sync.SyncStatus
 import com.myclinic.domain.forms.FormCodec
 import com.myclinic.domain.forms.FormSpecs
@@ -21,6 +21,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -32,8 +33,8 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
-import java.time.Instant
-import java.util.UUID
+import kotlinx.datetime.Clock
+import kotlin.uuid.Uuid
 
 /**
  * Patient records for the screens. Reads come from the encrypted offline
@@ -88,7 +89,7 @@ interface PatientRepository {
 class CachedPatientRepository(
     private val dao: LocalDao,
     private val supabase: SupabaseClient,
-    private val scheduler: SyncScheduler,
+    private val scheduler: SyncTrigger,
     private val engine: SyncEngine,
     private val files: ClinicalFileStore,
 ) : PatientRepository {
@@ -119,9 +120,9 @@ class CachedPatientRepository(
     override suspend fun save(table: RecordTable, patientId: String?, rowId: String?, values: Map<String, String>): String {
         val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not signed in")
         val existing = rowId?.let { dao.getRow(table.tableName, it) }
-        val id = existing?.id ?: UUID.randomUUID().toString()
+        val id = existing?.id ?: Uuid.random().toString()
         val ownerPatientId = if (table == RecordTable.PATIENTS) id else requireNotNull(patientId)
-        val now = Instant.now().toString()
+        val now = Clock.System.now().toString()
 
         val base: JsonObject = existing?.json?.let(::parse) ?: buildJsonObject {
             put("id", id)
@@ -140,8 +141,8 @@ class CachedPatientRepository(
     override suspend fun saveChanges(table: RecordTable, patientId: String, rowId: String?, changes: JsonObject): String {
         val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not signed in")
         val existing = rowId?.let { dao.getRow(table.tableName, it) }
-        val id = existing?.id ?: rowId ?: UUID.randomUUID().toString()
-        val now = Instant.now().toString()
+        val id = existing?.id ?: rowId ?: Uuid.random().toString()
+        val now = Clock.System.now().toString()
         val base: JsonObject = existing?.json?.let(::parse) ?: buildJsonObject {
             put("id", id)
             put("patient_id", patientId)
@@ -172,23 +173,23 @@ class CachedPatientRepository(
                 put("mime_type", file.mimeType)
                 put("file_name", file.fileName)
                 put("caption", JsonNull)
-                put("taken_at", Instant.now().toString())
+                put("taken_at", Clock.System.now().toString())
             },
         )
     }
 
     override suspend fun loadFile(storagePath: String): ByteArray = files.load(storagePath)
 
-    override suspend fun markDeleted(table: RecordTable, id: String) = setDeletedAt(table, id, Instant.now().toString())
+    override suspend fun markDeleted(table: RecordTable, id: String) = setDeletedAt(table, id, Clock.System.now().toString())
 
     override suspend fun setPatientDeleted(patientId: String, deleted: Boolean) =
-        setDeletedAt(RecordTable.PATIENTS, patientId, if (deleted) Instant.now().toString() else null)
+        setDeletedAt(RecordTable.PATIENTS, patientId, if (deleted) Clock.System.now().toString() else null)
 
     private suspend fun setDeletedAt(table: RecordTable, id: String, value: String?) {
         val existing = dao.getRow(table.tableName, id) ?: return
         val json = parse(existing.json) ?: return
         val updated = JsonObject(json + ("deleted_at" to (value?.let { JsonPrimitive(it) } ?: JsonNull)))
-            .withLocalUpdatedAt(Instant.now().toString())
+            .withLocalUpdatedAt(Clock.System.now().toString())
         write(table, id, existing.patientId, updated, existing.onServer)
     }
 
@@ -197,7 +198,7 @@ class CachedPatientRepository(
         dao.saveLocalChange(
             CachedRowEntity(table.tableName, id, patientId, text, row["updated_at"]?.toString()?.trim('"'), onServer),
             PendingOpEntity(tableName = table.tableName, rowId = id, patientId = patientId, json = text,
-                createdAtMillis = System.currentTimeMillis()),
+                createdAtMillis = Clock.System.now().toEpochMilliseconds()),
         )
         scheduler.requestSync()
     }

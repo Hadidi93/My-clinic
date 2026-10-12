@@ -18,9 +18,9 @@ datetime = "0.6.1"
 supabase = "3.0.3"
 ktor = "3.0.3"
 coil = "2.7.0"
-room = "2.6.1"
+room = "2.7.1"
 sqlcipher = "4.6.1"
-sqlite = "2.4.0"
+sqlite = "2.5.1"
 work = "2.10.0"
 firebaseBom = "33.7.0"
 biometric = "1.1.0"
@@ -69,10 +69,10 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 sqlcipher = { module = "net.zetetic:sqlcipher-android", version.ref = "sqlcipher" }
 androidx-sqlite = { module = "androidx.sqlite:sqlite-ktx", version.ref = "sqlite" }
+sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 
 junit = { module = "junit:junit", version.ref = "junit" }

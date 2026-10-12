@@ -28,8 +28,10 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
-import java.io.IOException
-import java.time.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.io.IOException
+import kotlin.time.Duration.Companion.seconds
 
 data class SyncStatus(
     val running: Boolean = false,
@@ -66,7 +68,7 @@ class SyncEngine(
             push()
             pull()
             purge()
-            _status.update { it.copy(running = false, offline = false, lastSyncedAt = Instant.now()) }
+            _status.update { it.copy(running = false, offline = false, lastSyncedAt = Clock.System.now()) }
             SyncOutcome.SUCCESS
         } catch (e: CancellationException) {
             _status.update { it.copy(running = false) }
@@ -135,7 +137,7 @@ class SyncEngine(
             val cursorKey = "cursor:${table.tableName}"
             // Re-read the last two minutes each time: rows committed slightly
             // out of order are then never missed (re-applying is harmless).
-            var since: String? = dao.meta(cursorKey)?.let { Instant.parse(it).minusSeconds(120).toString() }
+            var since: String? = dao.meta(cursorKey)?.let { Instant.parse(it).minus(120.seconds).toString() }
             var afterId = ZERO_UUID
             var newest: String? = null
             while (true) {
@@ -157,7 +159,7 @@ class SyncEngine(
                 if (rows.size < PAGE_SIZE) break
             }
             newest?.let { value ->
-                runCatching { Instant.parse(normalizeInstant(value)) }.getOrNull()?.let {
+                runCatching { Instant.parse(value) }.getOrNull()?.let {
                     dao.setMeta(SyncMetaEntity(cursorKey, it.toString()))
                 }
             }
@@ -195,10 +197,6 @@ class SyncEngine(
     }
 
     private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull
-
-    /** Postgres writes "+00:00"; java.time.Instant wants "Z". */
-    private fun normalizeInstant(value: String): String =
-        java.time.OffsetDateTime.parse(value).toInstant().toString()
 
     private companion object {
         const val META_OWNER = "owner_user_id"
