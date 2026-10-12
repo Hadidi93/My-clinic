@@ -34,7 +34,7 @@ kotlin {
             api(project.dependencies.platform(libs.koin.bom))
             api(libs.koin.core)
             // Offline copy (Room works on Android and iPhone)
-            implementation(libs.room.runtime)
+            api(libs.room.runtime)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
