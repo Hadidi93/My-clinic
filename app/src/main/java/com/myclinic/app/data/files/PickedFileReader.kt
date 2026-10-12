@@ -4,16 +4,14 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import com.myclinic.app.data.media.ImageCompressor
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 class FileTooLargeException : Exception("File is larger than 15 MB")
 
 /** Turns a photo or PDF the user picked (or took) into a [PickedFile]. */
-class PickedFileReader @Inject constructor(
-    @ApplicationContext private val context: Context,
+class PickedFileReader(
+    private val context: Context,
     private val imageCompressor: ImageCompressor,
 ) {
     /** Photos are resized to at most 2560 px and re-encoded, which also removes GPS and camera details. */

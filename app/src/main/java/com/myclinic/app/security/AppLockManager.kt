@@ -15,8 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Locks the app (fingerprint / face / phone PIN to continue) at every start
@@ -24,8 +22,7 @@ import javax.inject.Singleton
  * left open on the table. Uses the phone's uptime clock, which can't be moved
  * by changing the date.
  */
-@Singleton
-class AppLockManager @Inject constructor() {
+class AppLockManager() {
 
     private val _locked = MutableStateFlow(true)
     val locked: StateFlow<Boolean> = _locked.asStateFlow()

@@ -17,12 +17,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
 
-@Singleton
-class SupabaseDoctorRepository @Inject constructor(
+class SupabaseDoctorRepository(
     private val supabase: SupabaseClient,
 ) : DoctorRepository {
 

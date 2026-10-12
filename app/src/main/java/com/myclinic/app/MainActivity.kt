@@ -1,5 +1,6 @@
 package com.myclinic.app
 
+import org.koin.android.ext.android.inject
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -10,20 +11,17 @@ import com.myclinic.app.data.push.PushManager
 import com.myclinic.app.security.AppLockManager
 import com.myclinic.app.ui.root.MyClinicRoot
 import com.myclinic.app.ui.theme.MyClinicTheme
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 /**
  * The app's only Activity. Every screen is a Compose function shown inside it.
  * It extends AppCompatActivity so the in-app language switch (English/Arabic)
  * works on all supported Android versions.
  */
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    @Inject lateinit var authRepository: AuthRepository
-    @Inject lateinit var push: PushManager
-    @Inject lateinit var appLock: AppLockManager
+    private val authRepository: AuthRepository by inject()
+    private val push: PushManager by inject()
+    private val appLock: AppLockManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

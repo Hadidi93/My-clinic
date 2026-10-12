@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.auth
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.MaterialTheme
@@ -14,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
 import com.myclinic.app.ui.components.AppTextField
@@ -32,7 +32,7 @@ import com.myclinic.domain.validation.PasswordPolicy
 fun SignUpScreen(
     onBack: () -> Unit,
     onRegistered: (email: String) -> Unit,
-    viewModel: SignUpViewModel = hiltViewModel(),
+    viewModel: SignUpViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val focus = LocalFocusManager.current

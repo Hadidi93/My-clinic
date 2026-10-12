@@ -10,8 +10,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** Access logs (online only). The server decides who may see which log. */
 interface AuditRepository {
@@ -26,8 +24,7 @@ interface AuditRepository {
     suspend fun logResearchExport(patientIds: List<String>): Result<Unit>
 }
 
-@Singleton
-class SupabaseAuditRepository @Inject constructor(
+class SupabaseAuditRepository(
     private val supabase: SupabaseClient,
 ) : AuditRepository {
 

@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -75,7 +75,6 @@ import com.myclinic.domain.consult.NotificationKind
 import com.myclinic.domain.consult.ReferralRules
 import com.myclinic.domain.consult.ReferralSummary
 import com.myclinic.domain.record.Patient
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,7 +84,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import javax.inject.Inject
 
 // ---------------------------------------------------------------------------
 // New referral
@@ -107,8 +105,7 @@ data class NewReferralUiState(
 )
 
 @OptIn(FlowPreview::class)
-@HiltViewModel
-class NewReferralViewModel @Inject constructor(
+class NewReferralViewModel(
     savedStateHandle: SavedStateHandle,
     private val consults: ConsultRepository,
     private val doctors: DoctorRepository,
@@ -164,7 +161,7 @@ class NewReferralViewModel @Inject constructor(
 /** Refer a patient: co-management (both doctors) or transfer of care (the colleague becomes the main doctor). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewReferralScreen(onClose: () -> Unit, onSent: () -> Unit, viewModel: NewReferralViewModel = hiltViewModel()) {
+fun NewReferralScreen(onClose: () -> Unit, onSent: () -> Unit, viewModel: NewReferralViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.done) { if (state.done) onSent() }
 
@@ -239,8 +236,7 @@ data class ReferralsUiState(
     val error: DataError? = null,
 )
 
-@HiltViewModel
-class ReferralsViewModel @Inject constructor(
+class ReferralsViewModel(
     private val repository: ConsultRepository,
     private val notifications: NotificationRepository,
     private val patients: PatientRepository,
@@ -284,7 +280,7 @@ class ReferralsViewModel @Inject constructor(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReferralsScreen(onBack: () -> Unit, onOpenPatient: (String) -> Unit, viewModel: ReferralsViewModel = hiltViewModel()) {
+fun ReferralsScreen(onBack: () -> Unit, onOpenPatient: (String) -> Unit, viewModel: ReferralsViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var confirm by remember { mutableStateOf<Pair<String, ReferralSummary>?>(null) }
     LifecycleResumeEffect(Unit) {

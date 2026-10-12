@@ -29,7 +29,6 @@ import com.myclinic.domain.record.InvestigationRules
 import com.myclinic.domain.record.LabCatalog
 import com.myclinic.domain.record.RecordTable
 import com.myclinic.domain.record.SurgicalCase
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +36,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class EntryFormUiState(
     val loading: Boolean = true,
@@ -75,8 +73,7 @@ data class EntryFormUiState(
 data class AddedEntry(val id: String, val values: Map<String, String>)
 
 /** Add or edit one entry of any record section; the fields come from [FormSpecs]. */
-@HiltViewModel
-class EntryFormViewModel @Inject constructor(
+class EntryFormViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: PatientRepository,
     private val facilityRepository: FacilityRepository,

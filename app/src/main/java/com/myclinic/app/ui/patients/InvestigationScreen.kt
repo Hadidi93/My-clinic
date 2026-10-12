@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.patients
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,7 +58,6 @@ import com.myclinic.domain.record.InvestigationResult
 import com.myclinic.domain.record.InvestigationRules
 import com.myclinic.domain.record.InvestigationStatus
 import com.myclinic.domain.record.RecordTable
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -67,7 +66,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.time.Instant
-import javax.inject.Inject
 
 data class InvestigationUiState(
     val loading: Boolean = true,
@@ -79,8 +77,7 @@ data class InvestigationUiState(
     val editable: Boolean = false,
 )
 
-@HiltViewModel
-class InvestigationViewModel @Inject constructor(
+class InvestigationViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: PatientRepository,
     facilityRepository: FacilityRepository,
@@ -135,7 +132,7 @@ fun InvestigationScreen(
     onBack: () -> Unit,
     onEdit: (table: RecordTable, entryId: String?, requestId: String?) -> Unit,
     onOpenFile: (Attachment) -> Unit,
-    viewModel: InvestigationViewModel = hiltViewModel(),
+    viewModel: InvestigationViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var confirmCancel by remember { mutableStateOf(false) }

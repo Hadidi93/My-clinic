@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.auth
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -7,7 +8,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
 import com.myclinic.app.ui.components.AppTextField
@@ -22,7 +22,7 @@ import com.myclinic.domain.validation.PasswordError
 import com.myclinic.domain.validation.PasswordPolicy
 
 @Composable
-fun ForgotPasswordScreen(onBack: () -> Unit, viewModel: ForgotPasswordViewModel = hiltViewModel()) {
+fun ForgotPasswordScreen(onBack: () -> Unit, viewModel: ForgotPasswordViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val focus = LocalFocusManager.current
 
@@ -61,7 +61,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit, viewModel: ForgotPasswordViewModel 
 
 /** Shown when the app was opened from a password-reset email link. */
 @Composable
-fun ResetPasswordScreen(viewModel: ResetPasswordViewModel = hiltViewModel()) {
+fun ResetPasswordScreen(viewModel: ResetPasswordViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val focus = LocalFocusManager.current
     val errors = state.passwordErrors

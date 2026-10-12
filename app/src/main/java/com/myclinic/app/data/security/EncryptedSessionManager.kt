@@ -1,23 +1,19 @@
 package com.myclinic.app.data.security
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jan.supabase.auth.SessionManager
 import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Stores the Supabase login session encrypted on disk (by default the
  * library stores it as plain text). If the stored value can't be decrypted,
  * for example after the Keystore key was wiped, we treat it as "logged out".
  */
-@Singleton
-class EncryptedSessionManager @Inject constructor(
-    @ApplicationContext context: Context,
+class EncryptedSessionManager(
+    context: Context,
 ) : SessionManager {
 
     private val prefs = context.getSharedPreferences("secure_session", Context.MODE_PRIVATE)

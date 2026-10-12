@@ -20,8 +20,6 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.time.Instant
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * The in-app notification list (bell icon). Rows only say what happened
@@ -47,8 +45,7 @@ interface NotificationRepository {
     fun onOpenHandled()
 }
 
-@Singleton
-class SupabaseNotificationRepository @Inject constructor(
+class SupabaseNotificationRepository(
     private val supabase: SupabaseClient,
     private val push: PushManager,
 ) : NotificationRepository {

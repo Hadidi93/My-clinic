@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.staff
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,13 +50,11 @@ import com.myclinic.app.ui.patients.sexAgeLine
 import com.myclinic.app.ui.profile.VerificationStatusCard
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.record.WorklistItem
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class StaffHomeUiState(
     val loading: Boolean = false,
@@ -65,8 +63,7 @@ data class StaffHomeUiState(
     val error: DataError? = null,
 )
 
-@HiltViewModel
-class StaffHomeViewModel @Inject constructor(
+class StaffHomeViewModel(
     private val repository: StaffRepository,
     private val notifications: NotificationRepository,
 ) : ViewModel() {
@@ -101,7 +98,7 @@ fun StaffHomeScreen(
     staff: Doctor,
     onOpenProfile: () -> Unit,
     onOpenRequest: (String) -> Unit,
-    viewModel: StaffHomeViewModel = hiltViewModel(),
+    viewModel: StaffHomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     RequestNotificationPermission()

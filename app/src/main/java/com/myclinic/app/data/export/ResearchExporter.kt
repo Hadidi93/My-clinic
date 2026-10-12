@@ -4,22 +4,20 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.myclinic.domain.record.CsvFile
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlinx.datetime.LocalDate
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import javax.inject.Inject
 
 /**
  * Packs the research spreadsheets into one ZIP in the private exports folder
  * (cleared at every app start, like the PDF export) and offers it through
  * the share sheet. CSV files start with a UTF-8 mark so Excel shows Arabic correctly.
  */
-class ResearchExporter @Inject constructor(
-    @ApplicationContext private val context: Context,
+class ResearchExporter(
+    private val context: Context,
 ) {
     private val dir: File get() = File(context.cacheDir, "exports").apply { mkdirs() }
 

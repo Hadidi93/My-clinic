@@ -15,13 +15,11 @@ import com.myclinic.domain.record.InvestigationDashboard
 import com.myclinic.domain.record.ResultToReview
 import com.myclinic.domain.record.PatientSummaries
 import com.myclinic.domain.record.UpcomingOperation
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class HomeUiState(
     val loading: Boolean = true,
@@ -38,8 +36,7 @@ data class HomeUiState(
     val unreadReferrals: Int = 0,
 )
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
+class HomeViewModel(
     private val repository: PatientRepository,
     private val notifications: NotificationRepository,
     private val doctors: DoctorRepository,

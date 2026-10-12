@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.auth
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.MaterialTheme
@@ -12,7 +13,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
 import com.myclinic.app.data.auth.LinkMessage
@@ -30,7 +30,7 @@ fun LoginScreen(
     onForgotPassword: () -> Unit,
     linkMessage: LinkMessage? = null,
     onDismissLinkMessage: () -> Unit = {},
-    viewModel: LoginViewModel = hiltViewModel(),
+    viewModel: LoginViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val focus = LocalFocusManager.current

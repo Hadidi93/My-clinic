@@ -9,7 +9,6 @@ import com.myclinic.app.data.notifications.NotificationRepository
 import com.myclinic.app.security.AppLockManager
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.domain.model.Doctor
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +16,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /** Which part of the app to show. */
 sealed interface RootState {
@@ -42,8 +40,7 @@ private val RootState.userId: String?
  * user should see. Screens never navigate between "signed in" and "signed
  * out" themselves; they change the session and this reacts.
  */
-@HiltViewModel
-class RootViewModel @Inject constructor(
+class RootViewModel(
     private val authRepository: AuthRepository,
     private val doctorRepository: DoctorRepository,
     private val patientRepository: PatientRepository,

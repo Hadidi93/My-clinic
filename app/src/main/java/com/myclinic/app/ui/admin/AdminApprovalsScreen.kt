@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.admin
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.myclinic.app.R
@@ -55,7 +55,7 @@ import com.myclinic.domain.model.VerificationStatus
 /** Admin-only list of doctors waiting for licence verification. Screenshots are blocked here. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel = hiltViewModel()) {
+fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var rejecting by remember { mutableStateOf<Doctor?>(null) }

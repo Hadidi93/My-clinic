@@ -60,7 +60,7 @@
             </intent-filter>
         </activity>
 
-        <!-- WorkManager is started by MyClinicApp (so sync workers get Hilt injection). -->
+        <!-- WorkManager is started by MyClinicApp (so sync workers get their dependencies from Koin). -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

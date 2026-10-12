@@ -6,13 +6,11 @@ import com.myclinic.app.data.auth.AuthFailure
 import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.domain.error.AuthError
 import com.myclinic.domain.validation.EmailValidator
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class LoginUiState(
     val email: String = "",
@@ -28,8 +26,7 @@ data class LoginUiState(
  * On success nothing needs to happen here: the root screen notices the new
  * session and moves on to the app automatically.
  */
-@HiltViewModel
-class LoginViewModel @Inject constructor(
+class LoginViewModel(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 

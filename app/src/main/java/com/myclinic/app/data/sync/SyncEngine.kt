@@ -30,8 +30,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import java.io.IOException
 import java.time.Instant
-import javax.inject.Inject
-import javax.inject.Singleton
 
 data class SyncStatus(
     val running: Boolean = false,
@@ -51,8 +49,7 @@ enum class SyncOutcome { SUCCESS, NOT_SIGNED_IN, NETWORK_ERROR, ERROR }
  * Conflicts: if a row has an un-uploaded local change, the local version
  * wins until it is uploaded; otherwise the server version wins.
  */
-@Singleton
-class SyncEngine @Inject constructor(
+class SyncEngine(
     private val supabase: SupabaseClient,
     private val dao: LocalDao,
     private val files: ClinicalFileStore,

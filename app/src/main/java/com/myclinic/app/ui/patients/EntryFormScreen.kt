@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.patients
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
 import com.myclinic.app.ui.components.ErrorMessage
@@ -70,7 +70,7 @@ import androidx.compose.material.icons.filled.Delete
 fun EntryFormScreen(
     onClose: () -> Unit,
     onOpenFile: (Attachment) -> Unit,
-    viewModel: EntryFormViewModel = hiltViewModel(),
+    viewModel: EntryFormViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var confirmDiscard by remember { mutableStateOf(false) }

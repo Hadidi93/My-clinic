@@ -8,13 +8,11 @@ import com.myclinic.domain.error.AuthError
 import com.myclinic.domain.validation.EmailValidator
 import com.myclinic.domain.validation.PasswordError
 import com.myclinic.domain.validation.PasswordPolicy
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ForgotPasswordUiState(
     val email: String = "",
@@ -24,8 +22,7 @@ data class ForgotPasswordUiState(
     val error: AuthError? = null,
 )
 
-@HiltViewModel
-class ForgotPasswordViewModel @Inject constructor(
+class ForgotPasswordViewModel(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ForgotPasswordUiState())
@@ -67,8 +64,7 @@ data class ResetPasswordUiState(
 }
 
 /** Shown after the user opens the reset link from their email. */
-@HiltViewModel
-class ResetPasswordViewModel @Inject constructor(
+class ResetPasswordViewModel(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ResetPasswordUiState())

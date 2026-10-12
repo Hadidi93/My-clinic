@@ -1,7 +1,6 @@
 package com.myclinic.app.data.sync
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -12,20 +11,14 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** Runs a sync in the background, even if the app was closed; Android retries it when the network returns. */
-@HiltWorker
-class SyncWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted params: WorkerParameters,
+class SyncWorker(
+    context: Context,
+    params: WorkerParameters,
     private val engine: SyncEngine,
     private val supabase: SupabaseClient,
 ) : CoroutineWorker(context, params) {
@@ -40,9 +33,8 @@ class SyncWorker @AssistedInject constructor(
     }
 }
 
-@Singleton
-class SyncScheduler @Inject constructor(
-    @ApplicationContext private val context: Context,
+class SyncScheduler(
+    private val context: Context,
 ) {
     private val workManager get() = WorkManager.getInstance(context)
     private val needsNetwork = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()

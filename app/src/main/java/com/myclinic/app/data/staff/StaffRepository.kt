@@ -13,8 +13,6 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * The lab/radiology side. Everything goes through the staff_* database
@@ -36,8 +34,7 @@ interface StaffRepository {
     ): Result<Unit>
 }
 
-@Singleton
-class SupabaseStaffRepository @Inject constructor(
+class SupabaseStaffRepository(
     private val supabase: SupabaseClient,
     private val fileStore: ClinicalFileStore,
 ) : StaffRepository {

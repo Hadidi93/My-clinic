@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.files
 
+import org.koin.androidx.compose.koinViewModel
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -42,7 +43,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,8 +59,6 @@ import com.myclinic.app.ui.components.FullScreenLoading
 import com.myclinic.app.ui.components.SecureScreen
 import com.myclinic.app.ui.components.message
 import com.myclinic.app.ui.navigation.FileViewerRoute
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,7 +68,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
-import javax.inject.Inject
 
 data class FileViewerUiState(
     val loading: Boolean = true,
@@ -84,10 +81,9 @@ data class FileViewerUiState(
  * Opens one clinical file. The file is downloaded into memory and drawn on
  * screen; it is never saved to the phone's storage or shared with other apps.
  */
-@HiltViewModel
-class FileViewerViewModel @Inject constructor(
+class FileViewerViewModel(
     savedStateHandle: SavedStateHandle,
-    @ApplicationContext private val context: Context,
+    private val context: Context,
     private val files: ClinicalFileStore,
     private val consults: ConsultRepository,
 ) : ViewModel() {
@@ -163,7 +159,7 @@ class FileViewerViewModel @Inject constructor(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FileViewerScreen(onBack: () -> Unit, viewModel: FileViewerViewModel = hiltViewModel()) {
+fun FileViewerScreen(onBack: () -> Unit, viewModel: FileViewerViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SecureScreen {
         Scaffold(

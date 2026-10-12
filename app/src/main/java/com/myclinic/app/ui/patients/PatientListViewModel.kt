@@ -14,7 +14,6 @@ import com.myclinic.domain.record.PatientSummaries
 import com.myclinic.domain.record.PatientSummary
 import com.myclinic.domain.record.RecordTable
 import com.myclinic.domain.record.StatusFilter
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,7 +25,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class PatientListUiState(
     val loading: Boolean = true,
@@ -46,8 +44,7 @@ data class QuickAddState(
     val saving: Boolean = false,
 )
 
-@HiltViewModel
-class PatientListViewModel @Inject constructor(
+class PatientListViewModel(
     private val repository: PatientRepository,
 ) : ViewModel() {
 

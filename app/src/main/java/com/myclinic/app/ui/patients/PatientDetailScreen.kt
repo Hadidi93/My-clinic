@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.patients
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,7 +54,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
 import com.myclinic.app.ui.components.FullScreenLoading
@@ -88,7 +88,7 @@ fun PatientDetailScreen(
     onRefer: (patientId: String) -> Unit,
     onOpenReferrals: () -> Unit,
     onOpenAccessLog: (patientId: String) -> Unit,
-    viewModel: PatientDetailViewModel = hiltViewModel(),
+    viewModel: PatientDetailViewModel = koinViewModel(),
 ) {
     val exportState by viewModel.exportState.collectAsStateWithLifecycle()
     var confirmExport by remember { mutableStateOf(false) }

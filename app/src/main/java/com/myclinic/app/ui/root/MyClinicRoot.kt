@@ -1,9 +1,9 @@
 package com.myclinic.app.ui.root
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myclinic.app.R
 import com.myclinic.app.ui.auth.ResetPasswordScreen
@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 
 /** Top of the screen tree: picks the flow that matches the current [RootState]. */
 @Composable
-fun MyClinicRoot(viewModel: RootViewModel = hiltViewModel()) {
+fun MyClinicRoot(viewModel: RootViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val linkMessage by viewModel.linkMessage.collectAsStateWithLifecycle()
     val openRequest by viewModel.openRequest.collectAsStateWithLifecycle()

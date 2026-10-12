@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import org.koin.androidx.compose.koinViewModel
 import com.myclinic.domain.record.Dates
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +38,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,7 +68,6 @@ import com.myclinic.domain.permissions.ConsultRequest
 import com.myclinic.domain.permissions.ConsultRequestError
 import com.myclinic.domain.permissions.ConsultRequestValidator
 import com.myclinic.domain.record.Patient
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -78,7 +77,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import javax.inject.Inject
 
 data class NewConsultUiState(
     val patient: Patient? = null,
@@ -102,8 +100,7 @@ data class NewConsultUiState(
 )
 
 @OptIn(FlowPreview::class)
-@HiltViewModel
-class NewConsultViewModel @Inject constructor(
+class NewConsultViewModel(
     savedStateHandle: SavedStateHandle,
     private val consults: ConsultRepository,
     private val doctors: DoctorRepository,
@@ -212,7 +209,7 @@ private fun DoctorCard.asVerifiedDoctor() = Doctor(
 /** "Ask a colleague": share chosen parts of a record with one doctor, for a limited time. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun NewConsultScreen(onClose: () -> Unit, onCreated: (String) -> Unit, viewModel: NewConsultViewModel = hiltViewModel()) {
+fun NewConsultScreen(onClose: () -> Unit, onCreated: (String) -> Unit, viewModel: NewConsultViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.createdId) { state.createdId?.let(onCreated) }
     fun shown(e: ConsultRequestError) = state.showErrors && e in state.errors

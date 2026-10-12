@@ -11,7 +11,6 @@ import android.text.TextPaint
 import androidx.core.content.FileProvider
 import com.myclinic.app.R
 import com.myclinic.domain.record.RecordDocument
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -19,7 +18,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.UUID
-import javax.inject.Inject
 
 /**
  * Draws a [RecordDocument] as an A4 PDF with Android's built-in PDF writer
@@ -27,8 +25,8 @@ import javax.inject.Inject
  * written to a private temporary folder, offered through the share sheet,
  * and deleted the next time the app starts.
  */
-class PdfExporter @Inject constructor(
-    @ApplicationContext private val context: Context,
+class PdfExporter(
+    private val context: Context,
 ) {
     private val dir: File get() = File(context.cacheDir, "exports").apply { mkdirs() }
 

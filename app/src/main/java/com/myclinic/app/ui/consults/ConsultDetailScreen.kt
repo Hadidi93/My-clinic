@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import org.koin.androidx.compose.koinViewModel
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,7 +56,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -92,14 +92,12 @@ import com.myclinic.domain.consult.NotificationKind
 import com.myclinic.domain.model.RecordSection
 import com.myclinic.domain.record.Attachment
 import com.myclinic.domain.record.PatientRecord
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ConsultDetailUiState(
     val loading: Boolean = true,
@@ -117,8 +115,7 @@ data class ConsultDetailUiState(
     val recordError: DataError? = null,
 )
 
-@HiltViewModel
-class ConsultDetailViewModel @Inject constructor(
+class ConsultDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: ConsultRepository,
     private val notifications: NotificationRepository,
@@ -243,7 +240,7 @@ fun ConsultDetailScreen(
     onBack: () -> Unit,
     onOpenConsultFile: (path: String, mimeType: String) -> Unit,
     onOpenRecordFile: (Attachment) -> Unit,
-    viewModel: ConsultDetailViewModel = hiltViewModel(),
+    viewModel: ConsultDetailViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableIntStateOf(0) }

@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** Lab/radiology departments that investigation requests can be sent to. Anyone signed in may add one. */
 interface FacilityRepository {
@@ -23,8 +21,7 @@ interface FacilityRepository {
     suspend fun add(name: String, kind: String, hospital: String?): Result<Facility>
 }
 
-@Singleton
-class SupabaseFacilityRepository @Inject constructor(
+class SupabaseFacilityRepository(
     private val supabase: SupabaseClient,
 ) : FacilityRepository {
 

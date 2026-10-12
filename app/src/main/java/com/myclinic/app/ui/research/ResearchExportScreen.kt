@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.research
 
+import org.koin.androidx.compose.koinViewModel
 import com.myclinic.domain.record.Dates
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +35,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -60,7 +60,6 @@ import com.myclinic.domain.record.PatientSummaries
 import com.myclinic.domain.record.ResearchExport
 import com.myclinic.domain.record.ResearchExportOptions
 import com.myclinic.domain.record.StatusFilter
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -68,7 +67,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ResearchForm(
     val text: String = "",
@@ -82,8 +80,7 @@ data class ResearchForm(
 
 data class ResearchUiState(val form: ResearchForm = ResearchForm(), val matching: List<PatientRecord> = emptyList())
 
-@HiltViewModel
-class ResearchExportViewModel @Inject constructor(
+class ResearchExportViewModel(
     patients: PatientRepository,
     doctors: DoctorRepository,
     private val audit: AuditRepository,
@@ -135,7 +132,7 @@ class ResearchExportViewModel @Inject constructor(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResearchExportScreen(onBack: () -> Unit, viewModel: ResearchExportViewModel = hiltViewModel()) {
+fun ResearchExportScreen(onBack: () -> Unit, viewModel: ResearchExportViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val f = state.form
     val context = LocalContext.current

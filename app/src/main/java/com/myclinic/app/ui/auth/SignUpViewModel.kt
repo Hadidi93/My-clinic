@@ -8,13 +8,11 @@ import com.myclinic.domain.error.AuthError
 import com.myclinic.domain.validation.EmailValidator
 import com.myclinic.domain.validation.PasswordError
 import com.myclinic.domain.validation.PasswordPolicy
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class SignUpUiState(
     val fullName: String = "",
@@ -32,8 +30,7 @@ data class SignUpUiState(
     val passwordErrors: List<PasswordError> get() = PasswordPolicy.validate(password, confirmPassword)
 }
 
-@HiltViewModel
-class SignUpViewModel @Inject constructor(
+class SignUpViewModel(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 

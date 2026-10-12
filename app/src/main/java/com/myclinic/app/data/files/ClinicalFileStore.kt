@@ -3,7 +3,6 @@ package com.myclinic.app.data.files
 import android.content.Context
 import android.util.Base64
 import com.myclinic.app.data.security.KeystoreCipher
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
@@ -16,8 +15,6 @@ import java.util.UUID
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** A photo or PDF chosen by the user, ready to attach. Images are already re-encoded (no GPS/EXIF). */
 class PickedFile(val bytes: ByteArray, val mimeType: String, val fileName: String?) {
@@ -38,9 +35,8 @@ class PickedFile(val bytes: ByteArray, val mimeType: String, val fileName: Strin
  * with a random key that is itself protected by Android Keystore), until the
  * sync uploads it. Downloaded files are only held in memory, never cached on disk.
  */
-@Singleton
-class ClinicalFileStore @Inject constructor(
-    @ApplicationContext private val context: Context,
+class ClinicalFileStore(
+    private val context: Context,
     private val supabase: SupabaseClient,
 ) {
     private val dir: File get() = File(context.noBackupFilesDir, "pending_files").apply { mkdirs() }

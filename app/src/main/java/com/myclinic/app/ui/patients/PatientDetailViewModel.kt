@@ -12,7 +12,6 @@ import com.myclinic.app.data.audit.AuditRepository
 import com.myclinic.app.data.export.PdfExporter
 import com.myclinic.domain.record.ExportLabels
 import com.myclinic.domain.record.RecordExport
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.myclinic.app.data.consults.ConsultRepository
 import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.toDataError
@@ -28,14 +27,12 @@ import com.myclinic.domain.record.TimelineBuilder
 import com.myclinic.domain.record.TimelineEvent
 import com.myclinic.domain.record.LabTrends
 import com.myclinic.domain.record.VitalsSeries
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import com.myclinic.domain.record.RecordTable
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -60,15 +57,14 @@ data class ExportState(val working: Boolean = false, val share: Intent? = null, 
 /** Ending co-management from the record (co-manager side). */
 data class EndComanagementState(val working: Boolean = false, val ended: Boolean = false, val error: DataError? = null)
 
-@HiltViewModel
-class PatientDetailViewModel @Inject constructor(
+class PatientDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: PatientRepository,
     private val doctorRepository: DoctorRepository,
     private val consults: ConsultRepository,
     private val audit: AuditRepository,
     private val pdf: PdfExporter,
-    @ApplicationContext private val context: Context,
+    private val context: Context,
 ) : ViewModel() {
 
     private val _exportState = MutableStateFlow(ExportState())

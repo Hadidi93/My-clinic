@@ -34,8 +34,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import java.time.Instant
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Patient records for the screens. Reads come from the encrypted offline
@@ -87,8 +85,7 @@ interface PatientRepository {
     suspend fun clearLocalData()
 }
 
-@Singleton
-class CachedPatientRepository @Inject constructor(
+class CachedPatientRepository(
     private val dao: LocalDao,
     private val supabase: SupabaseClient,
     private val scheduler: SyncScheduler,

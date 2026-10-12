@@ -25,11 +25,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class SupabaseAuthRepository @Inject constructor(
+class SupabaseAuthRepository(
     private val supabase: SupabaseClient,
 ) : AuthRepository {
 

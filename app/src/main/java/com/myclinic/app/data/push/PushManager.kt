@@ -18,7 +18,6 @@ import com.myclinic.app.BuildConfig
 import com.myclinic.app.MainActivity
 import com.myclinic.app.R
 import com.myclinic.domain.consult.NotificationKind
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,8 +25,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.resume
 
 /**
@@ -39,9 +36,8 @@ import kotlin.coroutines.resume
  * A push carries only the kind of event; the text shown is generic and
  * translated here ("New consult request"), never patient details.
  */
-@Singleton
-class PushManager @Inject constructor(
-    @ApplicationContext private val context: Context,
+class PushManager(
+    private val context: Context,
 ) {
     val isConfigured: Boolean get() = BuildConfig.FIREBASE_APP_ID.isNotBlank()
 

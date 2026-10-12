@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,7 +38,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,13 +55,11 @@ import com.myclinic.app.ui.patients.formatDateTime
 import com.myclinic.app.ui.patients.optionLabel
 import com.myclinic.domain.consult.ConsultSummary
 import com.myclinic.domain.consult.NotificationKind
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ConsultsUiState(
     val loading: Boolean = false,
@@ -73,8 +71,7 @@ data class ConsultsUiState(
     val sent get() = consults.filterNot { it.iAmConsultant }
 }
 
-@HiltViewModel
-class ConsultsViewModel @Inject constructor(
+class ConsultsViewModel(
     private val repository: ConsultRepository,
     notifications: NotificationRepository,
 ) : ViewModel() {
@@ -99,7 +96,7 @@ class ConsultsViewModel @Inject constructor(
 /** Consults I was asked (received) and consults I asked (sent). Online only. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsultsScreen(onBack: () -> Unit, onOpen: (String) -> Unit, viewModel: ConsultsViewModel = hiltViewModel()) {
+fun ConsultsScreen(onBack: () -> Unit, onOpen: (String) -> Unit, viewModel: ConsultsViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableIntStateOf(0) }
     LifecycleResumeEffect(Unit) {

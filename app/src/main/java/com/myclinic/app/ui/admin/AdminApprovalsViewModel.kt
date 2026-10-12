@@ -9,13 +9,11 @@ import com.myclinic.app.data.facilities.FacilityRepository
 import com.myclinic.domain.model.Doctor
 import com.myclinic.domain.record.Facility
 import com.myclinic.domain.model.VerificationStatus
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class AdminApprovalsUiState(
     val loading: Boolean = true,
@@ -30,8 +28,7 @@ data class AdminApprovalsUiState(
     val facilities: List<Facility> = emptyList(),
 )
 
-@HiltViewModel
-class AdminApprovalsViewModel @Inject constructor(
+class AdminApprovalsViewModel(
     private val doctorRepository: DoctorRepository,
     private val facilityRepository: FacilityRepository,
 ) : ViewModel() {

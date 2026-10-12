@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.audit
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,13 +49,11 @@ import com.myclinic.domain.forms.Vocabulary
 import com.myclinic.domain.model.RecordSection
 import com.myclinic.domain.record.AuditEntry
 import com.myclinic.domain.record.RecordTable
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class AccessLogUiState(
     val loading: Boolean = false,
@@ -64,8 +62,7 @@ data class AccessLogUiState(
     val error: DataError? = null,
 )
 
-@HiltViewModel
-class AccessLogViewModel @Inject constructor(
+class AccessLogViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: AuditRepository,
 ) : ViewModel() {
@@ -107,7 +104,7 @@ class AccessLogViewModel @Inject constructor(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccessLogScreen(onBack: () -> Unit, viewModel: AccessLogViewModel = hiltViewModel()) {
+fun AccessLogScreen(onBack: () -> Unit, viewModel: AccessLogViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SecureScreen {
         Scaffold(

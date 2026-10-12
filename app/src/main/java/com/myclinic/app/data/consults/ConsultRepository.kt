@@ -28,8 +28,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import java.time.LocalDate
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** The answers on the "Ask a colleague" form. */
 data class NewConsult(
@@ -71,8 +69,7 @@ interface ConsultRepository {
     val myUserId: String?
 }
 
-@Singleton
-class SupabaseConsultRepository @Inject constructor(
+class SupabaseConsultRepository(
     private val supabase: SupabaseClient,
 ) : ConsultRepository {
 

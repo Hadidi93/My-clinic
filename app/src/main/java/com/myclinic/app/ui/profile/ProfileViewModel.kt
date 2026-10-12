@@ -16,13 +16,11 @@ import com.myclinic.domain.model.VerificationStatus
 import com.myclinic.domain.validation.ProfileField
 import com.myclinic.domain.validation.ProfileInput
 import com.myclinic.domain.validation.ProfileValidator
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ProfileUiState(
     val fullName: String = "",
@@ -65,8 +63,7 @@ data class ProfileUiState(
     val facilityMissing: Boolean get() = isStaff && facilityId == null
 }
 
-@HiltViewModel
-class ProfileViewModel @Inject constructor(
+class ProfileViewModel(
     private val doctorRepository: DoctorRepository,
     private val imageCompressor: ImageCompressor,
     private val patientRepository: PatientRepository,

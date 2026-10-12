@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -43,12 +43,9 @@ import com.myclinic.app.ui.components.TouchTarget
 import com.myclinic.app.ui.patients.formatDateTime
 import com.myclinic.domain.consult.AppNotification
 import com.myclinic.domain.consult.NotificationKind
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class NotificationsViewModel @Inject constructor(
+class NotificationsViewModel(
     private val repository: NotificationRepository,
 ) : ViewModel() {
     val notifications = repository.notifications
@@ -72,7 +69,7 @@ class NotificationsViewModel @Inject constructor(
 fun NotificationsScreen(
     onBack: () -> Unit,
     onOpen: (AppNotification) -> Unit,
-    viewModel: NotificationsViewModel = hiltViewModel(),
+    viewModel: NotificationsViewModel = koinViewModel(),
 ) {
     val items by viewModel.notifications.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.refresh() }

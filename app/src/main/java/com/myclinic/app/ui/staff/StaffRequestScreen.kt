@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.staff
 
+import org.koin.androidx.compose.koinViewModel
 import com.myclinic.domain.record.Dates
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -72,14 +72,12 @@ import com.myclinic.domain.record.InvestigationStatus
 import com.myclinic.domain.record.LabCatalog
 import com.myclinic.domain.record.StaffRequestDetail
 import com.myclinic.domain.record.StaffResult
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /** The result form staff fill in: the same fields as the doctor's result form, minus the request picker and type. */
 private val STAFF_RESULT_FORM = FormSpec(
@@ -102,8 +100,7 @@ data class StaffRequestUiState(
     val finished: Boolean = false,
 )
 
-@HiltViewModel
-class StaffRequestViewModel @Inject constructor(
+class StaffRequestViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: StaffRepository,
     private val fileReader: PickedFileReader,
@@ -204,7 +201,7 @@ class StaffRequestViewModel @Inject constructor(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StaffRequestScreen(onBack: () -> Unit, viewModel: StaffRequestViewModel = hiltViewModel()) {
+fun StaffRequestScreen(onBack: () -> Unit, viewModel: StaffRequestViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.finished) { if (state.finished) onBack() }
 
