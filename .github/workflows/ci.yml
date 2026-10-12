@@ -54,7 +54,12 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           # Optional: the text of google-services.json (push notifications).
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: ./gradlew :core:domain:jvmTest :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :core:domain:jvmTest :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease --stacktrace 2>&1 | tee build.log
+      - name: Show compile errors as annotations
+        if: failure()
+        run: .github/scripts/annotate-errors.sh build.log
       - name: Play Store bundle (only when the upload key secrets are set)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -116,7 +121,12 @@ jobs:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
       - name: Compile shared code for iPhone and the iPhone simulator
-        run: ./gradlew :core:domain:compileKotlinIosArm64 :core:domain:compileKotlinIosSimulatorArm64 --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :core:domain:compileKotlinIosArm64 :core:domain:compileKotlinIosSimulatorArm64 2>&1 | tee build.log
+      - name: Show compile errors as annotations
+        if: failure()
+        run: .github/scripts/annotate-errors.sh build.log
 
   # Starts the app on an Android emulator and fails if it crashes on launch.
   launch-smoke-test:

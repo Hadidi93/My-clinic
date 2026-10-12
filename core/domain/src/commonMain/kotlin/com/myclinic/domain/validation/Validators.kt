@@ -36,7 +36,7 @@ object PasswordPolicy {
     fun validate(password: String, confirmation: String? = null): List<PasswordError> {
         val errors = mutableListOf<PasswordError>()
         if (password.length < MIN_LENGTH) errors += PasswordError.TOO_SHORT
-        if (password.toByteArray(Charsets.UTF_8).size > MAX_LENGTH) errors += PasswordError.TOO_LONG
+        if (password.encodeToByteArray().size > MAX_LENGTH) errors += PasswordError.TOO_LONG
         if (password.none { it.isLetter() }) errors += PasswordError.NEEDS_LETTER
         if (password.none { it.isDigit() }) errors += PasswordError.NEEDS_DIGIT
         if (confirmation != null && confirmation != password) errors += PasswordError.MISMATCH
