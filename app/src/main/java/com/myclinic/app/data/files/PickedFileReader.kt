@@ -7,7 +7,6 @@ import com.myclinic.app.data.media.ImageCompressor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class FileTooLargeException : Exception("File is larger than 15 MB")
 
 /** Turns a photo or PDF the user picked (or took) into a [PickedFile]. */
 class PickedFileReader(

@@ -123,7 +123,7 @@ jobs:
       - name: Compile shared code for iPhone and the iPhone simulator
         run: |
           set -o pipefail
-          ./gradlew :core:domain:compileKotlinIosArm64 :core:domain:compileKotlinIosSimulatorArm64 2>&1 | tee build.log
+          ./gradlew :core:domain:compileKotlinIosArm64 :core:domain:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosArm64 :shared:compileKotlinIosSimulatorArm64 2>&1 | tee build.log
       - name: Show compile errors as annotations
         if: failure()
         run: .github/scripts/annotate-errors.sh build.log

@@ -14,6 +14,7 @@ import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.CancellationException
+import kotlinx.datetime.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -75,7 +76,7 @@ class SupabaseDoctorRepository(
         return call {
             // A new file name each time, so the path changes and the database
             // sends the account back for re-verification.
-            val path = "${currentUserId()}/license-${System.currentTimeMillis()}.jpg"
+            val path = "${currentUserId()}/license-${Clock.System.now().toEpochMilliseconds()}.jpg"
             supabase.storage.from(LICENSES).upload(path, jpegBytes) {
                 contentType = ContentType.Image.JPEG
             }

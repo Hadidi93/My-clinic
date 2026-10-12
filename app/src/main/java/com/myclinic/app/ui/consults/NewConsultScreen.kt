@@ -76,7 +76,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 data class NewConsultUiState(
     val patient: Patient? = null,
@@ -190,7 +189,7 @@ class NewConsultViewModel(
                 NewConsult(
                     patientId = patientId, consultantId = s.consultant.id, question = s.question,
                     sections = s.sections, anonymize = s.anonymize, durationDays = s.durationDays,
-                    urgency = s.urgency, consentDate = LocalDate.now(),
+                    urgency = s.urgency, consentDate = Dates.today(),
                 ),
             )
                 .onSuccess { id -> _state.update { it.copy(sending = false, createdId = id) } }

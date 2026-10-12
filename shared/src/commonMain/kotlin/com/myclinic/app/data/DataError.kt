@@ -2,7 +2,7 @@ package com.myclinic.app.data
 
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
-import java.io.IOException
+import kotlinx.io.IOException
 
 /** Reasons a database or storage call failed, in terms the UI can explain. */
 enum class DataError { NETWORK, LICENSE_TAKEN, NOT_ALLOWED, FILE_TOO_LARGE, DUPLICATE, UNKNOWN }

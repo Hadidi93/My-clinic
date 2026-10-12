@@ -16,17 +16,6 @@ import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-/** A photo or PDF chosen by the user, ready to attach. Images are already re-encoded (no GPS/EXIF). */
-class PickedFile(val bytes: ByteArray, val mimeType: String, val fileName: String?) {
-    val isPdf: Boolean get() = mimeType == MIME_PDF
-
-    companion object {
-        const val MIME_JPEG = "image/jpeg"
-        const val MIME_PDF = "application/pdf"
-        const val MAX_BYTES = 15 * 1024 * 1024 // same limit as the storage bucket
-    }
-}
-
 /**
  * Clinical files (lab reports, X-ray photos, wound photos) in the private
  * 'clinical-files' bucket, stored at <section>/<patient id>/<random name>.

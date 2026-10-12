@@ -26,8 +26,8 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
-import java.time.LocalDate
-import java.util.UUID
+import kotlinx.datetime.LocalDate
+import kotlin.uuid.Uuid
 
 /** The answers on the "Ask a colleague" form. */
 data class NewConsult(
@@ -114,7 +114,7 @@ class SupabaseConsultRepository(
         // Files first (allowed while the consult is open), then the message pointing to them.
         val paths = files.map { f ->
             val ext = if (f.isPdf) "pdf" else "jpg"
-            val path = "$consultId/${UUID.randomUUID()}.$ext"
+            val path = "$consultId/${Uuid.random()}.$ext"
             supabase.storage.from(CONSULT_FILES).upload(path, f.bytes) {
                 upsert = false
                 contentType = ContentType.parse(f.mimeType)

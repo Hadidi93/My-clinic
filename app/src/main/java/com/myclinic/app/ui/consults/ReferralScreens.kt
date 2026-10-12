@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import com.myclinic.domain.record.Dates
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,7 +84,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 // ---------------------------------------------------------------------------
 // New referral
@@ -151,7 +151,7 @@ class NewReferralViewModel(
         }
         _state.update { it.copy(sending = true, error = null) }
         viewModelScope.launch {
-            consults.createReferral(patientId, s.doctor.id, s.kind, s.note, LocalDate.now())
+            consults.createReferral(patientId, s.doctor.id, s.kind, s.note, Dates.today())
                 .onSuccess { _state.update { it.copy(sending = false, done = true) } }
                 .onFailure { e -> _state.update { it.copy(sending = false, error = e.toDataError()) } }
         }

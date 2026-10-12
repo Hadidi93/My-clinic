@@ -27,3 +27,6 @@ rootProject.name = "MyClinic"
 //                  and permission rules. No platform code, so its unit tests run fast anywhere.
 include(":app")
 include(":core:domain")
+// :shared       -> shared Kotlin (Android + iPhone): Supabase access, offline copy,
+//                  sync and (later) the screens. Platform parts live in androidMain / iosMain.
+include(":shared")
