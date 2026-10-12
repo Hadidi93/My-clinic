@@ -56,7 +56,7 @@ jobs:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           set -o pipefail
-          ./gradlew :core:domain:jvmTest :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease --stacktrace 2>&1 | tee build.log
+          ./gradlew :core:domain:jvmTest :shared:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease --stacktrace 2>&1 | tee build.log
       - name: Show compile errors as annotations
         if: failure()
         run: .github/scripts/annotate-errors.sh build.log

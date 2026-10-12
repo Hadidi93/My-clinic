@@ -38,16 +38,16 @@ import kotlin.coroutines.resume
  */
 class PushManager(
     private val context: Context,
-) {
+) : PushChannel {
     val isConfigured: Boolean get() = BuildConfig.FIREBASE_APP_ID.isNotBlank()
 
     private val _received = MutableSharedFlow<String>(extraBufferCapacity = 8)
     /** Kinds of pushes received while the app is running (screens refresh their lists). */
-    val received: SharedFlow<String> = _received.asSharedFlow()
+    override val received: SharedFlow<String> = _received.asSharedFlow()
 
     private val _openRequest = MutableStateFlow<String?>(null)
     /** The kind of a notification the user tapped, until a screen handles it. */
-    val openRequest: StateFlow<String?> = _openRequest.asStateFlow()
+    override val openRequest: StateFlow<String?> = _openRequest.asStateFlow()
 
     fun init() {
         if (!isConfigured || FirebaseApp.getApps(context).isNotEmpty()) return
@@ -61,7 +61,7 @@ class PushManager(
         createChannel()
     }
 
-    suspend fun currentToken(): String? {
+    override suspend fun currentToken(): String? {
         if (!isConfigured) return null
         return suspendCancellableCoroutine { cont ->
             FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
@@ -70,7 +70,7 @@ class PushManager(
         }
     }
 
-    suspend fun deleteToken() {
+    override suspend fun deleteToken() {
         if (!isConfigured) return
         suspendCancellableCoroutine { cont ->
             FirebaseMessaging.getInstance().deleteToken().addOnCompleteListener { cont.resume(Unit) }
@@ -88,7 +88,7 @@ class PushManager(
         if (kind != null && kind in NotificationKind.ALL) _openRequest.value = kind
     }
 
-    fun onOpenHandled() {
+    override fun onOpenHandled() {
         _openRequest.value = null
     }
 

@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         // Only on a fresh start: after rotation the same link was already handled.
         if (savedInstanceState == null) {
-            authRepository.handleDeepLink(intent)
+            authRepository.handleDeepLink(intent?.dataString)
             push.onNotificationTapped(intent?.getStringExtra(PushManager.EXTRA_OPEN))
         }
         setContent {
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        authRepository.handleDeepLink(intent)
+        authRepository.handleDeepLink(intent.dataString)
         push.onNotificationTapped(intent.getStringExtra(PushManager.EXTRA_OPEN))
     }
 }

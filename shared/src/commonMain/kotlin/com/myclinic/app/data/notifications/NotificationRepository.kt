@@ -1,6 +1,6 @@
 package com.myclinic.app.data.notifications
 
-import com.myclinic.app.data.push.PushManager
+import com.myclinic.app.data.push.PushChannel
 import com.myclinic.domain.consult.AppNotification
 import com.myclinic.domain.record.RecordJson
 import io.github.jan.supabase.SupabaseClient
@@ -10,6 +10,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.time.Instant
+import kotlinx.datetime.Clock
 
 /**
  * The in-app notification list (bell icon). Rows only say what happened
@@ -47,7 +48,7 @@ interface NotificationRepository {
 
 class SupabaseNotificationRepository(
     private val supabase: SupabaseClient,
-    private val push: PushManager,
+    private val push: PushChannel,
 ) : NotificationRepository {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -82,7 +83,7 @@ class SupabaseNotificationRepository(
     override suspend fun markRead(ids: Collection<String>) {
         val unreadIds = ids.filter { id -> list.value.any { it.id == id && !it.isRead } }
         if (unreadIds.isEmpty()) return
-        val now = Instant.now().toString()
+        val now = Clock.System.now().toString()
         publish(list.value.map { if (it.id in unreadIds) it.copy(readAt = now) else it })
         call {
             supabase.from(TABLE).update(buildJsonObject { put("read_at", now) }) {
@@ -92,7 +93,7 @@ class SupabaseNotificationRepository(
     }
 
     override suspend fun markAllRead() {
-        val now = Instant.now().toString()
+        val now = Clock.System.now().toString()
         publish(list.value.map { if (it.isRead) it else it.copy(readAt = now) })
         call { supabase.postgrest.rpc("mark_all_notifications_read") }
     }

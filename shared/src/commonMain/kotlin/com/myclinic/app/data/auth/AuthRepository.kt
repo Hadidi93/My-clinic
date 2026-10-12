@@ -1,6 +1,5 @@
 package com.myclinic.app.data.auth
 
-import android.content.Intent
 import com.myclinic.domain.error.AuthError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,6 +49,6 @@ interface AuthRepository {
     suspend fun updatePassword(newPassword: String): Result<Unit>
     suspend fun signOut()
 
-    /** Hands email links (verify / reset) to Supabase so it can finish the sign-in. */
-    fun handleDeepLink(intent: Intent?)
+    /** Hands email links (verify / reset), e.g. "myclinic://auth-callback/reset?code=…", to Supabase so it can finish the sign-in. */
+    fun handleDeepLink(url: String?)
 }

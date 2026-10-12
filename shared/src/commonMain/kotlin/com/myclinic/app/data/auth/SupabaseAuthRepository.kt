@@ -1,6 +1,5 @@
 package com.myclinic.app.data.auth
 
-import android.content.Intent
 import com.myclinic.domain.error.AuthError
 import com.myclinic.domain.error.AuthErrorClassifier
 import io.github.jan.supabase.SupabaseClient
@@ -24,7 +23,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.io.IOException
+import io.ktor.http.Url
+import kotlinx.io.IOException
 
 class SupabaseAuthRepository(
     private val supabase: SupabaseClient,
@@ -43,7 +43,7 @@ class SupabaseAuthRepository(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     /** The last signed-in user, so a session reload without user details doesn't look like "loading". */
-    @Volatile private var lastSignedIn: AuthState.SignedIn? = null
+    @kotlin.concurrent.Volatile private var lastSignedIn: AuthState.SignedIn? = null
 
     override val authState: Flow<AuthState> = supabase.auth.sessionStatus
         .map { status ->
@@ -107,15 +107,8 @@ class SupabaseAuthRepository(
         runCatching { supabase.auth.signOut() }
     }
 
-    override fun handleDeepLink(intent: Intent?) {
-        if (intent == null) return
-        val data = intent.data ?: return
-        if (data.scheme != AuthRedirects.SCHEME || data.host != AuthRedirects.HOST) return
-        val isReset = data.path == AuthRedirects.RESET_PATH
-        val code = data.getQueryParameter("code")
-        // Supabase reports a bad link (e.g. expired) in the query or after "#".
-        val linkError = data.getQueryParameter("error")
-            ?: data.fragment?.split('&')?.firstOrNull { it.startsWith("error=") }
+    override fun handleDeepLink(url: String?) {
+        val (isReset, code, linkError) = AuthLink.parse(url) ?: return
 
         scope.launch {
             // Wait until the saved login has been loaded. Otherwise that loading
@@ -162,4 +155,22 @@ class SupabaseAuthRepository(
         } catch (e: Exception) {
             Result.failure(AuthFailure(AuthErrorClassifier.classify(e.message), e))
         }
+}
+
+/** An email link (verify / reset) taken apart. Null when it isn't one of ours. */
+data class AuthLink(val isReset: Boolean, val code: String?, val error: String?) {
+    companion object {
+        fun parse(url: String?): AuthLink? {
+            if (url.isNullOrBlank()) return null
+            val data = runCatching { Url(url) }.getOrNull() ?: return null
+            if (data.protocol.name != AuthRedirects.SCHEME || data.host != AuthRedirects.HOST) return null
+            return AuthLink(
+                isReset = data.encodedPath == AuthRedirects.RESET_PATH,
+                code = data.parameters["code"],
+                // Supabase reports a bad link (e.g. expired) in the query or after "#".
+                error = data.parameters["error"]
+                    ?: data.fragment.takeIf { it.isNotEmpty() }?.split('&')?.firstOrNull { it.startsWith("error=") },
+            )
+        }
+    }
 }

@@ -14,12 +14,15 @@ import com.myclinic.app.data.export.PdfExporter
 import com.myclinic.app.data.export.ResearchExporter
 import com.myclinic.app.data.facilities.FacilityRepository
 import com.myclinic.app.data.facilities.SupabaseFacilityRepository
+import com.myclinic.app.data.files.AndroidFileVault
 import com.myclinic.app.data.files.ClinicalFileStore
+import com.myclinic.app.data.files.StagedFileVault
 import com.myclinic.app.data.files.PickedFileReader
 import com.myclinic.app.data.local.LocalDatabase
 import com.myclinic.app.data.media.ImageCompressor
 import com.myclinic.app.data.notifications.NotificationRepository
 import com.myclinic.app.data.notifications.SupabaseNotificationRepository
+import com.myclinic.app.data.push.PushChannel
 import com.myclinic.app.data.push.PushManager
 import com.myclinic.app.data.records.CachedPatientRepository
 import com.myclinic.app.data.records.PatientRepository
@@ -100,12 +103,13 @@ val dataModule = module {
     singleOf(::SupabaseNotificationRepository) { bind<NotificationRepository>() }
     singleOf(::CachedPatientRepository) { bind<PatientRepository>() }
 
+    singleOf(::AndroidFileVault) { bind<StagedFileVault>() }
     singleOf(::ClinicalFileStore)
     singleOf(::PickedFileReader)
     singleOf(::ImageCompressor)
     singleOf(::PdfExporter)
     singleOf(::ResearchExporter)
-    singleOf(::PushManager)
+    singleOf(::PushManager) { bind<PushChannel>() }
     singleOf(::SyncEngine)
     singleOf(::SyncScheduler)
     singleOf(::AppLockManager)

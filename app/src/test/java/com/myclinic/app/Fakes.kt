@@ -1,6 +1,5 @@
 package com.myclinic.app
 
-import android.content.Intent
 import com.myclinic.app.data.auth.AuthFailure
 import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.auth.AuthState
@@ -35,7 +34,7 @@ class FakeAuthRepository : AuthRepository {
     override suspend fun sendPasswordReset(email: String) = Result.success(Unit)
     override suspend fun updatePassword(newPassword: String) = Result.success(Unit)
     override suspend fun signOut() { state.value = AuthState.SignedOut }
-    override fun handleDeepLink(intent: Intent?) = Unit
+    override fun handleDeepLink(url: String?) = Unit
 }
 
 class FakeDoctorRepository(var stored: Doctor? = null) : DoctorRepository {
