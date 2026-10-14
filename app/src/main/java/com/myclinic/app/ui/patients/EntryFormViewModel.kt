@@ -1,6 +1,5 @@
 package com.myclinic.app.ui.patients
 
-import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,7 +7,6 @@ import androidx.navigation.toRoute
 import com.myclinic.app.data.DataError
 import com.myclinic.app.data.facilities.FacilityRepository
 import com.myclinic.app.data.files.PickedFile
-import com.myclinic.app.data.files.PickedFileReader
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.app.data.toDataError
 import com.myclinic.app.ui.navigation.EntryFormRoute
@@ -77,7 +75,6 @@ class EntryFormViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: PatientRepository,
     private val facilityRepository: FacilityRepository,
-    private val fileReader: PickedFileReader,
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<EntryFormRoute>()
@@ -175,8 +172,7 @@ class EntryFormViewModel(
         }
     }
 
-    fun onImage(uri: Uri, fromCamera: Boolean) = readFile { fileReader.image(uri, deleteOriginal = fromCamera) }
-    fun onPdf(uri: Uri) = readFile { fileReader.pdf(uri) }
+    fun onFile(read: suspend () -> PickedFile) = readFile(read)
 
     private fun readFile(read: suspend () -> PickedFile) {
         _state.update { it.copy(readingFile = true, error = null) }

@@ -1,7 +1,6 @@
 package com.myclinic.app.ui.consults
 
 import org.koin.androidx.compose.koinViewModel
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,7 +63,6 @@ import com.myclinic.app.R
 import com.myclinic.app.data.DataError
 import com.myclinic.app.data.consults.ConsultRepository
 import com.myclinic.app.data.files.PickedFile
-import com.myclinic.app.data.files.PickedFileReader
 import com.myclinic.app.data.notifications.NotificationRepository
 import com.myclinic.app.data.toDataError
 import com.myclinic.app.ui.components.ErrorMessage
@@ -119,7 +117,6 @@ class ConsultDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: ConsultRepository,
     private val notifications: NotificationRepository,
-    private val fileReader: PickedFileReader,
 ) : ViewModel() {
 
     val consultId: String = checkNotNull(savedStateHandle[ConsultRoute::consultId.name])
@@ -178,8 +175,7 @@ class ConsultDetailViewModel(
 
     fun onDraft(v: String) = _state.update { it.copy(draft = v, error = null) }
 
-    fun onImage(uri: Uri, fromCamera: Boolean) = readFile { fileReader.image(uri, deleteOriginal = fromCamera) }
-    fun onPdf(uri: Uri) = readFile { fileReader.pdf(uri) }
+    fun onFile(read: suspend () -> PickedFile) = readFile(read)
 
     private fun readFile(read: suspend () -> PickedFile) {
         _state.update { it.copy(readingFile = true, error = null) }
@@ -373,7 +369,7 @@ private fun Conversation(
                     )
                 }
                 if (state.readingFile || state.sending) LinearProgressIndicator(Modifier.fillMaxWidth())
-                AttachFileButtons(onImage = viewModel::onImage, onPdf = viewModel::onPdf, enabled = !state.readingFile && !state.sending)
+                AttachFileButtons(onFile = viewModel::onFile, enabled = !state.readingFile && !state.sending)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = state.draft, onValueChange = viewModel::onDraft, modifier = Modifier.weight(1f),

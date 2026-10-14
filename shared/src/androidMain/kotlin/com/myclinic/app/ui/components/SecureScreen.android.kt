@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalContext
  * shows a blank preview in the recent-apps list (FLAG_SECURE).
  */
 @Composable
-fun SecureScreen(content: @Composable () -> Unit) {
+actual fun SecureScreen(content: @Composable () -> Unit) {
     val activity = LocalContext.current.findActivity()
     DisposableEffect(activity) {
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)

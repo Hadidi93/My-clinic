@@ -194,7 +194,7 @@ fun EntryFormScreen(
                                 onRemove = { item -> viewModel.removeNewFile(item.key.toInt()) },
                             )
                             if (state.readingFile) LinearProgressIndicator(Modifier.fillMaxWidth())
-                            AttachFileButtons(onImage = viewModel::onImage, onPdf = viewModel::onPdf, enabled = !state.readingFile)
+                            AttachFileButtons(onFile = viewModel::onFile, enabled = !state.readingFile)
                         }
                         state.error?.let { ErrorMessage(it.message()) }
                         if (state.errors.isNotEmpty()) ErrorMessage(stringResource(R.string.fix_errors))

@@ -2,7 +2,6 @@ package com.myclinic.app.ui.staff
 
 import org.koin.androidx.compose.koinViewModel
 import com.myclinic.domain.record.Dates
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,7 +40,6 @@ import androidx.navigation.toRoute
 import com.myclinic.app.R
 import com.myclinic.app.data.DataError
 import com.myclinic.app.data.files.PickedFile
-import com.myclinic.app.data.files.PickedFileReader
 import com.myclinic.app.data.staff.StaffRepository
 import com.myclinic.app.data.toDataError
 import com.myclinic.app.ui.components.ErrorMessage
@@ -103,7 +101,6 @@ data class StaffRequestUiState(
 class StaffRequestViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: StaffRepository,
-    private val fileReader: PickedFileReader,
 ) : ViewModel() {
 
     private val requestId = savedStateHandle.toRoute<StaffRequestRoute>().requestId
@@ -141,8 +138,7 @@ class StaffRequestViewModel(
         it.copy(values = it.values + (key to value), errors = it.errors - key, nothingEntered = false)
     }
 
-    fun onImage(uri: Uri, fromCamera: Boolean) = readFile { fileReader.image(uri, deleteOriginal = fromCamera) }
-    fun onPdf(uri: Uri) = readFile { fileReader.pdf(uri) }
+    fun onFile(read: suspend () -> PickedFile) = readFile(read)
 
     private fun readFile(read: suspend () -> PickedFile) {
         _state.update { it.copy(readingFile = true, error = null) }
@@ -261,7 +257,7 @@ fun StaffRequestScreen(onBack: () -> Unit, viewModel: StaffRequestViewModel = ko
                             onRemove = { viewModel.removeFile(it.key.toInt()) },
                         )
                         if (state.readingFile) LinearProgressIndicator(Modifier.fillMaxWidth())
-                        AttachFileButtons(onImage = viewModel::onImage, onPdf = viewModel::onPdf, enabled = !state.readingFile)
+                        AttachFileButtons(onFile = viewModel::onFile, enabled = !state.readingFile)
                         if (state.nothingEntered) ErrorMessage(stringResource(R.string.staff_nothing_entered))
                         state.error?.let { ErrorMessage(it.message()) }
                         PrimaryButton(stringResource(R.string.staff_submit), onClick = viewModel::submit, loading = state.working,

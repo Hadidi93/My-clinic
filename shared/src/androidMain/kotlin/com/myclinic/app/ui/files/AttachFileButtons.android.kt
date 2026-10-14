@@ -1,5 +1,10 @@
 package com.myclinic.app.ui.files
 
+import com.myclinic.app.data.files.PickedFile
+import com.myclinic.app.data.files.PickedFileReader
+import org.koin.compose.koinInject
+
+import com.myclinic.shared.resources.*
 import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,10 +38,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import com.myclinic.app.R
 import com.myclinic.app.ui.components.TouchTarget
 import java.io.File
 import java.util.UUID
@@ -44,12 +48,11 @@ import java.util.UUID
 /** The three ways to add a file: take a photo, choose a photo, or choose a PDF. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AttachFileButtons(
-    onImage: (uri: Uri, fromCamera: Boolean) -> Unit,
-    onPdf: (Uri) -> Unit,
-    enabled: Boolean = true,
-) {
+actual fun AttachFileButtons(onFile: (read: suspend () -> PickedFile) -> Unit, enabled: Boolean) {
     val context = LocalContext.current
+    val reader = koinInject<PickedFileReader>()
+    val onImage: (Uri, Boolean) -> Unit = { uri, fromCamera -> onFile { reader.image(uri, deleteOriginal = fromCamera) } }
+    val onPdf: (Uri) -> Unit = { uri -> onFile { reader.pdf(uri) } }
     var cameraUri by rememberSaveable { mutableStateOf<String?>(null) }
 
     val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
@@ -74,21 +77,21 @@ fun AttachFileButtons(
                 takePhoto.launch(uri)
             },
             enabled = enabled,
-            label = { Text(stringResource(R.string.file_take_photo)) },
+            label = { Text(stringResource(Res.string.file_take_photo)) },
             leadingIcon = { Icon(Icons.Filled.PhotoCamera, contentDescription = null) },
             modifier = Modifier.heightIn(min = 48.dp),
         )
         AssistChip(
             onClick = { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
             enabled = enabled,
-            label = { Text(stringResource(R.string.file_choose_photo)) },
+            label = { Text(stringResource(Res.string.file_choose_photo)) },
             leadingIcon = { Icon(Icons.Filled.PhotoLibrary, contentDescription = null) },
             modifier = Modifier.heightIn(min = 48.dp),
         )
         AssistChip(
             onClick = { pickPdf.launch(arrayOf("application/pdf")) },
             enabled = enabled,
-            label = { Text(stringResource(R.string.file_choose_pdf)) },
+            label = { Text(stringResource(Res.string.file_choose_pdf)) },
             leadingIcon = { Icon(Icons.Filled.PictureAsPdf, contentDescription = null) },
             modifier = Modifier.heightIn(min = 48.dp),
         )
@@ -102,34 +105,3 @@ private fun newCameraUri(context: Context): Uri {
     return FileProvider.getUriForFile(context, "${context.packageName}.files", file)
 }
 
-/** One file in a list. [onOpen] null = not openable yet (e.g. picked but not saved). */
-data class FileItem(val key: String, val label: String, val isPdf: Boolean, val note: String? = null)
-
-@Composable
-fun FileList(items: List<FileItem>, onOpen: ((FileItem) -> Unit)?, onRemove: ((FileItem) -> Unit)? = null) {
-    Column {
-        items.forEach { item ->
-            Row(
-                Modifier.fillMaxWidth().heightIn(min = TouchTarget)
-                    .then(if (onOpen != null) Modifier.clickable { onOpen(item) } else Modifier)
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Icon(if (item.isPdf) Icons.Filled.PictureAsPdf else Icons.Filled.Image, contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary)
-                Column(Modifier.weight(1f)) {
-                    Text(item.label, style = MaterialTheme.typography.bodyLarge)
-                    item.note?.let {
-                        Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-                onRemove?.let {
-                    IconButton(onClick = { it(item) }) {
-                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.file_remove))
-                    }
-                }
-            }
-        }
-    }
-}

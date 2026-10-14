@@ -57,6 +57,9 @@ kotlin {
             implementation(libs.androidx.sqlite)
             // In-app language switch (English / Arabic)
             implementation(libs.androidx.appcompat)
+            // Android back button, camera and file pickers
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.ktx)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
