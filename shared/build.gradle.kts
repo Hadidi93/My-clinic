@@ -30,6 +30,10 @@ kotlin {
     }
 
     sourceSets {
+        // iPhone code calls Apple's system APIs (Foundation, UIKit) directly.
+        matching { it.name.startsWith("ios") }.configureEach {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+        }
         commonMain.dependencies {
             api(project(":core:domain"))
             api(project.dependencies.platform(libs.supabase.bom))
@@ -72,8 +76,6 @@ kotlin {
             implementation(libs.androidx.biometric)
             implementation(libs.androidx.lifecycle.process)
         }
-        // iPhone code calls Apple's system APIs (Foundation, UIKit) directly.
-        iosMain { languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi") }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqlite.bundled)
