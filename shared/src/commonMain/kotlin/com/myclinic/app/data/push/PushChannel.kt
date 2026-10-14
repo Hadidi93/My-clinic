@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
  * shared code sees it. Pushes carry only a kind, never patient data.
  */
 interface PushChannel {
+    /** False when push isn't set up for this build (e.g. no Firebase configuration). */
+    val isConfigured: Boolean
     /** Kinds of pushes received while the app is running (screens refresh their lists). */
     val received: SharedFlow<String>
     /** The kind of notification the user tapped to open the app, until handled. */

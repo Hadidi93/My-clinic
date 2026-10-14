@@ -1,14 +1,12 @@
 package com.myclinic.app.data.export
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
-import androidx.core.content.FileProvider
 import com.myclinic.app.R
 import com.myclinic.domain.record.RecordDocument
 import kotlinx.coroutines.Dispatchers
@@ -27,15 +25,18 @@ import java.util.UUID
  */
 class PdfExporter(
     private val context: Context,
-) {
+) : RecordPdfWriter {
     private val dir: File get() = File(context.cacheDir, "exports").apply { mkdirs() }
 
     /** Removes earlier exports (called at start and before each export). */
-    fun cleanUp() {
+    override fun cleanUp() {
         dir.listFiles()?.forEach { it.delete() }
     }
 
-    suspend fun write(doc: RecordDocument, doctorName: String): File = withContext(Dispatchers.Default) {
+    override suspend fun write(doc: RecordDocument, doctorName: String, title: String): ExportedFile =
+        ExportedFile(writeFile(doc, doctorName).absolutePath, "application/pdf", title)
+
+    private suspend fun writeFile(doc: RecordDocument, doctorName: String): File = withContext(Dispatchers.Default) {
         cleanUp()
         val pdf = PdfDocument()
         val title = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 18f; typeface = Typeface.DEFAULT_BOLD; color = Color.BLACK }
@@ -113,15 +114,6 @@ class PdfExporter(
     }
 
     /** The Android share sheet for the PDF; the user picks where it goes. */
-    fun shareIntent(file: File, title: String): Intent {
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
-        val send = Intent(Intent.ACTION_SEND)
-            .setType("application/pdf")
-            .putExtra(Intent.EXTRA_STREAM, uri)
-            .putExtra(Intent.EXTRA_TITLE, title)
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        return Intent.createChooser(send, title).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
 
     private companion object {
         const val PAGE_WIDTH = 595 // A4 in points

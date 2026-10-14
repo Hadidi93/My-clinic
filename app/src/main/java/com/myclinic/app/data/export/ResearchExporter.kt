@@ -1,8 +1,6 @@
 package com.myclinic.app.data.export
 
 import android.content.Context
-import android.content.Intent
-import androidx.core.content.FileProvider
 import com.myclinic.domain.record.CsvFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,10 +16,13 @@ import java.util.zip.ZipOutputStream
  */
 class ResearchExporter(
     private val context: Context,
-) {
+) : ResearchZipWriter {
     private val dir: File get() = File(context.cacheDir, "exports").apply { mkdirs() }
 
-    suspend fun write(files: List<CsvFile>, today: LocalDate): File = withContext(Dispatchers.IO) {
+    override suspend fun write(files: List<CsvFile>, today: LocalDate, title: String): ExportedFile =
+        ExportedFile(writeZip(files, today).absolutePath, "application/zip", title)
+
+    private suspend fun writeZip(files: List<CsvFile>, today: LocalDate): File = withContext(Dispatchers.IO) {
         dir.listFiles()?.forEach { it.delete() }
         val zip = File(dir, "my-clinic-research-$today.zip")
         ZipOutputStream(zip.outputStream().buffered()).use { out ->
@@ -35,15 +36,6 @@ class ResearchExporter(
         zip
     }
 
-    fun shareIntent(file: File, title: String): Intent {
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
-        val send = Intent(Intent.ACTION_SEND)
-            .setType("application/zip")
-            .putExtra(Intent.EXTRA_STREAM, uri)
-            .putExtra(Intent.EXTRA_TITLE, title)
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        return Intent.createChooser(send, title).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
 
     private companion object {
         val UTF8_BOM = byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte())

@@ -39,7 +39,7 @@ import kotlin.coroutines.resume
 class PushManager(
     private val context: Context,
 ) : PushChannel {
-    val isConfigured: Boolean get() = BuildConfig.FIREBASE_APP_ID.isNotBlank()
+    override val isConfigured: Boolean get() = BuildConfig.FIREBASE_APP_ID.isNotBlank()
 
     private val _received = MutableSharedFlow<String>(extraBufferCapacity = 8)
     /** Kinds of pushes received while the app is running (screens refresh their lists). */

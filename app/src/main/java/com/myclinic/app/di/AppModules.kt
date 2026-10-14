@@ -11,7 +11,9 @@ import com.myclinic.app.data.consults.SupabaseConsultRepository
 import com.myclinic.app.data.doctor.DoctorRepository
 import com.myclinic.app.data.doctor.SupabaseDoctorRepository
 import com.myclinic.app.data.export.PdfExporter
+import com.myclinic.app.data.export.RecordPdfWriter
 import com.myclinic.app.data.export.ResearchExporter
+import com.myclinic.app.data.export.ResearchZipWriter
 import com.myclinic.app.data.facilities.FacilityRepository
 import com.myclinic.app.data.facilities.SupabaseFacilityRepository
 import com.myclinic.app.data.files.AndroidFileVault
@@ -109,8 +111,8 @@ val dataModule = module {
     singleOf(::ClinicalFileStore)
     singleOf(::PickedFileReader)
     singleOf(::ImageCompressor)
-    singleOf(::PdfExporter)
-    singleOf(::ResearchExporter)
+    singleOf(::PdfExporter) { bind<RecordPdfWriter>() }
+    singleOf(::ResearchExporter) { bind<ResearchZipWriter>() }
     singleOf(::PushManager) { bind<PushChannel>() }
     singleOf(::SyncEngine)
     singleOf(::SyncScheduler) { bind<SyncTrigger>() }
