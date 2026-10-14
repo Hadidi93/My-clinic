@@ -3,15 +3,21 @@
 ## The pieces
 
 ```
-┌──────────────── Android app (Kotlin) ────────────────┐
-│  ui/        Jetpack Compose screens + ViewModels      │  what you see
-│  data/      Repositories: talk to Supabase            │  fetching / saving
-│  di/        Hilt: wires the pieces together           │
-└──────────────┬────────────────────────────────────────┘
+┌──── app/ (Android shell) ────┐   ┌──── iosApp/ (iPhone shell, Swift) ────┐
+│ start-up, Keystore, SQLCipher│   │ start-up, Keychain, privacy cover,    │
+│ Firebase push, WorkManager   │   │ email links                           │
+└──────────────┬───────────────┘   └──────────────────┬────────────────────┘
+               └──────────────┬───────────────────────┘
+┌──────────── shared/ (Kotlin Multiplatform) ─────────────────────────────┐
+│  ui/   Compose Multiplatform screens + ViewModels (same on both phones) │
+│  data/ Repositories: Supabase, offline copy (Room), sync                │
+│  di/   Koin: wires the pieces; each phone adds its own module           │
+│  androidMain / iosMain: camera & pickers, file viewer, PDF, Face ID     │
+└──────────────┬───────────────────────────────────────────────────────────┘
                │ uses
 ┌──────────────▼─────────────┐
-│  core/domain  (pure Kotlin)│  models, validation, permission rules
-└────────────────────────────┘  (unit-tested, no Android code)
+│  core/domain  (shared)     │  models, validation, permission rules
+└────────────────────────────┘  (unit-tested, no phone code)
 
                │ HTTPS (TLS) only
 ┌──────────────▼──────────────── Supabase (EU, Frankfurt) ─────┐

@@ -17,13 +17,17 @@ Android 10+.
 | 2 | Patients and all record sections, encrypted offline cache + sync, timeline, vitals chart, search; referral rules (database) | ✅ approved |
 | 3 | Investigation requests, results (typed values + photos/PDFs), lab/radiology department inbox, wound photos, lab trends | ✅ approved |
 | 4 | Consultations with section sharing and files, referrals (co-management / transfer), notifications and push | ✅ approved |
-| 5 | App lock, access/activity logs, PDF export, release hardening, Play Store preparation | ✅ built, awaiting review |
+| 5 | App lock, access/activity logs, PDF export, release hardening, Play Store preparation | ✅ approved |
+| 6 | iPhone app: code shared with Android (Kotlin Multiplatform), iPhone shell, TestFlight | 🚧 built; push and TestFlight wait for the Apple account |
 
 ## Where things are
 
 ```
-app/                    Android app (screens, ViewModels, Supabase access)
-core/domain/            Plain Kotlin: models, validation, permission rules + tests
+shared/                 Shared app code for Android + iPhone: screens, ViewModels,
+                        Supabase access, offline copy, sync (androidMain / iosMain = phone parts)
+core/domain/            Shared rules: models, validation, permission rules + tests
+app/                    Android shell (start-up, Keystore, Firebase, WorkManager, PDF)
+iosApp/                 iPhone shell (SwiftUI, Keychain), built by GitHub on a Mac
 supabase/migrations/    Database tables and security rules (SQL)
 supabase/tests/         Database security tests
 docs/SETUP.md           How to set up Supabase and run the app (start here)
@@ -32,6 +36,7 @@ docs/ARCHITECTURE.md    How the app is organised; Supabase vs Firebase
 docs/COMPLIANCE.md      Health-data law (Egypt 151/2020, GDPR, HIPAA) + backend checklist
 docs/PRIVACY_POLICY.md  Draft privacy policy (for your lawyer, then publish)
 docs/RELEASE.md         Publishing on Google Play (closed testing first)
+docs/IOS.md             The iPhone app, Apple account and TestFlight
 ```
 
 ## Quick start

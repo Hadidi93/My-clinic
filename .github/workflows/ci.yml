@@ -151,6 +151,32 @@ jobs:
             ios-log.txt
           if-no-files-found: ignore
           retention-days: 14
+      - name: TestFlight upload (only when the App Store Connect secrets are set)
+        env:
+          APP_STORE_CONNECT_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -z "$APP_STORE_CONNECT_KEY_BASE64" ] || [ -z "$APPLE_TEAM_ID" ]; then
+            echo "No App Store Connect key configured: skipping the TestFlight upload."
+            exit 0
+          fi
+          set -o pipefail
+          key="$RUNNER_TEMP/AuthKey.p8"
+          echo "$APP_STORE_CONNECT_KEY_BASE64" | base64 -d > "$key"
+          auth=(-allowProvisioningUpdates -authenticationKeyPath "$key" -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID")
+          cd iosApp
+          # Signed with Apple's automatic signing; each run gets a new build number.
+          xcodebuild -project MyClinic.xcodeproj -scheme MyClinic -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/MyClinic.xcarchive DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" "${auth[@]}" archive 2>&1 | tee ../build.log | grep -E "error:|ARCHIVE" || true
+          test -d build/MyClinic.xcarchive
+          /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" ExportOptions.plist
+          xcodebuild -exportArchive -archivePath build/MyClinic.xcarchive -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/export "${auth[@]}" 2>&1 | tee -a ../build.log | grep -E "error:|EXPORT|Upload" || true
+          grep -q "EXPORT SUCCEEDED\|Upload succeeded" ../build.log
+          rm -f "$key"
       - name: Show compile errors as annotations
         if: failure()
         run: |
