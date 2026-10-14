@@ -72,6 +72,8 @@ kotlin {
             implementation(libs.androidx.biometric)
             implementation(libs.androidx.lifecycle.process)
         }
+        // iPhone code calls Apple's system APIs (Foundation, UIKit) directly.
+        iosMain { languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi") }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqlite.bundled)
