@@ -1,11 +1,11 @@
 package com.myclinic.app.ui.root
 
-import org.koin.androidx.compose.koinViewModel
+import com.myclinic.shared.resources.*
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.myclinic.app.R
 import com.myclinic.app.ui.auth.ResetPasswordScreen
 import com.myclinic.app.ui.components.FullScreenError
 import com.myclinic.app.ui.components.FullScreenLoading
@@ -30,7 +30,7 @@ fun MyClinicRoot(viewModel: RootViewModel = koinViewModel()) {
         RootState.SignedOut -> AuthNavHost(linkMessage = linkMessage, onDismissLinkMessage = viewModel::clearLinkMessage)
         RootState.PasswordRecovery -> ResetPasswordScreen()
         RootState.ProfileLoadFailed -> FullScreenError(
-            message = stringResource(R.string.error_profile_load),
+            message = stringResource(Res.string.error_profile_load),
             onRetry = viewModel::loadProfile,
             onSignOut = viewModel::signOut,
         )

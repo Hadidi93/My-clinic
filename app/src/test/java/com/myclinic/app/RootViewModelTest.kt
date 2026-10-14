@@ -14,7 +14,7 @@ class RootViewModelTest {
     private val auth = FakeAuthRepository()
     private val patients = FakePatientRepository()
     private val notifications = FakeNotificationRepository()
-    private val appLock = com.myclinic.app.security.AppLockManager()
+    private val appLock = com.myclinic.app.security.AppLockManager { 0L }
 
     @Test
     fun `signed out shows the sign-in flow`() {
@@ -58,7 +58,7 @@ class RootViewModelTest {
         assertTrue(vm.locked.value)
 
         val restoredAuth = FakeAuthRepository().apply { state.value = AuthState.Loading }
-        val restoredLock = com.myclinic.app.security.AppLockManager()
+        val restoredLock = com.myclinic.app.security.AppLockManager { 0L }
         RootViewModel(restoredAuth, FakeDoctorRepository(demoDoctor()), patients, notifications, restoredLock)
         restoredAuth.state.value = AuthState.SignedIn("demo-id", "dr.demo@example.test")
         assertTrue("a saved session needs fingerprint / PIN first", restoredLock.locked.value)

@@ -3,8 +3,7 @@ package com.myclinic.app
 import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.work.WorkerParameters
-import com.myclinic.app.di.dataModule
-import com.myclinic.app.di.viewModelModule
+import com.myclinic.app.di.appModules
 import org.junit.Test
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
@@ -19,7 +18,7 @@ import org.koin.test.verify.verify
 class KoinModulesTest {
     @Test
     fun `every dependency can be created`() {
-        module { includes(dataModule, viewModelModule) }.verify(
+        module { includes(appModules) }.verify(
             extraTypes = listOf(Context::class, SavedStateHandle::class, WorkerParameters::class),
         )
     }

@@ -63,6 +63,9 @@ kotlin {
             // Android back button, camera and file pickers
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.ktx)
+            // App lock: fingerprint / face / phone PIN
+            implementation(libs.androidx.biometric)
+            implementation(libs.androidx.lifecycle.process)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

@@ -7,6 +7,7 @@ import com.myclinic.app.data.push.PushManager
 import com.myclinic.app.debug.CrashReporter
 import com.myclinic.app.di.appModules
 import com.myclinic.app.security.AppLockManager
+import com.myclinic.app.security.watchAndroidLifecycle
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.factory.KoinWorkerFactory
@@ -31,7 +32,7 @@ class MyClinicApp : Application(), Configuration.Provider {
             modules(appModules)
         }
         push.init() // push notifications, if Firebase is configured
-        appLock.start() // fingerprint / PIN at start and after 5 minutes away
+        appLock.watchAndroidLifecycle() // fingerprint / PIN at start and after 5 minutes away
         pdfExporter.cleanUp() // exported PDFs never stay on the phone
     }
 

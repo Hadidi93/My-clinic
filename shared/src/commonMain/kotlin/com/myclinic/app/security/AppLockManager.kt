@@ -1,9 +1,5 @@
 package com.myclinic.app.security
 
-import android.os.SystemClock
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ProcessLifecycleOwner
 import com.myclinic.domain.security.LockPolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,30 +16,29 @@ import kotlinx.coroutines.launch
  * Locks the app (fingerprint / face / phone PIN to continue) at every start
  * and after 5 minutes without use, whether the app was in the background or
  * left open on the table. Uses the phone's uptime clock, which can't be moved
- * by changing the date.
+ * by changing the date and keeps counting while the phone sleeps.
+ * Each phone reports when the app comes to the front or goes to the background.
  */
-class AppLockManager() {
+class AppLockManager(private val clock: UptimeClock) {
 
     private val _locked = MutableStateFlow(true)
     val locked: StateFlow<Boolean> = _locked.asStateFlow()
 
-    @Volatile private var lastActiveAt: Long? = null
+    @kotlin.concurrent.Volatile private var lastActiveAt: Long? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var ticker: Job? = null
 
-    fun start() {
-        ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onStart(owner: LifecycleOwner) {
-                checkNow()
-                startTicker()
-            }
+    /** The app is visible again. */
+    fun onForeground() {
+        checkNow()
+        startTicker()
+    }
 
-            override fun onStop(owner: LifecycleOwner) {
-                ticker?.cancel()
-                // The time away counts from now; touches no longer update it.
-                if (!_locked.value) lastActiveAt = now()
-            }
-        })
+    /** The app went to the background (home button, another app, screen off). */
+    fun onBackground() {
+        ticker?.cancel()
+        // The time away counts from now; touches no longer update it.
+        if (!_locked.value) lastActiveAt = now()
     }
 
     /** Any touch in the app. */
@@ -78,5 +73,5 @@ class AppLockManager() {
         }
     }
 
-    private fun now() = SystemClock.elapsedRealtime()
+    private fun now() = clock.millis()
 }
