@@ -19,6 +19,7 @@ import com.myclinic.app.data.sync.SyncTrigger
 import com.myclinic.app.data.sync.SyncWorker
 import com.myclinic.app.security.AndroidUptimeClock
 import com.myclinic.app.security.AppLockManager
+import com.myclinic.app.security.UptimeClock
 import com.myclinic.app.ui.files.AndroidFileRenderer
 import com.myclinic.app.ui.files.FileRenderer
 import io.github.jan.supabase.auth.SessionManager
@@ -39,7 +40,8 @@ val androidModule = module {
     singleOf(::ResearchExporter) { bind<ResearchZipWriter>() }
     singleOf(::PushManager) { bind<PushChannel>() }
     singleOf(::SyncScheduler) { bind<SyncTrigger>() }
-    single { AppLockManager(AndroidUptimeClock) }
+    single<UptimeClock> { AndroidUptimeClock }
+    singleOf(::AppLockManager)
     singleOf(::AndroidFileRenderer) { bind<FileRenderer>() }
     workerOf(::SyncWorker)
 }
