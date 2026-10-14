@@ -16,8 +16,13 @@ kotlin {
     androidTarget {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
     }
-    iosArm64()
-    iosSimulatorArm64()
+    // The iPhone app (iosApp/) links this as a framework called "Shared".
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+        target.binaries.framework {
+            baseName = "Shared"
+            isStatic = true
+        }
+    }
 
     compilerOptions {
         optIn.add("kotlinx.serialization.ExperimentalSerializationApi")

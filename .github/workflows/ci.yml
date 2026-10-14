@@ -107,7 +107,7 @@ jobs:
   # Mac minutes count 10x against GitHub's free allowance, so this job stays short.
   ios:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -124,9 +124,38 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew :core:domain:compileKotlinIosArm64 :core:domain:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosArm64 :shared:compileKotlinIosSimulatorArm64 2>&1 | tee build.log
+      - name: Build the iPhone app (simulator)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -o pipefail
+          brew install xcodegen
+          # "//" starts a comment in .xcconfig files, so the URL is written as https:/$()/...
+          if [ -n "$SUPABASE_URL" ]; then
+            printf 'SUPABASE_URL = %s\nSUPABASE_ANON_KEY = %s\n' "${SUPABASE_URL/\/\//\/\$()\/}" "$SUPABASE_ANON_KEY" > iosApp/Config.xcconfig
+          fi
+          cd iosApp && xcodegen generate
+          xcodebuild -project MyClinic.xcodeproj -scheme MyClinic -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build 2>&1 | tee ../build.log | grep -E "error:|warning: .*Swift|BUILD" || true
+          test -d build/Build/Products/Debug-iphonesimulator/MyClinic.app
+      - name: Launch the iPhone app in a simulator
+        run: .github/scripts/ios-smoke-test.sh iosApp/build/Build/Products/Debug-iphonesimulator/MyClinic.app
+      - name: Upload iPhone screenshot and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-screenshot
+          path: |
+            ios-screen.png
+            ios-log.txt
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Show compile errors as annotations
         if: failure()
-        run: .github/scripts/annotate-errors.sh build.log
+        run: |
+          .github/scripts/annotate-errors.sh build.log
+          grep -E "error:" build.log | head -20 | sed 's/^/::error::/' || true
 
   # Starts the app on an Android emulator and fails if it crashes on launch.
   launch-smoke-test:

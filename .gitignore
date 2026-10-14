@@ -19,3 +19,7 @@ local.properties
 google-services.json
 supabase/.env
 supabase/.temp/
+
+# iPhone build output
+iosApp/MyClinic.xcodeproj/
+iosApp/build/

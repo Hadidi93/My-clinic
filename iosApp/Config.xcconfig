@@ -1,0 +1,5 @@
+// Supabase project for the iPhone app. GitHub writes the real values from
+// the repository secrets SUPABASE_URL / SUPABASE_ANON_KEY before building;
+// never commit real keys here. ("/$()/" keeps "//" from starting a comment.)
+SUPABASE_URL = https:/$()/placeholder.supabase.co
+SUPABASE_ANON_KEY = placeholder
