@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.consults
 
+import org.jetbrains.compose.resources.StringResource
 import com.myclinic.shared.resources.*
 import com.myclinic.domain.record.Dates
 import org.koin.compose.viewmodel.koinViewModel
@@ -210,7 +211,7 @@ fun NewReferralScreen(onClose: () -> Unit, onSent: () -> Unit, viewModel: NewRef
 }
 
 @Composable
-private fun KindOption(kind: String, help: Int, selected: String, onSelect: (String) -> Unit) {
+private fun KindOption(kind: String, help: StringResource, selected: String, onSelect: (String) -> Unit) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = TouchTarget)
             .selectable(selected = selected == kind, role = Role.RadioButton, onClick = { onSelect(kind) }),
