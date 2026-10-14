@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My Clinic</string>
+
+    <!-- Common -->
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="full_name">Full name</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Try again</string>
+    <string name="back">Back</string>
+    <string name="sign_out">Sign out</string>
+    <string name="loading">Loading…</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="language">Language</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="coming_in_phase">Coming in phase %1$d</string>
+
+    <!-- Sign in -->
+    <string name="login_title">Sign in</string>
+    <string name="login_subtitle">Patient records and consultations for licensed doctors</string>
+    <string name="login_button">Sign in</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="no_account">New here? Create an account</string>
+
+    <!-- Sign up -->
+    <string name="signup_title">Create account</string>
+    <string name="signup_button">Create account</string>
+    <string name="have_account">Already have an account? Sign in</string>
+    <string name="password_rules">At least %1$d characters, including letters and numbers</string>
+    <string name="signup_verification_note">After you verify your email, an administrator will check your medical licence before you can share or receive patient data.</string>
+
+    <!-- Check email -->
+    <string name="check_email_title">Check your email</string>
+    <string name="check_email_body">We sent a verification link to %1$s. Open it on this phone to activate your account.</string>
+    <string name="back_to_sign_in">Back to sign in</string>
+
+    <!-- Forgot / reset password -->
+    <string name="forgot_title">Reset password</string>
+    <string name="forgot_body">Enter your account email and we'll send you a link to choose a new password.</string>
+    <string name="send_reset_link">Send reset link</string>
+    <string name="reset_link_sent">If an account exists for %1$s, a reset link is on its way. Open it on this phone.</string>
+    <string name="new_password_title">Choose a new password</string>
+    <string name="new_password">New password</string>
+    <string name="update_password">Update password</string>
+
+    <!-- Errors -->
+    <string name="error_invalid_email">Enter a valid email address</string>
+    <string name="error_password_too_short">Use at least %1$d characters</string>
+    <string name="error_password_too_long">Password is too long</string>
+    <string name="error_password_needs_letter">Include at least one letter</string>
+    <string name="error_password_needs_digit">Include at least one number</string>
+    <string name="error_password_mismatch">Passwords don't match</string>
+    <string name="error_password_required">Enter your password</string>
+    <string name="error_invalid_credentials">Email or password is incorrect</string>
+    <string name="error_email_not_confirmed">Please verify your email first. Check your inbox for the link.</string>
+    <string name="error_email_registered">An account with this email already exists</string>
+    <string name="error_weak_password">This password is too weak. Choose a stronger one.</string>
+    <string name="error_rate_limited">Too many attempts. Please wait a few minutes and try again.</string>
+    <string name="error_network">No connection. Check your internet and try again.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+    <string name="error_profile_load">Couldn't load your profile.</string>
+    <string name="error_full_name">Enter your full name (3–120 characters)</string>
+    <string name="error_specialty">Enter your specialty</string>
+    <string name="error_hospital">Enter your hospital or clinic</string>
+    <string name="error_license">Enter your licence number (letters, numbers, - or /)</string>
+    <string name="error_phone">Enter a valid phone number</string>
+    <string name="error_license_taken">This licence number is already registered to another account</string>
+
+    <!-- Profile -->
+    <string name="profile_setup_title">Complete your profile</string>
+    <string name="profile_setup_body">An administrator uses these details to verify your medical licence.</string>
+    <string name="profile_title">My profile</string>
+    <string name="specialty">Specialty</string>
+    <string name="hospital">Hospital / clinic</string>
+    <string name="license_number">Medical licence number</string>
+    <string name="phone">Phone</string>
+    <string name="add_photo">Add photo</string>
+    <string name="change_photo">Change photo</string>
+    <string name="license_document">Licence document</string>
+    <string name="license_document_help">A clear photo of your licence or syndicate card speeds up verification.</string>
+    <string name="upload_license_document">Upload photo of licence</string>
+    <string name="replace_license_document">Replace licence photo</string>
+    <string name="license_document_uploaded">Licence photo uploaded</string>
+    <string name="license_change_warning">Changing your licence details sends your account back for verification.</string>
+    <string name="profile_saved">Profile saved</string>
+    <string name="profile_photo">Profile photo</string>
+
+    <!-- Verification status -->
+    <string name="status_pending">Verification pending</string>
+    <string name="status_pending_body">An administrator is checking your licence. You can set up your profile meanwhile; sharing and receiving patient data unlocks once you're verified.</string>
+    <string name="status_verified">Verified</string>
+    <string name="status_rejected">Licence not verified</string>
+    <string name="status_rejected_body">Please review your profile details and licence photo, then save to resubmit.</string>
+    <string name="status_suspended">Account suspended</string>
+    <string name="status_suspended_body">Your access has been suspended. Please contact the administrator.</string>
+    <string name="status_note">Note from administrator: %1$s</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Hello, %1$s</string>
+    <string name="home_today_patients">Today's patients</string>
+    <string name="home_pending_consults">Pending consults</string>
+    <string name="home_pending_results">Pending results</string>
+    <string name="home_upcoming_operations">Upcoming operations</string>
+    <string name="open_profile">Open profile</string>
+    <string name="admin_approvals">Doctor approvals</string>
+
+    <!-- Admin -->
+    <string name="admin_title">Doctor approvals</string>
+    <string name="admin_empty">No doctors are waiting for approval.</string>
+    <string name="approve">Approve</string>
+    <string name="reject">Reject</string>
+    <string name="admin_reject_title">Reject verification</string>
+    <string name="admin_reject_reason">Reason (shown to the doctor)</string>
+    <string name="view_license">View licence photo</string>
+    <string name="no_license_document">No licence photo uploaded</string>
+    <string name="license_label">Licence: %1$s</string>
+    <string name="profile_incomplete">Profile incomplete</string>
+    <string name="admin_approved">%1$s approved</string>
+    <string name="admin_rejected">%1$s rejected</string>
+    <string name="close">Close</string>
+
+    <!-- Patients (Phase 2) -->
+    <string name="patients">Patients</string>
+    <string name="search_patients">Search name, ID, file no., diagnosis</string>
+    <string name="filter_all_dates">Any date</string>
+    <string name="filter_today">Today</string>
+    <string name="filter_7_days">7 days</string>
+    <string name="filter_30_days">30 days</string>
+    <string name="show_deleted">Show deleted patients</string>
+    <string name="hide_deleted">Hide deleted patients</string>
+    <string name="add_patient">Add patient</string>
+    <string name="quick_add_title">Quick add patient</string>
+    <string name="quick_add_hint">Only the name is required. You can complete the rest later.</string>
+    <string name="save_and_open">Save and open</string>
+    <string name="no_patients">No patients yet. Tap “Add patient” to create one.</string>
+    <string name="no_results">No patients match your search.</string>
+    <string name="clear_search">Clear search</string>
+    <string name="deleted">Deleted</string>
+    <string name="age_years_short">%1$d y</string>
+    <string name="file_number_short">File %1$s</string>
+    <string name="view_all_patients">All patients</string>
+
+    <!-- Sync -->
+    <plurals name="sync_pending">
+        <item quantity="one">%1$d change waiting to sync</item>
+        <item quantity="other">%1$d changes waiting to sync</item>
+    </plurals>
+    <plurals name="sync_failed">
+        <item quantity="one">%1$d change couldn't be saved on the server</item>
+        <item quantity="other">%1$d changes couldn't be saved on the server</item>
+    </plurals>
+    <string name="sync_failed_body">Usually this means you no longer have access to that patient.</string>
+    <string name="discard_failed">Discard</string>
+    <string name="offline">Offline – changes are saved on this phone</string>
+    <string name="sign_out_unsynced_title">Unsynced changes</string>
+    <plurals name="sign_out_unsynced_body">
+        <item quantity="one">%1$d change hasn't reached the server yet and will be lost if you sign out now. Connect to the internet first to keep it.</item>
+        <item quantity="other">%1$d changes haven't reached the server yet and will be lost if you sign out now. Connect to the internet first to keep them.</item>
+    </plurals>
+    <string name="sign_out_anyway">Sign out anyway</string>
+
+    <!-- Patient record -->
+    <string name="allergies_banner">ALLERGIES: %1$s</string>
+    <string name="no_allergies_recorded">No allergies recorded</string>
+    <string name="tab_record">Record</string>
+    <string name="tab_timeline">Timeline</string>
+    <string name="tab_vitals">Trends</string>
+    <string name="add_entry">Add</string>
+    <string name="edit">Edit</string>
+    <string name="edit_personal_data">Edit personal data</string>
+    <string name="no_entries">Nothing recorded yet</string>
+    <string name="delete_patient">Delete patient</string>
+    <string name="restore_patient">Restore patient</string>
+    <string name="delete_patient_confirm">The patient will be hidden from your lists. The record is kept and can be restored from “Show deleted patients”.</string>
+    <string name="patient_deleted_banner">This patient is deleted. Restore to edit.</string>
+    <string name="delete_entry">Delete entry (entered in error)</string>
+    <string name="delete_entry_confirm">This entry will be removed from the record view. It stays in the audit history.</string>
+    <string name="confirm">Confirm</string>
+    <string name="saved_offline">Saved</string>
+    <string name="patient_not_found">This patient is no longer available on this phone.</string>
+    <string name="checklist_progress">%1$d of %2$d done</string>
+    <string name="current">current</string>
+    <string name="stopped">stopped</string>
+    <string name="chronic">chronic</string>
+    <string name="comanaged_badge">Co-managed</string>
+
+    <!-- Forms -->
+    <string name="select_date">Select date</string>
+    <string name="clear">Clear</string>
+    <string name="ok">OK</string>
+    <string name="pick_condition_hint">Choose from the list or type your own</string>
+    <string name="no_surgical_cases">Add a surgery first, then record its follow-up.</string>
+    <string name="suggested_tags">Suggestions</string>
+    <string name="add_tag">Add tag</string>
+    <string name="field_required">Required</string>
+    <string name="field_too_long">Too long</string>
+    <string name="field_not_number">Enter a number</string>
+    <string name="field_out_of_range">Outside the allowed range</string>
+    <string name="field_invalid_date">Invalid date</string>
+    <string name="field_future_date">Can't be in the future</string>
+    <string name="fix_errors">Please correct the highlighted fields.</string>
+    <string name="unsaved_changes_title">Discard changes?</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep editing</string>
+
+    <!-- Timeline -->
+    <string name="timeline_empty">Events appear here as you add to the record.</string>
+    <string name="tl_patient_added">Patient added</string>
+    <string name="tl_complaint">Presenting complaint</string>
+    <string name="tl_condition">Diagnosed</string>
+    <string name="tl_past_surgery">Operation (history)</string>
+    <string name="tl_med_started">Medication started</string>
+    <string name="tl_med_stopped">Medication stopped</string>
+    <string name="tl_allergy">Allergy recorded</string>
+    <string name="tl_examination">Examination</string>
+    <string name="tl_operation_planned">Operation planned</string>
+    <string name="tl_operation_done">Operation</string>
+    <string name="tl_follow_up">Post-op follow-up</string>
+
+    <!-- Vitals -->
+    <string name="no_vitals">No vital signs yet. Add an examination with vitals to see trends.</string>
+    <string name="vital_pulse">Pulse</string>
+    <string name="vital_systolic">Systolic BP</string>
+    <string name="vital_diastolic">Diastolic BP</string>
+    <string name="vital_resp_rate">Respiratory rate</string>
+    <string name="vital_temperature">Temperature</string>
+    <string name="vital_spo2">SpO₂</string>
+    <string name="vital_weight">Weight</string>
+    <string name="vital_pain">Pain score</string>
+    <string name="vital_normal_range">Shaded band: typical adult range %1$s–%2$s %3$s</string>
+    <plurals name="vital_abnormal_count">
+        <item quantity="one">%1$d reading outside the typical range</item>
+        <item quantity="other">%1$d readings outside the typical range</item>
+    </plurals>
+    <string name="vital_readings">Readings</string>
+    <string name="outside_range">outside range</string>
+    <string name="chart_description">Trend chart of %1$s with %2$d readings. The readings are listed below.</string>
+
+    <!-- Dashboard -->
+    <string name="home_no_operations">No operations planned in the next 14 days.</string>
+    <string name="home_tap_to_open">Tap to open</string>
+    <string name="link_email_verified">Your email is verified. Please sign in.</string>
+    <string name="link_expired">This link has expired or was already used. Please sign in, or request a new link.</string>
+    <string name="link_reset_failed">This password reset link didn't work. Please request a new one with “Forgot password?”.</string>
+    <!-- Phase 3: investigations, files, lab/radiology staff -->
+    <string name="error_not_allowed">You don't have permission to do this.</string>
+    <string name="error_file_too_large">The file is larger than 15 MB. Please choose a smaller one.</string>
+    <string name="error_duplicate">This already exists.</string>
+    <string name="account_type">I am a</string>
+    <string name="account_doctor">Doctor</string>
+    <string name="account_staff">Lab / radiology staff</string>
+    <string name="account_doctor_help">Doctors keep patient records, request investigations and consult colleagues.</string>
+    <string name="account_staff_help">Lab and radiology staff see only the requests sent to their department, and send the results.</string>
+    <string name="account_type_change_warning">Changing the account type sends your account back for approval.</string>
+    <string name="job_title">Job title</string>
+    <string name="staff_id">Staff or syndicate ID</string>
+    <string name="your_department">Your department</string>
+    <string name="department_required">Choose your department, or add it.</string>
+    <string name="department_unknown">department not set</string>
+    <string name="staff_document_help">A photo of your staff ID card, so an administrator can approve your account.</string>
+    <string name="admin_staff_account">Lab/radiology staff · %1$s</string>
+    <string name="facility_none">None: I will enter the result myself</string>
+    <string name="facility_add">Add department</string>
+    <string name="facility_add_help">For example “Main Lab” or “X-ray”. Everyone signed in can see the list of departments.</string>
+    <string name="facility_name">Department name</string>
+    <string name="add_test">Add a test</string>
+    <string name="no_open_requests">No open requests. The result will be saved on its own.</string>
+    <string name="lab_test">Test</string>
+    <string name="lab_value">Value</string>
+    <string name="lab_unit">Unit</string>
+    <string name="lab_low">Normal from</string>
+    <string name="lab_high">Normal to</string>
+    <string name="lab_add_value">Add a value</string>
+    <string name="lab_remove_value">Remove this value</string>
+    <string name="files_title">Photos and PDFs</string>
+    <string name="files_help">Take a photo of a report, X-ray or wound, or attach a PDF. Location data is removed from photos.</string>
+    <string name="file_take_photo">Take photo</string>
+    <string name="file_choose_photo">Choose photo</string>
+    <string name="file_choose_pdf">Choose PDF</string>
+    <string name="file_remove">Remove file</string>
+    <string name="file_photo">Photo</string>
+    <string name="file_pdf">PDF</string>
+    <string name="file_will_attach">Will be attached when you save</string>
+    <string name="file_viewer_title">File</string>
+    <string name="file_page">Page %1$d</string>
+    <string name="file_pdf_truncated">Only the first 30 pages are shown.</string>
+    <string name="result_from_department">Uploaded by the department</string>
+    <string name="result_from_department_body">Results sent by the lab or radiology department can't be changed. If it is wrong, mark it as entered in error and ask the department to send it again.</string>
+    <string name="uploaded_by_department">from the department</string>
+    <string name="section_investigations">Investigations</string>
+    <string name="new_request">Request</string>
+    <string name="add_result">Add result</string>
+    <string name="investigation_request_title">Investigation request</string>
+    <string name="mark_reviewed">Mark result as reviewed</string>
+    <string name="edit_request">Edit request</string>
+    <string name="cancel_request">Cancel request</string>
+    <string name="cancel_request_confirm">Cancel this request? The department will no longer see it.</string>
+    <string name="keep_request">Keep it</string>
+    <string name="results_title">Results</string>
+    <string name="no_results_yet">No result yet.</string>
+    <string name="open">Open</string>
+    <string name="sent_to">Sent to %1$s</string>
+    <string name="sent_to_department">Sent to a department</string>
+    <string name="handled_by_doctor">Not sent to a department: you enter the result</string>
+    <string name="home_results_to_review">Results to review</string>
+    <string name="tl_investigation_requested">Investigation requested</string>
+    <string name="tl_investigation_result">Result</string>
+    <string name="refresh">Refresh</string>
+    <string name="staff_inbox_title">Department inbox</string>
+    <string name="staff_inbox_empty">No requests waiting. New requests appear here.</string>
+    <string name="staff_pending_body">An administrator must approve your account before requests appear here.</string>
+    <string name="mark_sample_taken">Sample taken / study done</string>
+    <string name="staff_already_sent">Already sent for this request</string>
+    <string name="staff_send_result">Send the result</string>
+    <string name="staff_submit">Send result to the doctor</string>
+    <string name="staff_nothing_entered">Enter values, a report, or attach a file.</string>
+    <string name="staff_previous_results">Earlier results of this kind</string>
+    <string name="clinical_notes_label">Notes from the doctor: %1$s</string>
+    <plurals name="file_count">
+        <item quantity="one">%1$d file</item>
+        <item quantity="other">%1$d files</item>
+    </plurals>
+    <plurals name="home_awaiting_results">
+        <item quantity="one">%1$d request waiting for a result</item>
+        <item quantity="other">%1$d requests waiting for a result</item>
+    </plurals>
+    <!-- Phase 4: consults, referrals, notifications -->
+    <string name="ask_colleague">Ask a colleague (consult)</string>
+    <string name="refer_patient">Refer patient</string>
+    <string name="choose_colleague">Colleague</string>
+    <string name="choose_colleague_error">Choose a colleague.</string>
+    <string name="search_doctors_hint">Search by name, specialty, grade or hospital</string>
+    <string name="no_doctors_found">No verified doctor found.</string>
+    <string name="consent_required">Patient consent is required before sharing.</string>
+    <string name="anonymous_patient">Anonymous patient</string>
+    <string name="new_consult_title">Ask a colleague</string>
+    <string name="consult_need_verified">Your account must be approved before you can share patients.</string>
+    <string name="consult_question">Your question</string>
+    <string name="consult_urgency">Urgency</string>
+    <string name="consult_sections">What to share</string>
+    <string name="consult_sections_help">Only the ticked parts of the record are visible to your colleague, and only for the time you choose.</string>
+    <string name="consult_no_sections">Choose at least one part to share.</string>
+    <string name="consult_anonymize">Hide the patient's name</string>
+    <string name="consult_anonymize_help">When on, your colleague sees only age and sex. ID number, phone and address are shared only if you tick Personal data.</string>
+    <string name="consult_age_sex_always">Age and sex are always shared: they matter for the diagnosis and plan. The name is shared too, unless you hide it below.</string>
+    <string name="age_not_recorded">age not recorded</string>
+    <string name="sex_not_recorded">sex not recorded</string>
+    <string name="save_and_add_another">Save and add another</string>
+    <string name="added_just_now">Added just now</string>
+    <string name="entry_added_next">Saved. You can add the next one.</string>
+    <string name="done">Done</string>
+    <string name="consult_duration">Access for</string>
+    <string name="consult_consent">The patient agreed to share these parts of the record with this colleague (today).</string>
+    <string name="send_consult">Send consult</string>
+    <string name="consults_title">Consults</string>
+    <string name="consults_received">Asked of me</string>
+    <string name="consults_sent">I asked</string>
+    <string name="consults_none_received">No colleague has asked you yet.</string>
+    <string name="consults_none_sent">You haven't asked a colleague yet. Open a patient, then ⋮ → Ask a colleague.</string>
+    <string name="consult_revoked">Access withdrawn</string>
+    <string name="consult_expired">Access expired</string>
+    <string name="consult_revoke">Withdraw access</string>
+    <string name="consult_revoke_confirm">Your colleague will immediately stop seeing this patient's record. The conversation is kept.</string>
+    <string name="consult_close">Close consult</string>
+    <string name="consult_close_confirm">Closing ends access to the record and no new messages can be sent. The conversation is kept.</string>
+    <string name="consult_tab_conversation">Conversation</string>
+    <string name="consult_tab_record">Shared record</string>
+    <string name="consult_shared_sections">Shared: %1$s</string>
+    <string name="consult_access_until">Access until %1$s</string>
+    <string name="consult_message_hint">Write a message</string>
+    <string name="send">Send</string>
+    <string name="consult_read_only">This consult is closed. The conversation is kept for the record.</string>
+    <string name="consult_record_note">Read-only, shared by your colleague. Nothing is saved on this phone.</string>
+    <string name="section_identifiers">Personal data</string>
+    <string name="section_presenting_complaint">Presenting complaint</string>
+    <string name="section_past_medical">Past medical history</string>
+    <string name="section_past_surgical">Past surgical history</string>
+    <string name="section_medications">Drug history</string>
+    <string name="section_allergies">Allergies</string>
+    <string name="section_family_history">Family history</string>
+    <string name="section_social_history">Social history</string>
+    <string name="section_examination">Examination &amp; vitals</string>
+    <string name="section_surgical_care">Surgery &amp; follow-up</string>
+    <string name="new_referral_title">Refer patient</string>
+    <string name="referral_kind">Type of referral</string>
+    <string name="referral_comanagement_help">You both look after the patient. Your colleague can read and edit the whole record, but cannot delete, share or transfer it. Either of you can end it.</string>
+    <string name="referral_transfer_help">Your colleague becomes the patient's main doctor. You keep read-only access to what was recorded until then.</string>
+    <string name="referral_note">Note for your colleague</string>
+    <string name="referral_consent">The patient agreed to this referral (today).</string>
+    <string name="send_referral">Send referral</string>
+    <string name="referrals_title">Referrals</string>
+    <string name="referrals_none">No referrals yet. Open a patient, then ⋮ → Refer patient.</string>
+    <string name="referral_from">From %1$s</string>
+    <string name="referral_to">To %1$s</string>
+    <string name="referral_accept">Accept</string>
+    <string name="referral_decline">Decline</string>
+    <string name="referral_cancel">Cancel referral</string>
+    <string name="referral_end">End co-management</string>
+    <string name="referral_accept_comanagement_confirm">You will be able to read and edit this patient's whole record, and it will be kept on your phone (encrypted).</string>
+    <string name="referral_accept_transfer_confirm">You will become this patient's main doctor and responsible for the record.</string>
+    <string name="referral_cancel_confirm">Cancel this referral? Your colleague will no longer be able to accept it.</string>
+    <string name="referral_end_confirm">End co-management? The colleague will lose access to the record straight away.</string>
+    <string name="open_patient">Open patient</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_none">No notifications.</string>
+    <string name="mark_all_read">Mark all read</string>
+    <string name="home_consults">Consults</string>
+    <string name="home_new_messages">new</string>
+    <string name="push_channel_name">Consults, referrals and requests</string>
+    <string name="push_channel_description">Alerts never contain patient details.</string>
+    <string name="push_consult_request">New consult request</string>
+    <string name="push_consult_message">New message in a consult</string>
+    <string name="push_referral_request">New patient referral</string>
+    <string name="push_referral_response">A colleague answered your referral</string>
+    <string name="push_lab_request">New request in your department</string>
+    <plurals name="days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="referral_end_self_confirm">You will stop co-managing this patient and lose access to the record straight away. It is removed from this phone.</string>
+    <string name="grade">Grade</string>
+    <string name="grade_choose">Resident, specialist or consultant</string>
+    <string name="grade_pending">Waiting for admin approval. Until then colleagues see your current grade: %1$s. Your account works as usual.</string>
+    <string name="admin_grade_change">Grade change requested: %1$s → %2$s</string>
+    <string name="admin_grade_approve">Approve grade</string>
+    <string name="admin_grade_reject">Keep old grade</string>
+    <!-- Phase 5: app lock, access logs, export -->
+    <string name="lock_title">My Clinic is locked</string>
+    <string name="lock_body">Use your fingerprint, face or phone PIN to continue.</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_prompt_title">Unlock My Clinic</string>
+    <string name="lock_prompt_subtitle">Patient records are protected</string>
+    <string name="lock_no_screen_lock">This phone has no screen lock. To protect patient records, set a PIN, pattern, password or fingerprint in the phone's settings, then come back.</string>
+    <string name="lock_open_settings">Open security settings</string>
+    <string name="access_log_title">Access log</string>
+    <string name="access_log_help">Everyone who opened, changed, shared or exported this record, newest first. No clinical details are stored in the log.</string>
+    <string name="activity_log_title">Activity log</string>
+    <string name="activity_log_help">Everything that happened in the app, newest first: approvals, sharing, referrals, views and changes. No patient names or clinical details.</string>
+    <string name="audit_you">You</string>
+    <string name="audit_system">The system</string>
+    <string name="audit_account">a doctor account</string>
+    <string name="audit_via_consult">via consult</string>
+    <string name="audit_via_department">via the department</string>
+    <string name="audit_load_more">Show older</string>
+    <string name="audit_patient_ref">patient %1$s</string>
+    <string name="audit_view">%1$s opened %2$s</string>
+    <string name="audit_create">%1$s added to %2$s</string>
+    <string name="audit_update">%1$s changed %2$s</string>
+    <string name="audit_delete">%1$s deleted from %2$s</string>
+    <string name="audit_share">%1$s shared the record (%2$s)</string>
+    <string name="audit_revoke">%1$s withdrew access (%2$s)</string>
+    <string name="audit_close">%1$s closed a consult</string>
+    <string name="audit_export">%1$s exported the record as PDF</string>
+    <string name="audit_verify">%1$s reviewed %2$s</string>
+    <string name="audit_refer">%1$s: referral update (%2$s)</string>
+    <string name="audit_transfer">%1$s took over the patient (transfer)</string>
+    <string name="audit_submit_result">%1$s sent a result (%2$s)</string>
+    <string name="audit_other">%1$s: %2$s</string>
+    <string name="export_pdf">Export PDF</string>
+    <string name="export_warning">A PDF copy of this record will be made and you choose where to send it. Once it leaves the app, My Clinic can no longer protect it. Only share it with the patient or for their care. The export is recorded in the access log.</string>
+    <string name="export_confirm">Export</string>
+    <string name="export_failed">The record could not be exported. %1$s</string>
+    <string name="export_footer">Confidential medical record · exported by %1$s · %2$s</string>
+    <string name="export_page">page %1$d</string>
+    <string name="export_confidential">CONFIDENTIAL. Medical record from My Clinic.</string>
+    <string name="export_no_allergies">No known allergies recorded</string>
+    <string name="home_greeting_doctor">Hello, Dr. %1$s</string>
+    <string name="duplicate_title">Already in the record?</string>
+    <string name="duplicate_body">This looks the same as: %1$s</string>
+    <string name="duplicate_confirm">The record already has: %1$s. Save this entry anyway?</string>
+    <string name="save_anyway">Save anyway</string>
+    <string name="remove_added_entry">Remove %1$s</string>
+    <string name="status_current">Current</string>
+    <string name="status_discharged">Discharged</string>
+    <string name="status_all">All</string>
+    <string name="discharged">Discharged</string>
+    <string name="discharge_patient">Discharge</string>
+    <string name="reopen_patient">Re-open</string>
+    <string name="discharge_confirm">Mark this patient as discharged / follow-up finished? They leave your current list but stay complete, searchable and available for research. You can re-open them any time.</string>
+    <string name="discharged_banner">Discharged on %1$s</string>
+    <string name="discharged_banner_body">Kept in your records and searchable. Tap Re-open to move them back to your current patients.</string>
+    <string name="research_export_title">Research export</string>
+    <string name="research_intro_title">De-identified spreadsheet</string>
+    <string name="research_intro_body">Exports your own patients without names, ID, file number, phone, address or date of birth. Each patient gets a random study number, and no key back to the patient is kept.</string>
+    <string name="research_which_patients">Which patients</string>
+    <string name="research_search_hint">Diagnosis, operation or #tag (empty = all)</string>
+    <string name="research_what">What to include</string>
+    <string name="research_full_dates">Full dates</string>
+    <string name="research_full_dates_help">Off: year and month only. Days between operation and follow-up are always included.</string>
+    <string name="research_free_text">Free-text notes</string>
+    <string name="research_free_text_help">History, operative notes and reports. They may contain names: check before sharing.</string>
+    <string name="research_ethics">I have ethics committee approval for this research, or it is an internal audit / service review, and I will keep the file secure.</string>
+    <string name="research_logged">The export is recorded in each patient's access log. You need to be online.</string>
+    <string name="research_export_button">Export spreadsheet</string>
+    <plurals name="research_patient_count">
+        <item quantity="one">%1$d patient will be exported</item>
+        <item quantity="other">%1$d patients will be exported</item>
+    </plurals>
+</resources>

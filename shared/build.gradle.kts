@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.compose.multiplatform)
 }
 
 kotlin {
@@ -35,12 +37,26 @@ kotlin {
             api(libs.koin.core)
             // Offline copy (Room works on Android and iPhone)
             api(libs.room.runtime)
+            // Screens (Compose Multiplatform) and their English/Arabic texts
+            api(compose.runtime)
+            api(compose.foundation)
+            api(compose.ui)
+            api(compose.material3)
+            api(compose.materialIconsExtended)
+            api(compose.components.resources)
+            api(libs.jb.navigation.compose)
+            api(libs.jb.lifecycle.viewmodel.compose)
+            api(libs.jb.lifecycle.runtime.compose)
+            api(libs.koin.compose)
+            api(libs.koin.compose.viewmodel)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             // Android's offline copy is encrypted with SQLCipher
             implementation(libs.sqlcipher)
             implementation(libs.androidx.sqlite)
+            // In-app language switch (English / Arabic)
+            implementation(libs.androidx.appcompat)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -50,6 +66,13 @@ kotlin {
             implementation(libs.junit)
         }
     }
+}
+
+// Texts and images in src/commonMain/composeResources, used as Res.string.<name>.
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.myclinic.shared.resources"
+    generateResClass = always
 }
 
 // Room's code generator, once per platform.

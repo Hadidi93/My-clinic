@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.components
 
+import com.myclinic.shared.resources.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -23,14 +24,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.myclinic.app.R
 
 /** Minimum height for anything tappable: bigger than the 48dp guideline, easy with gloves or one hand. */
 val TouchTarget = 56.dp
@@ -95,7 +95,7 @@ fun PasswordField(
             IconButton(onClick = { visible = !visible }) {
                 Icon(
                     imageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                    contentDescription = stringResource(if (visible) R.string.hide_password else R.string.show_password),
+                    contentDescription = stringResource(if (visible) Res.string.hide_password else Res.string.show_password),
                 )
             }
         },

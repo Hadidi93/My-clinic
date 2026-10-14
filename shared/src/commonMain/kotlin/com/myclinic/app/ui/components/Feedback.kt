@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.components
 
+import com.myclinic.shared.resources.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.myclinic.app.R
 
 @Composable
 fun FullScreenLoading() {
@@ -37,8 +37,8 @@ fun FullScreenError(message: String, onRetry: () -> Unit, onSignOut: (() -> Unit
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(message, style = MaterialTheme.typography.bodyLarge)
-        PrimaryButton(stringResource(R.string.retry), onRetry)
-        onSignOut?.let { SecondaryButton(stringResource(R.string.sign_out), it) }
+        PrimaryButton(stringResource(Res.string.retry), onRetry)
+        onSignOut?.let { SecondaryButton(stringResource(Res.string.sign_out), it) }
     }
 }
 
