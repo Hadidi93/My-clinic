@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.auth
 
+import com.myclinic.shared.resources.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,11 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.myclinic.app.R
 import com.myclinic.app.ui.components.LanguageSwitch
 import com.myclinic.app.ui.components.currentAppLanguage
 import com.myclinic.app.ui.components.setAppLanguage
@@ -51,7 +51,7 @@ fun AuthScaffold(
                 if (onBack != null) {
                     IconButton(onClick = onBack) {
                         // AutoMirrored: the arrow points the right way in Arabic too.
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 }
                 Spacer(Modifier.weight(1f))

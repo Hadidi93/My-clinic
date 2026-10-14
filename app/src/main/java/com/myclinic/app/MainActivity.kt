@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import org.koin.compose.KoinContext
 import com.myclinic.app.data.auth.AuthRepository
 import com.myclinic.app.data.push.PushManager
 import com.myclinic.app.security.AppLockManager
@@ -32,8 +33,11 @@ class MainActivity : AppCompatActivity() {
             push.onNotificationTapped(intent?.getStringExtra(PushManager.EXTRA_OPEN))
         }
         setContent {
-            MyClinicTheme {
-                MyClinicRoot()
+            // Lets shared screens find their view models and repositories (Koin).
+            KoinContext {
+                MyClinicTheme {
+                    MyClinicRoot()
+                }
             }
         }
         // Ignore touches while another app draws over this one (tap-jacking protection).

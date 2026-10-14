@@ -1,6 +1,7 @@
 package com.myclinic.app.ui.auth
 
-import org.koin.androidx.compose.koinViewModel
+import com.myclinic.shared.resources.*
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.MaterialTheme
@@ -10,11 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.myclinic.app.R
 import com.myclinic.app.data.auth.LinkMessage
 import com.myclinic.app.ui.components.MessageCard
 import com.myclinic.app.ui.components.AppTextField
@@ -36,50 +36,50 @@ fun LoginScreen(
     val focus = LocalFocusManager.current
 
     AuthScaffold(
-        title = stringResource(R.string.app_name),
-        subtitle = stringResource(R.string.login_subtitle),
+        title = stringResource(Res.string.app_name),
+        subtitle = stringResource(Res.string.login_subtitle),
     ) {
         linkMessage?.let { message ->
             val verified = message == LinkMessage.EMAIL_VERIFIED_SIGN_IN
             MessageCard(
                 title = stringResource(
                     when (message) {
-                        LinkMessage.EMAIL_VERIFIED_SIGN_IN -> R.string.link_email_verified
-                        LinkMessage.LINK_EXPIRED -> R.string.link_expired
-                        LinkMessage.RESET_LINK_FAILED -> R.string.link_reset_failed
+                        LinkMessage.EMAIL_VERIFIED_SIGN_IN -> Res.string.link_email_verified
+                        LinkMessage.LINK_EXPIRED -> Res.string.link_expired
+                        LinkMessage.RESET_LINK_FAILED -> Res.string.link_reset_failed
                     },
                 ),
                 container = if (verified) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer,
                 content = if (verified) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer,
             )
-            TextButton(onClick = onDismissLinkMessage) { Text(stringResource(R.string.close)) }
+            TextButton(onClick = onDismissLinkMessage) { Text(stringResource(Res.string.close)) }
         }
         AppTextField(
             value = state.email,
             onValueChange = viewModel::onEmailChange,
-            label = stringResource(R.string.email),
+            label = stringResource(Res.string.email),
             keyboardType = KeyboardType.Email,
-            error = if (state.showEmailError) stringResource(R.string.error_invalid_email) else null,
+            error = if (state.showEmailError) stringResource(Res.string.error_invalid_email) else null,
         )
         PasswordField(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
-            label = stringResource(R.string.password),
-            error = if (state.showPasswordError) stringResource(R.string.error_password_required) else null,
+            label = stringResource(Res.string.password),
+            error = if (state.showPasswordError) stringResource(Res.string.error_password_required) else null,
             imeAction = ImeAction.Done,
             onImeAction = { focus.clearFocus(); viewModel.signIn() },
         )
         ErrorMessage(state.error?.message())
         PrimaryButton(
-            text = stringResource(R.string.login_button),
+            text = stringResource(Res.string.login_button),
             onClick = { focus.clearFocus(); viewModel.signIn() },
             loading = state.loading,
         )
         TextButton(onClick = onForgotPassword, modifier = Modifier.fillMaxWidth().heightIn(min = TouchTarget)) {
-            Text(stringResource(R.string.forgot_password))
+            Text(stringResource(Res.string.forgot_password))
         }
         TextButton(onClick = onCreateAccount, modifier = Modifier.fillMaxWidth().heightIn(min = TouchTarget)) {
-            Text(stringResource(R.string.no_account))
+            Text(stringResource(Res.string.no_account))
         }
     }
 }

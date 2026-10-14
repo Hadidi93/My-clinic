@@ -1,15 +1,15 @@
 package com.myclinic.app.ui.auth
 
-import org.koin.androidx.compose.koinViewModel
+import com.myclinic.shared.resources.*
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.myclinic.app.R
 import com.myclinic.app.ui.components.AppTextField
 import com.myclinic.app.ui.components.ErrorMessage
 import com.myclinic.app.ui.components.MessageCard
@@ -27,31 +27,31 @@ fun ForgotPasswordScreen(onBack: () -> Unit, viewModel: ForgotPasswordViewModel 
     val focus = LocalFocusManager.current
 
     AuthScaffold(
-        title = stringResource(R.string.forgot_title),
-        subtitle = stringResource(R.string.forgot_body),
+        title = stringResource(Res.string.forgot_title),
+        subtitle = stringResource(Res.string.forgot_body),
         onBack = onBack,
     ) {
         val sentTo = state.sentTo
         if (sentTo != null) {
             MessageCard(
-                title = stringResource(R.string.reset_link_sent, sentTo),
+                title = stringResource(Res.string.reset_link_sent, sentTo),
                 container = MaterialTheme.colorScheme.primaryContainer,
                 content = MaterialTheme.colorScheme.onPrimaryContainer,
             )
-            PrimaryButton(stringResource(R.string.back_to_sign_in), onBack)
+            PrimaryButton(stringResource(Res.string.back_to_sign_in), onBack)
         } else {
             AppTextField(
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
-                label = stringResource(R.string.email),
+                label = stringResource(Res.string.email),
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Send,
                 onImeAction = { focus.clearFocus(); viewModel.send() },
-                error = if (state.showEmailError) stringResource(R.string.error_invalid_email) else null,
+                error = if (state.showEmailError) stringResource(Res.string.error_invalid_email) else null,
             )
             ErrorMessage(state.error?.message())
             PrimaryButton(
-                text = stringResource(R.string.send_reset_link),
+                text = stringResource(Res.string.send_reset_link),
                 onClick = { focus.clearFocus(); viewModel.send() },
                 loading = state.loading,
             )
@@ -66,21 +66,21 @@ fun ResetPasswordScreen(viewModel: ResetPasswordViewModel = koinViewModel()) {
     val focus = LocalFocusManager.current
     val errors = state.passwordErrors
 
-    AuthScaffold(title = stringResource(R.string.new_password_title)) {
+    AuthScaffold(title = stringResource(Res.string.new_password_title)) {
         PasswordField(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
-            label = stringResource(R.string.new_password),
+            label = stringResource(Res.string.new_password),
             imeAction = ImeAction.Next,
-            supportingText = stringResource(R.string.password_rules, PasswordPolicy.MIN_LENGTH),
+            supportingText = stringResource(Res.string.password_rules, PasswordPolicy.MIN_LENGTH),
             error = if (state.showErrors) errors.filter { it != PasswordError.MISMATCH }.firstMessage() else null,
         )
         PasswordField(
             value = state.confirmPassword,
             onValueChange = viewModel::onConfirmPasswordChange,
-            label = stringResource(R.string.confirm_password),
+            label = stringResource(Res.string.confirm_password),
             error = if (state.showErrors && PasswordError.MISMATCH in errors) {
-                stringResource(R.string.error_password_mismatch)
+                stringResource(Res.string.error_password_mismatch)
             } else {
                 null
             },
@@ -88,10 +88,10 @@ fun ResetPasswordScreen(viewModel: ResetPasswordViewModel = koinViewModel()) {
         )
         ErrorMessage(state.error?.message())
         PrimaryButton(
-            text = stringResource(R.string.update_password),
+            text = stringResource(Res.string.update_password),
             onClick = { focus.clearFocus(); viewModel.submit() },
             loading = state.loading,
         )
-        SecondaryButton(text = stringResource(R.string.cancel), onClick = viewModel::cancel)
+        SecondaryButton(text = stringResource(Res.string.cancel), onClick = viewModel::cancel)
     }
 }
