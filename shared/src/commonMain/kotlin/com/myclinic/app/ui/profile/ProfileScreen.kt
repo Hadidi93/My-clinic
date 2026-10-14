@@ -1,9 +1,7 @@
 package com.myclinic.app.ui.profile
 
-import org.koin.androidx.compose.koinViewModel
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import com.myclinic.shared.resources.*
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,15 +41,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import com.myclinic.app.R
+import coil3.compose.AsyncImage
+import com.myclinic.app.ui.files.rememberPhotoPicker
 import com.myclinic.app.ui.components.AppTextField
 import com.myclinic.app.ui.components.ErrorMessage
 import com.myclinic.app.ui.components.LanguageSwitch
@@ -81,15 +79,11 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
-    val savedText = stringResource(R.string.profile_saved)
+    val savedText = stringResource(Res.string.profile_saved)
 
-    val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        uri?.let(viewModel::onPhotoPicked)
-    }
-    val pickLicense = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        uri?.let(viewModel::onLicensePhotoPicked)
-    }
-    val imageOnly = PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+    // Profile photo: small; licence photo: large enough to read.
+    val pickPhoto = rememberPhotoPicker(maxDimension = 512, quality = 85, onPicked = viewModel::onPhotoPicked)
+    val pickLicense = rememberPhotoPicker(maxDimension = 2000, quality = 90, onPicked = viewModel::onLicensePhotoPicked)
 
     LaunchedEffect(state.savedEvent) {
         if (state.savedEvent) {
@@ -107,27 +101,27 @@ fun ProfileScreen(
     state.signOutWarning?.let { count ->
         AlertDialog(
             onDismissRequest = viewModel::cancelSignOut,
-            title = { Text(stringResource(R.string.sign_out_unsynced_title)) },
-            text = { Text(pluralStringResource(R.plurals.sign_out_unsynced_body, count, count)) },
-            confirmButton = { TextButton(onClick = viewModel::confirmSignOut) { Text(stringResource(R.string.sign_out_anyway)) } },
-            dismissButton = { TextButton(onClick = viewModel::cancelSignOut) { Text(stringResource(R.string.cancel)) } },
+            title = { Text(stringResource(Res.string.sign_out_unsynced_title)) },
+            text = { Text(pluralStringResource(Res.plurals.sign_out_unsynced_body, count, count)) },
+            confirmButton = { TextButton(onClick = viewModel::confirmSignOut) { Text(stringResource(Res.string.sign_out_anyway)) } },
+            dismissButton = { TextButton(onClick = viewModel::cancelSignOut) { Text(stringResource(Res.string.cancel)) } },
         )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(if (setupMode) R.string.profile_setup_title else R.string.profile_title)) },
+                title = { Text(stringResource(if (setupMode) Res.string.profile_setup_title else Res.string.profile_title)) },
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                         }
                     }
                 },
                 actions = {
                     IconButton(onClick = viewModel::requestSignOut) {
-                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = stringResource(R.string.sign_out))
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = stringResource(Res.string.sign_out))
                     }
                 },
             )
@@ -144,15 +138,15 @@ fun ProfileScreen(
                     .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                if (setupMode) Text(stringResource(R.string.profile_setup_body), style = MaterialTheme.typography.bodyLarge)
+                if (setupMode) Text(stringResource(Res.string.profile_setup_body), style = MaterialTheme.typography.bodyLarge)
                 VerificationStatusCard(state.verificationStatus, state.verificationNote)
 
                 // Photo
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Avatar(url = state.photoUrl, loading = state.uploadingPhoto)
                     SecondaryButton(
-                        text = stringResource(if (state.photoUrl == null) R.string.add_photo else R.string.change_photo),
-                        onClick = { pickPhoto.launch(imageOnly) },
+                        text = stringResource(if (state.photoUrl == null) Res.string.add_photo else Res.string.change_photo),
+                        onClick = { pickPhoto() },
                         enabled = !state.uploadingPhoto,
                         modifier = Modifier.weight(1f),
                     )
@@ -161,34 +155,34 @@ fun ProfileScreen(
                 fun err(field: ProfileField) = state.showErrors && field in state.invalidFields
 
                 // Doctor or lab/radiology staff
-                Text(stringResource(R.string.account_type), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.account_type), style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AccountType.entries.forEach { type ->
                         FilterChip(
                             selected = state.accountType == type,
                             onClick = { viewModel.onAccountTypeChange(type) },
-                            label = { Text(stringResource(if (type == AccountType.STAFF) R.string.account_staff else R.string.account_doctor)) },
+                            label = { Text(stringResource(if (type == AccountType.STAFF) Res.string.account_staff else Res.string.account_doctor)) },
                             modifier = Modifier.heightIn(min = 48.dp),
                         )
                     }
                 }
                 Text(
-                    stringResource(if (state.isStaff) R.string.account_staff_help else R.string.account_doctor_help),
+                    stringResource(if (state.isStaff) Res.string.account_staff_help else Res.string.account_doctor_help),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (!setupMode && state.accountType != state.savedAccountType) {
-                    MessageCard(title = stringResource(R.string.account_type_change_warning))
+                    MessageCard(title = stringResource(Res.string.account_type_change_warning))
                 }
 
                 AppTextField(
                     value = state.fullName, onValueChange = viewModel::onFullNameChange,
-                    label = stringResource(R.string.full_name),
+                    label = stringResource(Res.string.full_name),
                     capitalization = KeyboardCapitalization.Words,
                     error = if (err(ProfileField.FULL_NAME)) ProfileField.FULL_NAME.errorMessage() else null,
                 )
                 AppTextField(
                     value = state.specialty, onValueChange = viewModel::onSpecialtyChange,
-                    label = stringResource(if (state.isStaff) R.string.job_title else R.string.specialty),
+                    label = stringResource(if (state.isStaff) Res.string.job_title else Res.string.specialty),
                     capitalization = KeyboardCapitalization.Words,
                     error = if (err(ProfileField.SPECIALTY)) ProfileField.SPECIALTY.errorMessage() else null,
                 )
@@ -197,7 +191,7 @@ fun ProfileScreen(
                     GradeDropdown(state.grade, viewModel::onGradeChange)
                     if (state.gradePending || (state.grade != null && state.grade != state.approvedGrade && state.verificationStatus == com.myclinic.domain.model.VerificationStatus.VERIFIED)) {
                         Text(
-                            stringResource(R.string.grade_pending,
+                            stringResource(Res.string.grade_pending,
                                 state.approvedGrade?.let { com.myclinic.domain.forms.Vocabulary.option(it).get(com.myclinic.app.ui.components.currentAppLanguage()) } ?: "—"),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -205,20 +199,20 @@ fun ProfileScreen(
                 }
                 AppTextField(
                     value = state.hospital, onValueChange = viewModel::onHospitalChange,
-                    label = stringResource(R.string.hospital),
+                    label = stringResource(Res.string.hospital),
                     capitalization = KeyboardCapitalization.Words,
                     error = if (err(ProfileField.HOSPITAL)) ProfileField.HOSPITAL.errorMessage() else null,
                 )
                 AppTextField(
                     value = state.licenseNumber, onValueChange = viewModel::onLicenseChange,
-                    label = stringResource(if (state.isStaff) R.string.staff_id else R.string.license_number),
+                    label = stringResource(if (state.isStaff) Res.string.staff_id else Res.string.license_number),
                     capitalization = KeyboardCapitalization.Characters,
-                    supportingText = if (!setupMode) stringResource(R.string.license_change_warning) else null,
+                    supportingText = if (!setupMode) stringResource(Res.string.license_change_warning) else null,
                     error = if (err(ProfileField.LICENSE_NUMBER)) ProfileField.LICENSE_NUMBER.errorMessage() else null,
                 )
                 AppTextField(
                     value = state.phone, onValueChange = viewModel::onPhoneChange,
-                    label = stringResource(R.string.phone),
+                    label = stringResource(Res.string.phone),
                     keyboardType = KeyboardType.Phone,
                     imeAction = ImeAction.Done,
                     error = if (err(ProfileField.PHONE)) ProfileField.PHONE.errorMessage() else null,
@@ -226,37 +220,37 @@ fun ProfileScreen(
 
                 if (state.isStaff) {
                     FacilityPicker(
-                        label = stringResource(R.string.your_department),
+                        label = stringResource(Res.string.your_department),
                         selectedId = state.facilityId,
                         facilities = state.facilities,
                         requestKind = "",
                         noneLabel = null,
                         onSelect = viewModel::onFacilityChange,
                         onAdd = viewModel::addFacility,
-                        error = if (state.showErrors && state.facilityMissing) stringResource(R.string.department_required) else null,
+                        error = if (state.showErrors && state.facilityMissing) stringResource(Res.string.department_required) else null,
                     )
                 }
 
                 // Licence document
-                Text(stringResource(R.string.license_document), style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(if (state.isStaff) R.string.staff_document_help else R.string.license_document_help),
+                Text(stringResource(Res.string.license_document), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(if (state.isStaff) Res.string.staff_document_help else Res.string.license_document_help),
                     style = MaterialTheme.typography.bodyMedium)
                 if (state.hasLicenseDocument) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Text(stringResource(R.string.license_document_uploaded))
+                        Text(stringResource(Res.string.license_document_uploaded))
                     }
                 }
                 SecondaryButton(
                     text = stringResource(
-                        if (state.hasLicenseDocument) R.string.replace_license_document else R.string.upload_license_document,
+                        if (state.hasLicenseDocument) Res.string.replace_license_document else Res.string.upload_license_document,
                     ),
-                    onClick = { pickLicense.launch(imageOnly) },
+                    onClick = { pickLicense() },
                     enabled = !state.uploadingLicense,
                 )
                 if (state.uploadingLicense) CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
 
-                Text(stringResource(R.string.language), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(Res.string.language), style = MaterialTheme.typography.titleMedium)
                 LanguageSwitch(
                     selected = state.language,
                     onSelect = {
@@ -266,7 +260,7 @@ fun ProfileScreen(
                 )
 
                 ErrorMessage(state.error?.message())
-                PrimaryButton(text = stringResource(R.string.save), onClick = viewModel::save, loading = state.saving)
+                PrimaryButton(text = stringResource(Res.string.save), onClick = viewModel::save, loading = state.saving)
             }
         }
     }
@@ -285,7 +279,7 @@ private fun Avatar(url: String?, loading: Boolean) {
             loading -> CircularProgressIndicator()
             url != null -> AsyncImage(
                 model = url,
-                contentDescription = stringResource(R.string.profile_photo),
+                contentDescription = stringResource(Res.string.profile_photo),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )

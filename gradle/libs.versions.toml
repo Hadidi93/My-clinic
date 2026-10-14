@@ -21,7 +21,7 @@ serialization = "1.7.3"
 datetime = "0.6.1"
 supabase = "3.0.3"
 ktor = "3.0.3"
-coil = "2.7.0"
+coil = "3.0.4"
 room = "2.7.1"
 sqlcipher = "4.6.1"
 sqlite = "2.5.1"
@@ -75,7 +75,8 @@ supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

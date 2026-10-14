@@ -1,5 +1,6 @@
 package com.myclinic.app.ui.profile
 
+import com.myclinic.shared.resources.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -19,9 +20,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.myclinic.app.R
 import com.myclinic.app.ui.components.TouchTarget
 import com.myclinic.app.ui.components.currentAppLanguage
 import com.myclinic.app.ui.patients.optionLabel
@@ -39,8 +39,8 @@ fun GradeDropdown(selected: String?, onSelect: (String) -> Unit) {
             value = optionLabel(selected).orEmpty(),
             onValueChange = {},
             readOnly = true,
-            label = { Text(stringResource(R.string.grade)) },
-            placeholder = { Text(stringResource(R.string.grade_choose)) },
+            label = { Text(stringResource(Res.string.grade)) },
+            placeholder = { Text(stringResource(Res.string.grade_choose)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
             modifier = Modifier.fillMaxWidth().heightIn(min = TouchTarget).menuAnchor(MenuAnchorType.PrimaryNotEditable),
         )

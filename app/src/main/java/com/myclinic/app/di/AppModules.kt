@@ -37,6 +37,8 @@ import com.myclinic.app.data.sync.SyncScheduler
 import com.myclinic.app.data.sync.SyncTrigger
 import com.myclinic.app.data.sync.SyncWorker
 import com.myclinic.app.security.AppLockManager
+import com.myclinic.app.ui.files.AndroidFileRenderer
+import com.myclinic.app.ui.files.FileRenderer
 import com.myclinic.app.ui.admin.AdminApprovalsViewModel
 import com.myclinic.app.ui.audit.AccessLogViewModel
 import com.myclinic.app.ui.auth.ForgotPasswordViewModel
@@ -117,6 +119,7 @@ val dataModule = module {
     singleOf(::SyncEngine)
     singleOf(::SyncScheduler) { bind<SyncTrigger>() }
     singleOf(::AppLockManager)
+    singleOf(::AndroidFileRenderer) { bind<FileRenderer>() }
     workerOf(::SyncWorker)
 }
 

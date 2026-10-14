@@ -1,11 +1,9 @@
 package com.myclinic.app.ui.profile
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myclinic.app.data.DataError
 import com.myclinic.app.data.doctor.DoctorRepository
-import com.myclinic.app.data.media.ImageCompressor
 import com.myclinic.app.data.records.PatientRepository
 import com.myclinic.app.data.toDataError
 import com.myclinic.app.data.facilities.FacilityRepository
@@ -65,7 +63,6 @@ data class ProfileUiState(
 
 class ProfileViewModel(
     private val doctorRepository: DoctorRepository,
-    private val imageCompressor: ImageCompressor,
     private val patientRepository: PatientRepository,
     private val facilityRepository: FacilityRepository,
 ) : ViewModel() {
@@ -156,10 +153,10 @@ class ProfileViewModel(
         }
     }
 
-    fun onPhotoPicked(uri: Uri) {
+    fun onPhotoPicked(read: suspend () -> ByteArray) {
         _state.update { it.copy(uploadingPhoto = true, error = null) }
         viewModelScope.launch {
-            runCatching { imageCompressor.toJpeg(uri, maxDimension = 512) }
+            runCatching { read() }
                 .mapCatching { doctorRepository.uploadMyPhoto(it).getOrThrow() }
                 .onSuccess { doctor ->
                     val url = doctor.photoPath?.let { doctorRepository.photoUrl(it) }
@@ -169,10 +166,10 @@ class ProfileViewModel(
         }
     }
 
-    fun onLicensePhotoPicked(uri: Uri) {
+    fun onLicensePhotoPicked(read: suspend () -> ByteArray) {
         _state.update { it.copy(uploadingLicense = true, error = null) }
         viewModelScope.launch {
-            runCatching { imageCompressor.toJpeg(uri, maxDimension = 2000, quality = 90) }
+            runCatching { read() }
                 .mapCatching { doctorRepository.uploadMyLicenseDocument(it).getOrThrow() }
                 .onSuccess { doctor ->
                     refreshStatus(doctor)

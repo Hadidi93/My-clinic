@@ -1,6 +1,7 @@
 package com.myclinic.app.ui.admin
 
-import org.koin.androidx.compose.koinViewModel
+import com.myclinic.shared.resources.*
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,11 +41,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import com.myclinic.app.R
+import coil3.compose.AsyncImage
 import com.myclinic.app.ui.components.ErrorMessage
 import com.myclinic.app.ui.components.SecureScreen
 import com.myclinic.app.ui.components.TouchTarget
@@ -62,7 +62,7 @@ fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel 
 
     val decision = state.lastDecision
     val decisionText = decision?.let { (name, status) ->
-        stringResource(if (status == VerificationStatus.VERIFIED) R.string.admin_approved else R.string.admin_rejected, name)
+        stringResource(if (status == VerificationStatus.VERIFIED) Res.string.admin_approved else Res.string.admin_rejected, name)
     }
     LaunchedEffect(decisionText) {
         if (decisionText != null) {
@@ -75,10 +75,10 @@ fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel 
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.admin_title)) },
+                    title = { Text(stringResource(Res.string.admin_title)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                         }
                     },
                 )
@@ -97,7 +97,7 @@ fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel 
                 ) {
                     state.error?.let { error -> item { ErrorMessage(error.message()) } }
                     if (!state.loading && state.doctors.isEmpty()) {
-                        item { Text(stringResource(R.string.admin_empty), style = MaterialTheme.typography.bodyLarge) }
+                        item { Text(stringResource(Res.string.admin_empty), style = MaterialTheme.typography.bodyLarge) }
                     }
                     items(state.doctors, key = { it.id }) { doctor ->
                         PendingDoctorCard(
@@ -127,11 +127,11 @@ fun AdminApprovalsScreen(onBack: () -> Unit, viewModel: AdminApprovalsViewModel 
         state.licenseViewerUrl?.let { url ->
             AlertDialog(
                 onDismissRequest = viewModel::closeLicense,
-                confirmButton = { TextButton(onClick = viewModel::closeLicense) { Text(stringResource(R.string.close)) } },
+                confirmButton = { TextButton(onClick = viewModel::closeLicense) { Text(stringResource(Res.string.close)) } },
                 text = {
                     AsyncImage(
                         model = url,
-                        contentDescription = stringResource(R.string.license_document),
+                        contentDescription = stringResource(Res.string.license_document),
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp),
                     )
@@ -160,13 +160,13 @@ private fun PendingDoctorCard(
             if (doctor.isStaff) {
                 // Staff never see patient records, only their department's requests.
                 Text(
-                    stringResource(R.string.admin_staff_account, department ?: stringResource(R.string.department_unknown)),
+                    stringResource(Res.string.admin_staff_account, department ?: stringResource(Res.string.department_unknown)),
                     style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary,
                 )
             }
             doctor.requestedGrade?.let { requested ->
                 Text(
-                    stringResource(R.string.admin_grade_change, gradeLabel(doctor.grade) ?: "—", gradeLabel(requested).orEmpty()),
+                    stringResource(Res.string.admin_grade_change, gradeLabel(doctor.grade) ?: "—", gradeLabel(requested).orEmpty()),
                     style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -174,17 +174,17 @@ private fun PendingDoctorCard(
                 Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium)
             }
             Text(
-                doctor.licenseNumber?.let { stringResource(R.string.license_label, it) }
-                    ?: stringResource(R.string.profile_incomplete),
+                doctor.licenseNumber?.let { stringResource(Res.string.license_label, it) }
+                    ?: stringResource(Res.string.profile_incomplete),
                 style = MaterialTheme.typography.bodyMedium,
             )
             if (doctor.licenseDocumentPath != null) {
                 TextButton(onClick = onViewLicense, modifier = Modifier.heightIn(min = TouchTarget)) {
-                    Text(stringResource(R.string.view_license))
+                    Text(stringResource(Res.string.view_license))
                 }
             } else {
                 Text(
-                    stringResource(R.string.no_license_document),
+                    stringResource(Res.string.no_license_document),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -195,23 +195,23 @@ private fun PendingDoctorCard(
                 // The account is approved; only the new grade needs a decision.
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedButton(onClick = { onReviewGrade(false) }, modifier = Modifier.weight(1f).heightIn(min = TouchTarget)) {
-                        Text(stringResource(R.string.admin_grade_reject))
+                        Text(stringResource(Res.string.admin_grade_reject))
                     }
                     Button(onClick = { onReviewGrade(true) }, modifier = Modifier.weight(1f).heightIn(min = TouchTarget)) {
-                        Text(stringResource(R.string.admin_grade_approve))
+                        Text(stringResource(Res.string.admin_grade_approve))
                     }
                 }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedButton(onClick = onReject, modifier = Modifier.weight(1f).heightIn(min = TouchTarget)) {
-                        Text(stringResource(R.string.reject))
+                        Text(stringResource(Res.string.reject))
                     }
                     Button(
                         onClick = onApprove,
                         enabled = doctor.isProfileComplete,
                         modifier = Modifier.weight(1f).heightIn(min = TouchTarget),
                     ) {
-                        Text(stringResource(R.string.approve))
+                        Text(stringResource(Res.string.approve))
                     }
                 }
             }
@@ -224,18 +224,18 @@ private fun RejectDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var reason by rememberSaveable { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.admin_reject_title)) },
+        title = { Text(stringResource(Res.string.admin_reject_title)) },
         text = {
             OutlinedTextField(
                 value = reason,
                 onValueChange = { if (it.length <= 500) reason = it },
-                label = { Text(stringResource(R.string.admin_reject_reason)) },
+                label = { Text(stringResource(Res.string.admin_reject_reason)) },
                 minLines = 2,
             )
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(reason) }, enabled = reason.isNotBlank()) { Text(stringResource(R.string.reject)) }
+            TextButton(onClick = { onConfirm(reason) }, enabled = reason.isNotBlank()) { Text(stringResource(Res.string.reject)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
     )
 }

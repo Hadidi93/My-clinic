@@ -169,7 +169,6 @@ dependencies {
     implementation(libs.supabase.storage)
     implementation(libs.ktor.client.okhttp)
 
-    implementation(libs.coil.compose)
 
     // Offline cache: Room on top of SQLCipher lives in :shared (androidMain)
 

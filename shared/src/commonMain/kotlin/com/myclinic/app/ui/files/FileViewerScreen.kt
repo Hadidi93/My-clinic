@@ -1,12 +1,7 @@
 package com.myclinic.app.ui.files
 
-import org.koin.androidx.compose.koinViewModel
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.pdf.PdfRenderer
-import android.os.ParcelFileDescriptor
+import com.myclinic.shared.resources.*
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -38,17 +33,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.myclinic.app.R
 import com.myclinic.app.data.DataError
 import com.myclinic.app.data.consults.ConsultRepository
 import com.myclinic.app.data.files.ClinicalFileStore
@@ -66,8 +58,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.UUID
 
 data class FileViewerUiState(
     val loading: Boolean = true,
@@ -83,12 +73,17 @@ data class FileViewerUiState(
  */
 class FileViewerViewModel(
     savedStateHandle: SavedStateHandle,
-    private val context: Context,
+    private val renderer: FileRenderer,
     private val files: ClinicalFileStore,
     private val consults: ConsultRepository,
 ) : ViewModel() {
 
-    val route: FileViewerRoute = savedStateHandle.toRoute()
+    val route = FileViewerRoute(
+        path = checkNotNull(savedStateHandle.get<String>(FileViewerRoute::path.name)),
+        mimeType = checkNotNull(savedStateHandle.get<String>(FileViewerRoute::mimeType.name)),
+        title = savedStateHandle.get<String>(FileViewerRoute::title.name),
+        consultFile = savedStateHandle.get<Boolean>(FileViewerRoute::consultFile.name) ?: false,
+    )
     private val _state = MutableStateFlow(FileViewerUiState())
     val state: StateFlow<FileViewerUiState> = _state.asStateFlow()
 
@@ -101,51 +96,16 @@ class FileViewerViewModel(
         viewModelScope.launch {
             try {
                 val bytes = if (route.consultFile) consults.loadConsultFile(route.path) else files.load(route.path)
-                val pages = withContext(Dispatchers.Default) {
-                    if (route.mimeType == PickedFile.MIME_PDF) renderPdf(bytes) else listOf(decodeImage(bytes)) to false
+                val pages = if (route.mimeType == PickedFile.MIME_PDF) {
+                    renderer.pdfPages(bytes, widthPx = PDF_WIDTH_PX, maxPages = MAX_PDF_PAGES)
+                } else {
+                    listOf(renderer.image(bytes, maxPx = MAX_IMAGE_PX)) to false
                 }
                 _state.value = FileViewerUiState(loading = false, pages = pages.first, truncated = pages.second)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 _state.value = FileViewerUiState(loading = false, error = e.toDataError())
-            }
-        }
-    }
-
-    private fun decodeImage(bytes: ByteArray): ImageBitmap {
-        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
-        var sample = 1
-        while (maxOf(options.outWidth, options.outHeight) / sample > MAX_IMAGE_PX) sample *= 2
-        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
-            ?: error("Not an image")
-        return bitmap.asImageBitmap()
-    }
-
-    /** PdfRenderer needs a file: it is written to private storage and deleted straight after opening. */
-    private suspend fun renderPdf(bytes: ByteArray): Pair<List<ImageBitmap>, Boolean> = withContext(Dispatchers.IO) {
-        val dir = File(context.noBackupFilesDir, "viewer").apply { mkdirs() }
-        val tmp = File(dir, "${UUID.randomUUID()}.pdf")
-        tmp.writeBytes(bytes)
-        val fd = try {
-            ParcelFileDescriptor.open(tmp, ParcelFileDescriptor.MODE_READ_ONLY)
-        } finally {
-            tmp.delete() // the open descriptor still reads it; nothing stays on disk
-        }
-        fd.use { descriptor ->
-            PdfRenderer(descriptor).use { renderer ->
-                val count = minOf(renderer.pageCount, MAX_PDF_PAGES)
-                val pages = (0 until count).map { i ->
-                    renderer.openPage(i).use { page ->
-                        val scale = PDF_WIDTH_PX.toFloat() / page.width
-                        val bitmap = Bitmap.createBitmap(PDF_WIDTH_PX, (page.height * scale).toInt().coerceAtLeast(1), Bitmap.Config.ARGB_8888)
-                        bitmap.eraseColor(Color.WHITE)
-                        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                        bitmap.asImageBitmap()
-                    }
-                }
-                pages to (renderer.pageCount > MAX_PDF_PAGES)
             }
         }
     }
@@ -165,10 +125,10 @@ fun FileViewerScreen(onBack: () -> Unit, viewModel: FileViewerViewModel = koinVi
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(viewModel.route.title ?: stringResource(R.string.file_viewer_title)) },
+                    title = { Text(viewModel.route.title ?: stringResource(Res.string.file_viewer_title)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
                         }
                     },
                 )
@@ -185,11 +145,11 @@ fun FileViewerScreen(onBack: () -> Unit, viewModel: FileViewerViewModel = koinVi
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         itemsIndexed(state.pages) { i, page ->
-                            Image(page, contentDescription = stringResource(R.string.file_page, i + 1),
+                            Image(page, contentDescription = stringResource(Res.string.file_page, i + 1),
                                 contentScale = ContentScale.FillWidth, modifier = Modifier.fillMaxWidth())
                         }
                         if (state.truncated) {
-                            item { Text(stringResource(R.string.file_pdf_truncated), modifier = Modifier.padding(16.dp)) }
+                            item { Text(stringResource(Res.string.file_pdf_truncated), modifier = Modifier.padding(16.dp)) }
                         }
                     }
                 }
@@ -211,7 +171,7 @@ private fun ZoomableImage(image: ImageBitmap) {
         contentAlignment = Alignment.Center) {
         Image(
             image,
-            contentDescription = stringResource(R.string.file_photo),
+            contentDescription = stringResource(Res.string.file_photo),
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize().graphicsLayer(
                 scaleX = scale, scaleY = scale, translationX = offset.x, translationY = offset.y,

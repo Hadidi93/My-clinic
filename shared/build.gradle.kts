@@ -49,6 +49,9 @@ kotlin {
             api(libs.jb.lifecycle.runtime.compose)
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
+            // Doctor photos and licence images (signed links)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
